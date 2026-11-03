@@ -76,6 +76,9 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
    La casilla «Con fondo decorativo» del registro permite imprimir sin ellos (ahorro de tinta). */
 .hoja.t-adultos{--acento:#1f6f78;--acento-osc:#134349;--suave:#e2eff0;--fondo-k:#f3f8f8;--linea:#c9d6d6;--calido:#b8722a}
 .hoja.t-infancia{--acento:#e8604f;--acento-osc:#2b2d42;--suave:#ffe9e4;--fondo-k:#fff7ef;--linea:#f1d6cc;--calido:#56b6e8}
+/* Adolescentes (12 a 17): editorial urbano, como la semilla de adolescentes (pizarra, terracota,
+   salvia y arena); marcadores en rombo. */
+.hoja.t-adolescentes{--acento:#c86d51;--acento-osc:#2b3a4a;--suave:#f3e8dc;--fondo-k:#f8f2ea;--linea:#e3d3c2;--calido:#5a8f76}
 .hoja{position:relative}
 .hoja .atn{position:relative}
 /* Recuadro del encabezado: color suave a la izquierda que se desvanece a transparente, para que el
@@ -90,6 +93,8 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 .hoja h2::before{content:"";flex:0 0 auto;width:3.2mm;height:3.2mm;border-radius:1mm;background:var(--acento)}
 .hoja.t-infancia h2::before{border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffc845 0 40%,var(--acento) 41%)}
 .hoja.t-infancia h2{letter-spacing:.05em}
+.hoja.t-adolescentes h2::before{width:2.6mm;height:2.6mm;border-radius:.4mm;transform:rotate(45deg);margin:0 1mm 0 .5mm;background:linear-gradient(135deg,var(--acento) 50%,var(--calido) 50%)}
+.hoja.t-adolescentes .h-cab{border-radius:2mm 6mm 2mm 6mm}
 .hoja table{background:rgba(255,255,255,.88)}
 .hoja th,.hoja td{border-color:var(--linea)}
 .hoja th{background:var(--suave);color:var(--acento-osc)}
@@ -106,6 +111,8 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
   body[data-hoja] .hoja .fondo.arriba{position:absolute;top:0;left:0;height:135mm;object-position:right top;opacity:.8}
   body[data-hoja] .hoja.t-infancia .fondo.arriba{opacity:1}
   body[data-hoja] .hoja.t-infancia .fondo.abajo{opacity:.9}
+  body[data-hoja] .hoja.t-adolescentes .fondo.arriba{opacity:.62}
+  body[data-hoja] .hoja.t-adolescentes .fondo.abajo{opacity:.62}
   body[data-hoja] .hoja.sin-fondo .fondo{display:none}
   @page{margin:14mm 14mm 17mm;
     @bottom-left{content:"Historia clínica psicológica · Documento confidencial · Juan Boya Guerra, T.P. 186609";vertical-align:top;padding-top:5px;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}
@@ -531,9 +538,15 @@ function impresionTabla(a) {
 function firmaHtml(a) {
   return `<div class="firma">${FIRMA ? `<img src="${FIRMA}" alt="Firma">` : '<div style="height:17mm"></div>'}<div class="linea"><strong>${esc(PROFESIONAL.nombre)}</strong><br>${esc(PROFESIONAL.titulo)}<br>T.P. ${esc(PROFESIONAL.tp)}</div></div>`;
 }
-// Tema del PDF: infancia si la atención se hizo con la población de niños y adolescentes (o, en
-// registros viejos, si el paciente tenía menos de 18 años ese día).
-const temaDe = (a, p) => a.pob === "infancia" || (!a.pob && (edadDe(p.nacimiento, a.atencion.fecha) ?? 99) < 18) ? "infancia" : "adultos";
+// Tema del PDF según la población de la atención y la edad ese día: adultos; dentro de niños y
+// adolescentes, «adolescentes» desde los 12 años (o con el rango de edad 12 a 17 si no hay fecha de
+// nacimiento) e «infancia» antes. En registros viejos sin población, cuenta la edad (< 18).
+function temaDe(a, p) {
+  const edad = edadDe(p.nacimiento, a.atencion.fecha);
+  const menor = a.pob === "infancia" || (!a.pob && (edad ?? 99) < 18);
+  if (!menor) return "adultos";
+  return (edad != null ? edad >= 12 : /12/.test(a.edadRango || "")) ? "adolescentes" : "infancia";
+}
 function hojaAtencion(a, p, salto) {
   const seg = a.tipo === "seguimiento", tema = temaDe(a, p);
   let h = `<div class="atn${salto ? " salto" : ""}"><img class="fondo arriba" src="arte/fondo-${tema}-arriba.webp" alt=""><div class="h-cab"><div class="txt"><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
