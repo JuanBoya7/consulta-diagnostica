@@ -146,6 +146,9 @@ body.local .campo.oblig>label::after,body.local h3.oblig>span:first-child::after
 .lat-der li button span:not(.punto){flex:1}
 .lat-der li button small{color:var(--ink-faint);font-variant-numeric:tabular-nums}
 .lat-der li.sub button{padding-left:16px;font-size:.82rem}
+/* Títulos (secciones) en negrita y subtítulos (áreas, hipótesis) en peso normal. */
+.lat-der li:not(.sub) button{font-weight:650;color:var(--ink);margin-top:3px}
+.lat-der li.sub button{font-weight:400}
 .punto{flex:0 0 8px;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink-faint)}
 .punto.r-P{background:var(--accent);border-color:var(--accent)}
 .punto.r-D{background:var(--ambar);border-color:var(--ambar)}
@@ -180,7 +183,6 @@ button.globo:hover{border-color:var(--accent)}
 <main>
 <h1>Consulta diagnóstica</h1>
 <p class="lead">Siga la ruta de entrevista y verifique sus hipótesis: criterios, diferenciales, códigos y los planes, instrumentos y fichas de las guías.</p>
-<div class="aviso">El criterio clínico es suyo: la página ordena la exploración y la verificación, no diagnostica.</div>
 
 <div class="panel">
   <div class="fila">
@@ -1203,7 +1205,7 @@ const VERIF = {
        Los globos se agrupan por categoría (cat, en el orden de CATEGORIAS) y, dentro de cada
        una, en orden alfabético.
      fijo / obligatorio: bloques que siempre se muestran y deben responderse para guardar
-       (riesgo, que además va en rojo, y áreas básicas: ánimo y sueño, que
+       (riesgo, que además va en rojo, y áreas básicas: ánimo, ansiedad y sueño, que
        alimentan el examen mental).
    Campos de un área:
      ops           respuestas propias en lugar de Presente / Dudoso / Ausente: [[código, texto]];
@@ -1298,6 +1300,21 @@ const RUTA = [
         { t: "La mayor parte del tiempo durante dos años o más (uno en niños y adolescentes)", m: ["distimia:0", "distimia:2"] },
         { t: "Explosiones de rabia graves, varias veces por semana, con irritabilidad entre ellas", pob: "infancia", m: ["ddae:0", "ddae:1"] },
         { t: "Ha tenido periodos de euforia o mucha energía (abra «Euforia o aceleración»)", sug: ["bipolar"] }] },
+    { id: "ansiedad", t: "Preocupación y ansiedad",
+      q: "¿Se preocupa mucho, por muchas cosas, y le cuesta parar de hacerlo?",
+      qInf: "¿Se preocupa mucho por muchas cosas (el colegio, la familia, lo que puede pasar) y necesita que lo tranquilicen?",
+      sug: ["tag", "adaptacion"],
+      eem: { P: ["contenido", "refiere preocupaciones excesivas"] },
+      det: [
+        { t: "Se preocupa por varios temas la mayoría de los días", m: ["tag:0"] },
+        { t: "Le cuesta controlar la preocupación", m: ["tag:1"], eem: "difíciles de controlar" },
+        { t: "Inquietud o nervios de punta", m: ["tag:2:inquietud"] },
+        { t: "Se cansa con facilidad", m: ["tag:2:fatiga"] },
+        { t: "Le cuesta concentrarse", m: ["tag:2:concentracion"] },
+        { t: "Irritabilidad", m: ["tag:2:irritable"] },
+        { t: "Tensión muscular", m: ["tag:2:tension_muscular"] },
+        { t: "Le cuesta dormir por la preocupación", m: ["tag:2:insomnio"] },
+        { t: "Seis meses o más", m: ["tag:3"] }] },
     { id: "sueno", t: "Sueño",
       q: "¿Cómo duerme: le cuesta dormirse, se despierta en la noche o muy temprano, tiene pesadillas o duerme demasiado?",
       sug: ["insomnio"],
@@ -1341,21 +1358,6 @@ const RUTA = [
         { t: "Gastos, sexo o conductas de riesgo poco usuales en su forma de ser", m: ["bipolar:1:conductas_riesgo"] },
         { t: "Duró cuatro días o más", m: ["bipolar:2"] },
         { t: "También ha tenido episodios de depresión", m: ["bipolar:3"] }] },
-    { id: "ansiedad", cat: "emocional", t: "Preocupación y ansiedad",
-      q: "¿Se preocupa mucho, por muchas cosas, y le cuesta parar de hacerlo?",
-      qInf: "¿Se preocupa mucho por muchas cosas (el colegio, la familia, lo que puede pasar) y necesita que lo tranquilicen?",
-      sug: ["tag", "adaptacion"],
-      eem: { P: ["contenido", "refiere preocupaciones excesivas"] },
-      det: [
-        { t: "Se preocupa por varios temas la mayoría de los días", m: ["tag:0"] },
-        { t: "Le cuesta controlar la preocupación", m: ["tag:1"], eem: "difíciles de controlar" },
-        { t: "Inquietud o nervios de punta", m: ["tag:2:inquietud"] },
-        { t: "Se cansa con facilidad", m: ["tag:2:fatiga"] },
-        { t: "Le cuesta concentrarse", m: ["tag:2:concentracion"] },
-        { t: "Irritabilidad", m: ["tag:2:irritable"] },
-        { t: "Tensión muscular", m: ["tag:2:tension_muscular"] },
-        { t: "Le cuesta dormir por la preocupación", m: ["tag:2:insomnio"] },
-        { t: "Seis meses o más", m: ["tag:3"] }] },
     { id: "panico", cat: "emocional", t: "Ataques de pánico",
       q: "¿Ha tenido ataques de miedo intenso que llegan de golpe, con palpitaciones, falta de aire o la sensación de que se va a morir o a enloquecer?",
       sug: ["panico", "agorafobia"],
@@ -1656,6 +1658,8 @@ const INCONGRUENCIAS = [
     t: "En la ruta hay ánimo bajo o pérdida de interés, y el ánimo referido figura como estable." },
   { si: [{ area: "animo", resp: ["A"] }, { dom: "animo", ops: [1] }], dom: "animo",
     t: "En la ruta niega ánimo bajo, y el ánimo referido figura como triste o desanimado." },
+  { si: [{ area: "ansiedad", resp: ["A"] }, { dom: "animo", ops: [3] }], dom: "animo",
+    t: "En la ruta niega preocupación o ansiedad excesivas, y el ánimo referido figura como ansioso o preocupado." },
   { si: [{ area: "sueno", resp: ["P", "D"] }, { dom: "funciones", ops: [0] }], dom: "funciones",
     t: "En la ruta hay alteraciones del sueño, y el examen mental dice «sueño conservado»." },
   { si: [{ area: "sueno", resp: ["A"] }, { dom: "funciones", ops: [1, 2] }], dom: "funciones",
