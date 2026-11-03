@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de atenciones</title>
+<style>
+:root{
+  --bg:#ffffff; --surface:#f6f8f8; --surface-alt:#eef2f2; --border:#dde5e5;
+  --ink:#16232b; --ink-soft:#4b5c63; --ink-faint:#7d8c91;
+  --accent:#1f6f78; --accent-dark:#134349; --accent-soft:#e2eff0;
+  --rojo:#a3342b; --ambar-soft:#fbf1e4; --radio:10px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:1.7rem;margin:0 0 4px}
+h2{font-size:1.15rem;margin:0 0 10px;color:var(--accent-dark)}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.lead{color:var(--ink-soft);margin:6px 0 14px}
+.aviso{background:var(--accent-soft);border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:.92rem;color:var(--accent-dark)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radio);padding:16px;margin:16px 0}
+.fila{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,a.boton{font:inherit;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+.prim{background:var(--accent);color:#fff;font-weight:600}
+.sec{background:var(--surface-alt);color:var(--ink)}
+.meta{font-size:.85rem;color:var(--ink-faint);margin:4px 0}
+input[type=search],.form input,.form select{font:inherit;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fff;color:var(--ink);width:100%}
+.lista{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pac{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:var(--radio);padding:12px 14px;cursor:pointer;text-align:left;width:100%}
+.pac:hover,.pac:focus{border-color:var(--accent)}
+.pac small{color:var(--ink-faint)}
+.at{background:#fff;border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:var(--radio);padding:12px 14px;margin:10px 0}
+.at.seg{border-left-color:#8aa9ad}
+button.basura{background:none;color:var(--ink-faint);padding:7px 9px;line-height:0;border:1px solid transparent}
+button.basura:hover,button.basura:focus{color:var(--rojo);border-color:#e7b6b0;background:#fbecea}
+.at-cab{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.vista{border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:10px;background:#fff;max-height:70vh;overflow:auto}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px}
+.form label{font-size:.85rem;font-weight:600;color:var(--ink-soft);display:flex;flex-direction:column;gap:4px}
+.vacio{color:var(--ink-faint);font-style:italic}
+footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
+
+/* ---------- Hoja para exportar (misma línea que el exportador de planes) ---------- */
+.hoja{font:9.5px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow-wrap:break-word}
+.hoja .h-cab{border-bottom:2px solid var(--accent);padding-bottom:6px;margin-bottom:10px;display:flex;justify-content:space-between;gap:12px;align-items:flex-end}
+.hoja .h-var{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.hoja h1{font-size:18px;line-height:1.2;margin:2px 0 0}
+.hoja .h-sub{font-size:11px;color:var(--ink-faint);margin-top:2px}
+.hoja .h-prof{text-align:right;font-size:9px;color:var(--ink-soft);line-height:1.35}
+.hoja .h-prof b{color:var(--ink);font-size:10px}
+.hoja h2{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin:12px 0 5px;padding-bottom:2px;border-bottom:0.6px solid #c9d6d6;break-after:avoid}
+.hoja h3{font-size:10px;margin:8px 0 2px;color:var(--ink);break-after:avoid}
+.hoja p,.hoja li{font-size:9.5px;line-height:1.42;margin:0 0 3px}
+.hoja ul{margin:0 0 4px;padding-left:14px}
+.hoja table{width:100%;border-collapse:collapse;margin:2px 0 6px}
+.hoja th,.hoja td{border:0.6px solid #c9d6d6;padding:3px 6px;text-align:left;vertical-align:top;font-size:9px}
+.hoja th{background:#eef2f2;font-weight:700;color:var(--ink-soft)}
+.hoja .datos td.k{width:22%;color:var(--ink-soft);background:#f6f8f8;font-weight:600}
+.hoja .eem td.k{width:26%;color:var(--ink-soft);background:#f6f8f8;font-weight:600}
+.hoja .cita{border-left:3px solid var(--accent-soft);padding:2px 0 2px 8px;font-style:italic;color:var(--ink-soft)}
+.hoja .nota{font-size:8.5px;color:var(--ink-faint)}
+.hoja .ruta li{font-size:8.8px}
+.hoja .principal{font-weight:700}
+.hoja .firma{margin-top:18px;break-inside:avoid;width:62mm}
+.hoja .firma img{height:17mm;display:block;margin-left:4mm}
+.hoja .firma .linea{border-top:0.8px solid var(--ink);padding-top:3px;font-size:9.5px;line-height:1.35}
+.hoja .salto{break-before:page}
+#hoja{display:none}
+@media print{
+  body[data-hoja] main{display:none!important}
+  body[data-hoja] #hoja{display:block!important}
+  @page{margin:14mm 14mm 17mm;
+    @bottom-left{content:"Historia clínica psicológica · Documento confidencial · Juan Boya Guerra, T.P. 186609";vertical-align:top;padding-top:5px;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}
+    @bottom-right{content:counter(page);width:12mm;vertical-align:top;padding-top:5px;text-align:right;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}}
+}
+@media (max-width:600px){h1{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<main>
+<h1>Registro de atenciones</h1>
+
+<div class="panel fila" id="barra">
+  <span class="meta" id="estado">Registro bloqueado.</span>
+  <span style="flex:1"></span>
+  <button type="button" class="prim" id="abrir">Abrir registro</button>
+  <button type="button" class="sec" id="bloquear" hidden>Bloquear</button>
+  <button type="button" class="sec" id="firma-btn" hidden>Cargar firma</button><input type="file" id="firma-archivo" accept="image/png,image/jpeg" hidden>
+  <a class="boton sec" href="./">Nueva consulta inicial</a>
+</div>
+
+<section id="vista-lista" hidden>
+  <input type="search" id="buscar" placeholder="Buscar por nombre o documento" autocomplete="off">
+  <div class="lista" id="pacientes"></div>
+</section>
+
+<section id="vista-paciente" hidden>
+  <button type="button" class="sec" id="volver">← Todos los pacientes</button>
+  <div class="panel" id="ficha"></div>
+  <div id="atenciones"></div>
+</section>
+
+</main>
+
+<div id="hoja" class="hoja"></div>
+
+<script>
+/* Almacén del registro de atenciones (solo en el equipo; nunca se publica).
+
+   Los registros viven en una carpeta que el clínico elige una vez (File System Access API:
+   Chrome o Edge). La carpeta queda recordada en el navegador (IndexedDB) y cada sesión se
+   pide de nuevo el permiso y la contraseña.
+
+   Cifrado: AES-GCM de 256 bits con una clave derivada de la contraseña (PBKDF2-SHA-256,
+   310 000 iteraciones, sal propia de la carpeta). La contraseña no se guarda en ningún
+   lado: si se olvida, los registros no se pueden abrir.
+
+   Carpeta:
+     clave.json               sal, iteraciones y una prueba cifrada para validar la contraseña
+     pacientes/<id>.jbr       datos de identificación del paciente (cifrados)
+     atenciones/<id>.jbr      cada atención: consulta inicial o seguimiento (cifrada)
+   Los nombres de archivo no llevan datos del paciente. */
+const Almacen = (() => {
+  const ITER = 310000, PRUEBA = "registro-jb-ok";
+  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  let carpeta = null, clave = null;
+
+  // ---------- Carpeta recordada (IndexedDB) ----------
+  function bd() {
+    return new Promise((ok, mal) => {
+      const r = indexedDB.open("registro-jb", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("cfg");
+      r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error);
+    });
+  }
+  async function cfg(k, v) {
+    const db = await bd();
+    return new Promise((ok, mal) => {
+      const tx = db.transaction("cfg", v === undefined ? "readonly" : "readwrite"), st = tx.objectStore("cfg");
+      const r = v === undefined ? st.get(k) : st.put(v, k);
+      r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error);
+    });
+  }
+  const soportado = () => typeof window.showDirectoryPicker === "function";
+  async function recordada() { try { return await cfg("carpeta"); } catch { return null; } }
+  async function elegirCarpeta() {
+    const h = await window.showDirectoryPicker({ id: "registro-jb", mode: "readwrite" });
+    await cfg("carpeta", h);
+    carpeta = h; clave = null;
+    return h;
+  }
+  // Pide permiso de lectura y escritura (necesita un clic del usuario si no está concedido).
+  async function permiso(h, pedir) {
+    const o = { mode: "readwrite" };
+    if ((await h.queryPermission(o)) === "granted") return true;
+    return pedir ? (await h.requestPermission(o)) === "granted" : false;
+  }
+
+  // ---------- Archivos ----------
+  async function leerTexto(dir, nombre) {
+    try { return await (await (await dir.getFileHandle(nombre)).getFile()).text(); }
+    catch (e) { if (e.name === "NotFoundError") return null; throw e; }
+  }
+  async function escribirTexto(dir, nombre, texto) {
+    const w = await (await dir.getFileHandle(nombre, { create: true })).createWritable();
+    await w.write(texto); await w.close();
+  }
+  const sub = nombre => carpeta.getDirectoryHandle(nombre, { create: true });
+
+  // ---------- Cifrado ----------
+  async function derivar(pass, sal) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt: sal, iterations: ITER, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  }
+  async function cifrar(obj, k = clave) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, new TextEncoder().encode(JSON.stringify(obj)));
+    return JSON.stringify({ v: 1, iv: b64(iv), ct: b64(ct) });
+  }
+  async function descifrar(texto, k = clave) {
+    const { iv, ct } = JSON.parse(texto);
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(iv) }, k, deB64(ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  async function tieneClave() { return !!(await leerTexto(carpeta, "clave.json")); }
+  async function crearClave(pass) {
+    if (await tieneClave()) throw new Error("Esta carpeta ya tiene contraseña.");
+    const sal = crypto.getRandomValues(new Uint8Array(16)), k = await derivar(pass, sal);
+    await escribirTexto(carpeta, "clave.json", JSON.stringify({ v: 1, iter: ITER, sal: b64(sal), prueba: JSON.parse(await cifrar(PRUEBA, k)) }, null, 1));
+    clave = k;
+  }
+  async function abrir(pass) {
+    const c = JSON.parse(await leerTexto(carpeta, "clave.json"));
+    const k = await derivar(pass, deB64(c.sal));
+    try { if ((await descifrar(JSON.stringify(c.prueba), k)) !== PRUEBA) throw 0; }
+    catch { throw new Error("Contraseña incorrecta."); }
+    clave = k;
+  }
+
+  // ---------- Registros ----------
+  const nuevoId = p => p + "-" + Array.from(crypto.getRandomValues(new Uint8Array(6)), b => b.toString(16).padStart(2, "0")).join("");
+  async function guardar(tipo, obj) { await escribirTexto(await sub(tipo), obj.id + ".jbr", await cifrar(obj)); }
+  async function listar(tipo) {
+    const dir = await sub(tipo), out = [];
+    for await (const [nombre, h] of dir.entries()) {
+      if (h.kind !== "file" || !nombre.endsWith(".jbr")) continue;
+      try { out.push(await descifrar(await (await h.getFile()).text())); }
+      catch { out.push({ id: nombre.replace(/\.jbr$/, ""), ilegible: true }); }
+    }
+    return out;
+  }
+  async function borrar(tipo, id) {
+    try { await (await sub(tipo)).removeEntry(id + ".jbr"); }
+    catch (e) { if (e.name !== "NotFoundError") throw e; }
+  }
+  async function leer(tipo, id) { const t = await leerTexto(await sub(tipo), id + ".jbr"); return t ? descifrar(t) : null; }
+
+  // ---------- Desbloqueo (diálogo propio) ----------
+  // Muestra lo que haga falta (elegir carpeta, dar permiso, crear o escribir la contraseña) y
+  // resuelve cuando el almacén queda listo. Rechaza si el usuario cancela.
+  function estilos() {
+    if (document.getElementById("alm-estilos")) return;
+    const s = document.createElement("style"); s.id = "alm-estilos";
+    s.textContent = `#alm-dlg{border:0;border-radius:14px;padding:22px;max-width:440px;width:calc(100% - 32px);box-shadow:0 12px 40px rgba(0,0,0,.25);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#16232b}
+#alm-dlg::backdrop{background:rgba(22,35,43,.45)}
+#alm-dlg h2{font-size:1.15rem;margin:0 0 6px;color:#134349}
+#alm-dlg p{margin:6px 0;color:#4b5c63;font-size:.92rem}
+#alm-dlg input{font:inherit;width:100%;border:1px solid #dde5e5;border-radius:8px;padding:8px;margin:6px 0}
+#alm-dlg .alm-bot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+#alm-dlg button{font:inherit;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;background:#eef2f2;color:#16232b}
+#alm-dlg button.prim{background:#1f6f78;color:#fff;font-weight:600}
+#alm-dlg .alm-err{color:#a3342b;font-size:.88rem;min-height:1.2em}
+#alm-dlg .alm-aviso{background:#fbf1e4;color:#7a4a17;border-radius:8px;padding:8px 10px;font-size:.86rem}`;
+    document.head.appendChild(s);
+  }
+  function dialogo() {
+    estilos();
+    let d = document.getElementById("alm-dlg");
+    if (!d) { d = document.createElement("dialog"); d.id = "alm-dlg"; document.body.appendChild(d); }
+    return d;
+  }
+  function pantalla(d, html) {
+    d.innerHTML = html;
+    if (!d.open) d.showModal();
+    return sel => d.querySelector(sel);
+  }
+  async function listo() { return !!(carpeta && clave && (await permiso(carpeta, false))); }
+  function desbloquear() {
+    return new Promise(async (ok, mal) => {
+      if (await listo()) return ok();
+      const d = dialogo();
+      const cancelar = () => { d.close(); mal(new Error("cancelado")); };
+      d.oncancel = e => { e.preventDefault(); cancelar(); };
+      if (!soportado()) {
+        const q = pantalla(d, `<h2>Registro no disponible</h2><p>Este navegador no permite guardar en una carpeta del equipo. Abra la página en Chrome o Edge.</p><div class="alm-bot"><button type="button" data-c>Cerrar</button></div>`);
+        q("[data-c]").onclick = cancelar; return;
+      }
+      const pasoCarpeta = async () => {
+        const h = carpeta || await recordada();
+        const q = pantalla(d, `<h2>Carpeta de registros</h2>${h ? `<p>Carpeta recordada: <strong>${h.name}</strong>. Dé permiso para usarla en esta sesión.</p>` : `<p>Elija la carpeta del equipo donde se guardarán los registros (por ejemplo, una carpeta «registros» que no se sincronice con servicios públicos).</p>`}
+          <p class="alm-err"></p><div class="alm-bot"><button type="button" data-c>Cancelar</button>${h ? `<button type="button" data-otra>Elegir otra</button><button type="button" class="prim" data-usar>Usar esta carpeta</button>` : `<button type="button" class="prim" data-otra>Elegir carpeta</button>`}</div>`);
+        q("[data-c]").onclick = cancelar;
+        const err = q(".alm-err");
+        q("[data-otra]").onclick = async () => { try { await elegirCarpeta(); pasoClave(); } catch (e) { if (e.name !== "AbortError") err.textContent = e.message; } };
+        if (h) q("[data-usar]").onclick = async () => { try { if (await permiso(h, true)) { carpeta = h; pasoClave(); } else err.textContent = "Sin permiso no se puede usar la carpeta."; } catch (e) { err.textContent = e.message; } };
+      };
+      const pasoClave = async () => {
+        if (!(await permiso(carpeta, false))) return pasoCarpeta();
+        if (clave) { d.close(); return ok(); }
+        const nueva = !(await tieneClave());
+        pantalla(d, nueva
+          ? `<h2>Cree una contraseña</h2><p>Los registros de <strong>${carpeta.name}</strong> quedarán cifrados con ella.</p><p class="alm-aviso">No se guarda en ningún lado: si la olvida, los registros no se pueden abrir. Guárdela en un lugar seguro.</p>
+             <input type="password" data-p1 placeholder="Contraseña (mínimo 8 caracteres)" autocomplete="new-password"><input type="password" data-p2 placeholder="Repítala" autocomplete="new-password">`
+          : `<h2>Contraseña del registro</h2><p>Carpeta: <strong>${carpeta.name}</strong></p><input type="password" data-p1 placeholder="Contraseña" autocomplete="current-password">`);
+        const sel = s => d.querySelector(s);
+        d.insertAdjacentHTML("beforeend", `<p class="alm-err"></p><div class="alm-bot"><button type="button" data-c>Cancelar</button><button type="button" data-otra>Otra carpeta</button><button type="button" class="prim" data-ok>${nueva ? "Crear" : "Abrir"}</button></div>`);
+        const err = sel(".alm-err");
+        sel("[data-c]").onclick = cancelar;
+        sel("[data-otra]").onclick = async () => { try { await elegirCarpeta(); pasoClave(); } catch (e) { if (e.name !== "AbortError") err.textContent = e.message; } };
+        const enviar = async () => {
+          const p1 = sel("[data-p1]").value, p2 = nueva ? sel("[data-p2]").value : p1;
+          if (nueva && p1.length < 8) { err.textContent = "Use al menos 8 caracteres."; return; }
+          if (p1 !== p2) { err.textContent = "Las contraseñas no coinciden."; return; }
+          sel("[data-ok]").disabled = true; err.textContent = "Verificando…";
+          try { nueva ? await crearClave(p1) : await abrir(p1); d.close(); ok(); }
+          catch (e) { err.textContent = e.message; sel("[data-ok]").disabled = false; }
+        };
+        sel("[data-ok]").onclick = enviar;
+        d.querySelectorAll("input").forEach(i => i.addEventListener("keydown", e => { if (e.key === "Enter") enviar(); }));
+        sel("[data-p1]").focus();
+      };
+      (carpeta && (await permiso(carpeta, false))) ? pasoClave() : pasoCarpeta();
+    });
+  }
+  function cerrar() { clave = null; }
+  const nombreCarpeta = () => carpeta ? carpeta.name : "";
+
+  return { soportado, desbloquear, listo, cerrar, elegirCarpeta, nombreCarpeta, nuevoId, guardar, listar, leer, borrar,
+    _prueba: { derivar, cifrar, descifrar, poner: (c, k) => { carpeta = c; clave = k; } } };
+})();
+
+
+const PROFESIONAL = { nombre: "Juan Boya Guerra", titulo: "Psicólogo Clínico y de la Salud", tp: "186609" };
+// La firma vive en la carpeta del registro (cifrada, config/firma.jbr), no en la página: así la
+// página puede publicarse sin exponerla. Se carga una vez con «Cargar firma».
+let FIRMA = null;
+const CAMPOS = [["tipoDoc", "Tipo de documento"], ["documento", "Documento"], ["nacimiento", "Fecha de nacimiento"], ["sexo", "Sexo"], ["genero", "Identidad de género"],
+  ["escolaridad", "Escolaridad"], ["ocupacion", "Ocupación"], ["estadoCivil", "Estado civil"], ["residencia", "Lugar de residencia"], ["telefono", "Teléfono"],
+  ["aseguradora", "EPS o aseguradora"], ["acudiente", "Acudiente o acompañante"], ["remite", "Remitido por"]];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const fechaLarga = f => f ? new Date(f + "T00:00").toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }) : "";
+function edadDe(f, en) {
+  if (!f) return null;
+  const n = new Date(f + "T00:00"), h = en ? new Date(en + "T00:00") : new Date();
+  let e = h.getFullYear() - n.getFullYear();
+  if (h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) e--;
+  return e >= 0 && e < 130 ? e : null;
+}
+const tipoEt = a => a.tipo === "seguimiento" ? `Seguimiento · sesión ${a.sesion}` : "Consulta inicial";
+const orden = (a, b) => ((a.atencion || {}).fecha + a.guardado).localeCompare((b.atencion || {}).fecha + b.guardado);
+
+let pacientes = [], atenciones = [], actual = null;
+const PAPELERA = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
+function actualizarEstado() {
+  const leibles = atenciones.filter(a => !a.ilegible).length, malas = atenciones.length - leibles;
+  $("#estado").textContent = `Carpeta: ${Almacen.nombreCarpeta()} · ${pacientes.length} ${pacientes.length === 1 ? "paciente" : "pacientes"} · ${leibles} ${leibles === 1 ? "atención" : "atenciones"}` + (malas ? ` · ${malas} archivos no se pudieron leer` : "");
+}
+
+// ---------- Apertura ----------
+async function abrir() {
+  try { await Almacen.desbloquear(); } catch { return; }
+  $("#estado").textContent = "Cargando…";
+  pacientes = (await Almacen.listar("pacientes")).filter(p => !p.ilegible);
+  atenciones = await Almacen.listar("atenciones");
+  actualizarEstado();
+  try { FIRMA = ((await Almacen.leer("config", "firma")) || {}).dataUrl || null; } catch { FIRMA = null; }
+  pintarBotonFirma();
+  $("#abrir").hidden = true; $("#bloquear").hidden = false;
+  const id = (location.hash.match(/^#p=([\w-]+)$/) || [])[1];
+  id && pacientes.some(p => p.id === id) ? verPaciente(id) : verLista();
+}
+$("#abrir").addEventListener("click", abrir);
+
+// ---------- Firma (en la carpeta, cifrada) ----------
+function pintarBotonFirma() { $("#firma-btn").hidden = false; $("#firma-btn").textContent = FIRMA ? "Cambiar firma" : "Cargar firma"; }
+$("#firma-btn").addEventListener("click", () => $("#firma-archivo").click());
+$("#firma-archivo").addEventListener("change", e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  if (f.size > 2e6) { alert("La imagen pesa más de 2 MB; use una más liviana."); return; }
+  const lector = new FileReader();
+  lector.onload = async () => {
+    try { await Almacen.guardar("config", { id: "firma", dataUrl: lector.result, guardada: new Date().toISOString() }); FIRMA = lector.result; pintarBotonFirma(); alert("Firma guardada en la carpeta del registro."); }
+    catch (err) { alert("No se pudo guardar la firma: " + err.message); }
+  };
+  lector.readAsDataURL(f);
+});
+$("#bloquear").addEventListener("click", () => { Almacen.cerrar(); location.hash = ""; location.reload(); });
+
+// ---------- Lista ----------
+function verLista() {
+  actual = null; history.replaceState(null, "", location.pathname);
+  $("#vista-paciente").hidden = true; $("#vista-lista").hidden = false;
+  pintarLista();
+}
+function pintarLista() {
+  const q = norm($("#buscar").value.trim());
+  const lista = pacientes.filter(p => !q || norm(p.nombre + " " + p.documento).includes(q))
+    .map(p => ({ p, ats: atenciones.filter(a => a.pacienteId === p.id).sort(orden) }))
+    .sort((a, b) => ((b.ats.at(-1) || {}).guardado || "").localeCompare((a.ats.at(-1) || {}).guardado || ""));
+  $("#pacientes").innerHTML = lista.length ? lista.map(({ p, ats }) => {
+    const e = edadDe(p.nacimiento), ult = ats.at(-1);
+    return `<button type="button" class="pac" data-p="${p.id}"><span><strong>${esc(p.nombre)}</strong><br><small>${esc(p.tipoDoc || "")} ${esc(p.documento || "")}${e != null ? ` · ${e} años` : ""}</small></span>
+      <small>${ats.length} ${ats.length === 1 ? "atención" : "atenciones"}${ult ? `<br>Última: ${esc(fechaLarga(ult.atencion.fecha))}` : ""}</small></button>`;
+  }).join("") : `<p class="vacio">${pacientes.length ? "Sin resultados." : "Aún no hay pacientes. Guarde una atención desde la consulta."}</p>`;
+}
+$("#buscar").addEventListener("input", pintarLista);
+$("#pacientes").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b) verPaciente(b.dataset.p); });
+
+// ---------- Paciente ----------
+function verPaciente(id) {
+  actual = pacientes.find(p => p.id === id);
+  history.replaceState(null, "", "#p=" + id);
+  $("#vista-lista").hidden = true; $("#vista-paciente").hidden = false;
+  pintarFicha(); pintarAtenciones();
+  window.scrollTo(0, 0);
+}
+$("#volver").addEventListener("click", verLista);
+function pintarFicha(editar) {
+  const p = actual, e = edadDe(p.nacimiento);
+  if (editar) {
+    $("#ficha").innerHTML = `<h2>Editar datos</h2><div class="form"><label>Nombre completo<input data-c="nombre" value="${esc(p.nombre)}"></label>${CAMPOS.map(([k, et]) => `<label>${et}<input data-c="${k}" type="${k === "nacimiento" ? "date" : "text"}" value="${esc(p[k])}"></label>`).join("")}</div>
+      <div class="fila" style="margin-top:12px"><button type="button" class="prim" data-guardar-ficha>Guardar datos</button><button type="button" class="sec" data-cancelar>Cancelar</button></div>
+      <p class="meta">Los PDF usan los datos actuales del paciente.</p>`;
+    return;
+  }
+  $("#ficha").innerHTML = `<h2 style="margin-bottom:2px">${esc(p.nombre)}</h2><p class="meta">${esc(p.tipoDoc || "")} ${esc(p.documento || "")}${e != null ? ` · ${e} años` : ""}${p.aseguradora ? " · " + esc(p.aseguradora) : ""}${p.telefono ? " · " + esc(p.telefono) : ""}</p>
+    <div class="fila" style="margin-top:10px"><a class="boton prim" href="./#seg=${p.id}">Nuevo seguimiento</a><button type="button" class="sec" data-historia>Exportar historia completa (PDF)</button><button type="button" class="sec" data-editar>Editar datos</button><button type="button" class="basura" data-borrar-paciente title="Borrar paciente y toda su historia" aria-label="Borrar paciente y toda su historia">${PAPELERA}</button></div>`;
+}
+$("#ficha").addEventListener("click", async e => {
+  if (e.target.closest("[data-editar]")) return pintarFicha(true);
+  if (e.target.closest("[data-cancelar]")) return pintarFicha();
+  if (e.target.closest("[data-historia]")) return exportar(atenciones.filter(a => a.pacienteId === actual.id && !a.ilegible).sort(orden), `Historia clínica - ${actual.nombre}`);
+  if (e.target.closest("[data-guardar-ficha]")) {
+    $("#ficha").querySelectorAll("[data-c]").forEach(i => { actual[i.dataset.c] = i.value.trim(); });
+    actual.actualizado = new Date().toISOString();
+    try { await Almacen.guardar("pacientes", actual); pintarFicha(); } catch (err) { alert("No se pudo guardar: " + err.message); }
+  }
+  if (e.target.closest("[data-borrar-paciente]")) {
+    const suyas = atenciones.filter(a => a.pacienteId === actual.id);
+    if (!confirm(`¿Borrar a ${actual.nombre} y sus ${suyas.length} ${suyas.length === 1 ? "atención" : "atenciones"}?\n\nSe eliminan de la carpeta y no se pueden recuperar.`)) return;
+    try {
+      for (const a of suyas) await Almacen.borrar("atenciones", a.id);
+      await Almacen.borrar("pacientes", actual.id);
+      atenciones = atenciones.filter(a => a.pacienteId !== actual.id);
+      pacientes = pacientes.filter(p => p.id !== actual.id);
+      actualizarEstado(); verLista();
+    } catch (err) { alert("No se pudo borrar: " + err.message); }
+  }
+});
+function pintarAtenciones() {
+  const ats = atenciones.filter(a => a.pacienteId === actual.id && !a.ilegible).sort(orden).reverse();
+  $("#atenciones").innerHTML = ats.length ? ats.map(a => {
+    const pr = (a.impresion || []).find(d => d.principal) || (a.impresion || []).find(d => d.estado !== "descartada");
+    return `<div class="at${a.tipo === "seguimiento" ? " seg" : ""}"><div class="at-cab"><div><strong>${esc(tipoEt(a))}</strong> · ${esc(fechaLarga(a.atencion.fecha))}
+      <div class="meta">${pr ? esc(pr.t) + (pr.codigo ? " · " + esc(pr.codigo) : "") : "Sin impresión diagnóstica"}${a.granola.trim() ? "" : " · sin informe de Granola"}</div></div>
+      <div class="fila"><button type="button" class="sec" data-ver="${a.id}">Ver</button><button type="button" class="prim" data-pdf="${a.id}">Exportar PDF</button><button type="button" class="basura" data-borrar="${a.id}" title="Borrar esta atención" aria-label="Borrar esta atención">${PAPELERA}</button></div></div>
+      <div class="vista hoja" id="vista-${a.id}" hidden></div></div>`;
+  }).join("") : '<p class="vacio">Sin atenciones.</p>';
+}
+$("#atenciones").addEventListener("click", e => {
+  const v = e.target.closest("[data-ver]");
+  if (v) { const box = $("#vista-" + v.dataset.ver); box.hidden = !box.hidden; if (!box.hidden) box.innerHTML = hojaAtencion(atenciones.find(a => a.id === v.dataset.ver), actual); return; }
+  const p = e.target.closest("[data-pdf]");
+  if (p) { const a = atenciones.find(x => x.id === p.dataset.pdf); exportar([a], `${a.tipo === "seguimiento" ? "Evolución" : "Historia clínica"} - ${actual.nombre} - ${a.atencion.fecha}`); return; }
+  const b = e.target.closest("[data-borrar]");
+  if (b) {
+    const a = atenciones.find(x => x.id === b.dataset.borrar);
+    if (!confirm(`¿Borrar ${tipoEt(a).toLowerCase()} del ${fechaLarga(a.atencion.fecha)}?\n\nSe elimina de la carpeta y no se puede recuperar.`)) return;
+    Almacen.borrar("atenciones", a.id)
+      .then(() => { atenciones = atenciones.filter(x => x.id !== a.id); actualizarEstado(); pintarAtenciones(); })
+      .catch(err => alert("No se pudo borrar: " + err.message));
+  }
+});
+
+// ---------- Hoja ----------
+// Markdown sencillo del informe de Granola: títulos «#», viñetas, negrilla y párrafos.
+function md(t) {
+  const out = []; let lista = false;
+  const linea = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+  for (const raw of String(t || "").replace(/\r/g, "").split("\n")) {
+    const l = raw.trim();
+    const cierra = () => { if (lista) { out.push("</ul>"); lista = false; } };
+    if (!l) { cierra(); continue; }
+    let m;
+    if ((m = l.match(/^#{1,6}\s+(.*)$/))) { cierra(); out.push(`<h3>${linea(m[1])}</h3>`); continue; }
+    if ((m = l.match(/^[-*•]\s+(.*)$/)) || (m = l.match(/^\d+[.)]\s+(.*)$/))) { if (!lista) { out.push("<ul>"); lista = true; } out.push(`<li>${linea(m[1])}</li>`); continue; }
+    cierra(); out.push(`<p>${linea(l)}</p>`);
+  }
+  if (lista) out.push("</ul>");
+  return out.join("");
+}
+function datosTabla(p, a) {
+  const e = edadDe(p.nacimiento, a.atencion.fecha);
+  const filas = [["Nombre", p.nombre], ["Documento", [p.tipoDoc, p.documento].filter(Boolean).join(" ")], ["Fecha de nacimiento", p.nacimiento ? fechaLarga(p.nacimiento) + (e != null ? ` (${e} años)` : "") : ""],
+    ...CAMPOS.filter(([k]) => !["tipoDoc", "documento", "nacimiento"].includes(k)).map(([k, et]) => [et, p[k]]),
+    ["Fecha de la atención", fechaLarga(a.atencion.fecha)], ["Modalidad", a.atencion.modalidad], ["Lugar", a.atencion.lugar], ["Escenario", a.escenario]].filter(f => f[1]);
+  const pares = [];
+  for (let i = 0; i < filas.length; i += 2) pares.push(filas.slice(i, i + 2));
+  return `<table class="datos">${pares.map(par => `<tr>${par.map(([k, v]) => `<td class="k">${esc(k)}</td><td>${esc(v)}</td>`).join("")}${par.length < 2 ? "<td class='k'></td><td></td>" : ""}</tr>`).join("")}</table>`;
+}
+function eemTabla(texto) {
+  const lineas = String(texto || "").split("\n").filter(l => l.includes(": "));
+  if (!lineas.length) return '<p class="nota">No se registró examen mental.</p>';
+  const nr = lineas.find(l => l.startsWith("No registrado:"));
+  return `<table class="eem">${lineas.filter(l => l !== nr).map(l => { const i = l.indexOf(": "); return `<tr><td class="k">${esc(l.slice(0, i))}</td><td>${esc(l.slice(i + 2))}</td></tr>`; }).join("")}</table>${nr ? `<p class="nota">${esc(nr)}</p>` : ""}`;
+}
+const ESTADO_ET = { presuntiva: "Presuntiva", confirmada: "Confirmada", descartada: "Descartada" };
+function impresionTabla(a) {
+  const d = (a.impresion || []).slice().sort((x, y) => (y.principal - x.principal) || (x.estado === "descartada") - (y.estado === "descartada"));
+  if (!d.length) return '<p class="nota">No se registró impresión diagnóstica.</p>';
+  return `<table><tr><th>Diagnóstico o afección</th><th>Código registrado</th><th>CIE-10</th><th>CIE-11</th><th>Estado</th></tr>${d.map(x => `<tr${x.principal ? ' class="principal"' : ""}><td>${esc(x.t)}${x.principal ? " (principal)" : ""}${x.criterios ? `<br><span class="nota">Criterios verificados: ${esc(x.criterios)}</span>` : ""}</td><td>${esc(x.codigo)}</td><td>${esc(x.cie10)}</td><td>${esc(x.cie11)}</td><td>${esc(ESTADO_ET[x.estado] || x.estado)}</td></tr>`).join("")}</table>
+    <p class="nota">Códigos DSM-5-TR (CIE-10-MC) según el manual; los de la CIE-10 (OMS) y la CIE-11 deben verificarse en la clasificación oficial.</p>`;
+}
+function firmaHtml(a) {
+  return `<div class="firma">${FIRMA ? `<img src="${FIRMA}" alt="Firma">` : '<div style="height:17mm"></div>'}<div class="linea"><strong>${esc(PROFESIONAL.nombre)}</strong><br>${esc(PROFESIONAL.titulo)}<br>T.P. ${esc(PROFESIONAL.tp)}</div></div>`;
+}
+function hojaAtencion(a, p, salto) {
+  const seg = a.tipo === "seguimiento";
+  let h = `<div class="${salto ? "salto" : ""}"><div class="h-cab"><div><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
+    <h1>${esc(p.nombre)}</h1><div class="h-sub">${esc(tipoEt(a))} · ${esc(fechaLarga(a.atencion.fecha))}</div></div>
+    <div class="h-prof"><b>${esc(PROFESIONAL.nombre)}</b><br>${esc(PROFESIONAL.titulo)}<br>T.P. ${esc(PROFESIONAL.tp)}</div></div>`;
+  h += `<h2>Datos de identificación</h2>${datosTabla(p, a)}`;
+  if ((a.atencion.motivo || "").trim()) h += `<h2>${seg ? "Foco de la sesión" : "Motivo de consulta"}</h2><p class="cita">${esc(a.atencion.motivo.trim())}</p>`;
+  h += `<h2>${seg ? "Evolución (informe de la sesión)" : "Historia clínica (informe de la sesión)"}</h2>${a.granola.trim() ? md(a.granola) : '<p class="nota">No se adjuntó el informe de la sesión.</p>'}`;
+  h += `<h2>Examen mental</h2>${eemTabla(a.examen)}`;
+  h += `<h2>Impresión diagnóstica</h2>${impresionTabla(a)}`;
+  if ((a.observaciones || "").trim()) h += `<h3>Observaciones</h3>${md(a.observaciones)}`;
+  h += firmaHtml(a) + "</div>";
+  return h;
+}
+function exportar(lista, titulo) {
+  if (!lista.length) return;
+  if (!FIRMA && !confirm("Aún no ha cargado su firma en el registro (botón «Cargar firma»). ¿Exportar sin la imagen de la firma?")) return;
+  $("#hoja").innerHTML = lista.map((a, i) => hojaAtencion(a, actual, i > 0)).join("");
+  const t = document.title;
+  document.title = titulo.replace(/[\\/:*?"<>|]/g, "-");
+  document.body.dataset.hoja = "1";
+  const fin = () => { delete document.body.dataset.hoja; document.title = t; window.removeEventListener("afterprint", fin); };
+  window.addEventListener("afterprint", fin);
+  window.print();
+}
+</script>
+</body>
+</html>

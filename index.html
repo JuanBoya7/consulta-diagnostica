@@ -211,6 +211,11 @@ button.globo:hover{border-color:var(--accent)}
 
 <div id="tab-entrevista" role="tabpanel" aria-labelledby="t-entrevista">
   
+  <div class="bloque" id="s-datos">
+    <h3>Datos de la atención <span class="cuenta" id="modo-et"></span></h3>
+    <div class="caja" id="datos"></div>
+  </div>
+  
   <div id="ruta"></div>
   <div class="bloque" id="sugeridas-bloque" hidden>
     <h3>Hipótesis que sugiere la ruta</h3>
@@ -222,6 +227,18 @@ button.globo:hover{border-color:var(--accent)}
     <div class="fila" style="gap:8px"><button type="button" class="sec" id="eem-normal">Sin alteraciones en lo no marcado</button><button type="button" class="sec" id="eem-copiar">Copiar examen mental</button></div>
     <div class="avisos-inc" id="eem-avisos" hidden></div>
     <div class="texto" id="eem-texto"></div>
+  </div>
+  
+  <div class="bloque" id="s-granola">
+    <h3 class="oblig"><span>Informe de la sesión</span></h3>
+    <p class="meta">Receta de Granola: <strong id="receta-nombre"></strong>.</p>
+    <details><summary>Ver la receta para Granola</summary><div class="texto" id="receta"></div><button type="button" class="sec" id="receta-copiar">Copiar receta</button></details>
+    <textarea id="granola" rows="14" placeholder="## Historia del problema actual&#10;…"></textarea>
+  </div>
+  <div class="bloque" id="s-impresion">
+    <h3 class="oblig"><span>Impresión diagnóstica</span></h3>
+    <div id="impresion"></div>
+    <div class="campo" style="margin-top:10px"><label for="imp-obs">Observaciones o análisis (opcional)</label><textarea id="imp-obs" rows="3"></textarea></div>
   </div>
   
 </div>
@@ -240,12 +257,13 @@ button.globo:hover{border-color:var(--accent)}
 </div>
 
 <div class="barra" id="barra">
-  
+  <button type="button" class="prim" id="guardar">Guardar</button>
+  <a class="sec boton" href="registro.html">Registro</a>
   <button type="button" class="prim" id="copiar">Copiar resumen</button>
   <button type="button" class="sec" id="quitar-todo" hidden>Quitar hipótesis</button>
   <button type="button" class="sec" id="nueva">Nueva consulta</button>
   <span class="meta" id="copiado"></span>
-  
+  <div class="faltan" id="faltan" hidden></div>
 </div>
 
 <footer>Criterios resumidos del DSM-5-TR (no textuales) y códigos DSM-5-TR verificados en el manual; los de la CIE-10 y la CIE-11 deben verificarse en la clasificación oficial. Planes, instrumentos y fichas de las guías de intervención, datos del 2026-11-03. Ruta de entrevista de redacción propia, según las áreas de la entrevista inicial de Belloch (Manual de psicopatología), Caballo (Manual de TCC, vol. 2) y Sommers-Flanagan (Clinical Interviewing), y dominios del examen mental de este último.</footer>
@@ -1007,7 +1025,71 @@ const HIPOTESIS = [
   { id: "z-escolar", z: true, t: "Problema académico o educativo", pob: "ambas", dsm: "Z55.9", cie10: "Z55.9", cie11: "", crit: [{ t: "Dificultades académicas sin trastorno que las explique", s: ["problema_escolar"] }] },
   { id: "z-pobreza", z: true, t: "Pobreza extrema o ingresos insuficientes", pob: "ambas", dsm: "Z59.5 (pobreza extrema) · Z59.6 (bajos ingresos)", cie10: "Z59.5 · Z59.6", cie11: "", crit: [{ t: "Ingresos que no alcanzan para lo básico", s: ["pobreza"] }] },
   { id: "z-discriminacion", z: true, t: "Discriminación o persecución percibida", pob: "ambas", dsm: "Z60.5", cie10: "Z60.5", cie11: "", crit: [{ t: "Discriminación por su condición", s: ["discriminacion"] }] },
-  { id: "z-conflicto-parental", z: true, t: "Niño afectado por el conflicto entre los padres", pob: "infancia", dsm: "Z62.898", cie10: "Z62.8", cie11: "", crit: [{ t: "Expuesto al conflicto o la ruptura de los padres", s: ["conflicto_parental"] }] }
+  { id: "z-conflicto-parental", z: true, t: "Niño afectado por el conflicto entre los padres", pob: "infancia", dsm: "Z62.898", cie10: "Z62.8", cie11: "", crit: [{ t: "Expuesto al conflicto o la ruptura de los padres", s: ["conflicto_parental"] }] },
+
+  // Otro especificado y no especificado (malestar significativo sin todos los criterios de un
+  // trastorno específico). «Otro especificado»: se registra la razón; «no especificado»: no se
+  // indica o falta información. Códigos verificados en el DSM-5-TR de la biblioteca, salvo F43.89,
+  // que es el de la actualización posterior (la primera impresión traía F43.8).
+  { id: "otro-depresivo", t: "Otro trastorno depresivo especificado o no especificado", pob: "ambas", dsm: "F32.89 (otro especificado) · F32.A (no especificado)", cie10: "F32.8 · F32.9", cie11: "6A7Y · 6A7Z",
+    crit: [
+      { t: "Predominan síntomas depresivos con malestar o deterioro significativo", det: true },
+      { t: "No cumplen todos los criterios de un trastorno depresivo específico ni de un trastorno de adaptación" },
+      { t: "Otro especificado: registrar la razón (por ejemplo, episodio breve o con síntomas insuficientes)", opcional: true }],
+    dif: "Depresión mayor, distimia, trastorno de adaptación con ánimo deprimido, duelo." },
+  { id: "otro-bipolar", t: "Otro trastorno bipolar especificado o no especificado", pob: "ambas", dsm: "F31.89 (otro especificado) · F31.9 (no especificado)", cie10: "F31.8 · F31.9", cie11: "6A6Y · 6A6Z",
+    crit: [
+      { t: "Predominan síntomas bipolares con malestar o deterioro significativo", det: true },
+      { t: "No cumplen todos los criterios de un trastorno bipolar o ciclotímico específico" },
+      { t: "Otro especificado: registrar la razón (por ejemplo, hipomanía breve o con síntomas insuficientes)", opcional: true }],
+    dif: "Bipolar I o II, ciclotimia, consumo de estimulantes, trastorno límite." },
+  { id: "animo-ne", t: "Trastorno del estado de ánimo no especificado", pob: "ambas", dsm: "F39", cie10: "F39", cie11: "",
+    crit: [
+      { t: "Síntomas del estado de ánimo con malestar o deterioro significativo", det: true },
+      { t: "Aún no es posible precisar si corresponden a un trastorno depresivo o bipolar" }],
+    dif: "Otro trastorno depresivo o bipolar especificado o no especificado." },
+  { id: "otra-ansiedad", t: "Otro trastorno de ansiedad especificado o no especificado", pob: "ambas", dsm: "F41.8 (otro especificado) · F41.9 (no especificado)", cie10: "F41.8 · F41.9", cie11: "6B0Y · 6B0Z",
+    crit: [
+      { t: "Predominan síntomas de ansiedad con malestar o deterioro significativo", det: true },
+      { t: "No cumplen todos los criterios de un trastorno de ansiedad específico" },
+      { t: "Otro especificado: registrar la razón (por ejemplo, ataques con síntomas limitados o preocupación de menos de seis meses)", opcional: true }],
+    dif: "Ansiedad generalizada, pánico, trastorno de adaptación con ansiedad, causas médicas o consumo." },
+  { id: "otro-trauma", t: "Otro trastorno relacionado con trauma y estrés especificado o no especificado", pob: "ambas", dsm: "F43.89 (otro especificado; F43.8 en la primera impresión) · F43.9 (no especificado)", cie10: "F43.8 · F43.9", cie11: "6B4Y · 6B4Z",
+    crit: [
+      { t: "Síntomas tras un estresor o un suceso traumático, con malestar o deterioro significativo", det: true },
+      { t: "No cumplen todos los criterios de estrés postraumático, de adaptación ni de otro trastorno del capítulo" },
+      { t: "Otro especificado: registrar la razón (por ejemplo, síntomas de adaptación de inicio tardío o de más de seis meses)", opcional: true }],
+    dif: "Estrés postraumático, trastorno de adaptación, duelo prolongado." },
+  { id: "f99", t: "Otro trastorno mental especificado o no especificado", pob: "ambas", dsm: "F99", cie10: "F99", cie11: "",
+    crit: [
+      { t: "Síntomas de un trastorno mental con malestar o deterioro significativo", det: true },
+      { t: "No cumplen los criterios de ningún trastorno ni encajan en otro capítulo «otro especificado» o «no especificado»" }],
+    dif: "Los «otro especificado» y «no especificado» de cada capítulo, que se prefieren cuando alguno encaja." },
+
+  // Sin trastorno codificable.
+  { id: "z-sin-dx", z: true, t: "Sin diagnóstico ni afección", pob: "ambas", dsm: "Z03.89", cie10: "", cie11: "", crit: [{ t: "Se evaluó y no hay ningún trastorno ni afección que sea objeto de atención" }] },
+  { id: "z-consulta", z: true, t: "Otro asesoramiento o consulta (orientación sin problema clínico)", pob: "ambas", dsm: "Z71.9", cie10: "Z71.9", cie11: "", crit: [{ t: "Consulta para orientación, información o psicoeducación, sin otra afección" }] },
+  { id: "z-religioso", z: true, t: "Problema religioso o espiritual", pob: "ambas", dsm: "Z65.8", cie10: "Z65.8", cie11: "", crit: [{ t: "Malestar por la pérdida o el cuestionamiento de la fe, una conversión u otras inquietudes espirituales" }] },
+
+  // Antecedentes.
+  { id: "z-hist-suicida", z: true, t: "Antecedente de conducta suicida", pob: "ambas", dsm: "Z91.51", cie10: "Z91.5", cie11: "", crit: [{ t: "Intento o conducta suicida en el pasado" }] },
+  { id: "z-hist-autolesion", z: true, t: "Antecedente de autolesión no suicida", pob: "ambas", dsm: "Z91.52", cie10: "Z91.5", cie11: "", crit: [{ t: "Autolesiones sin intención suicida en el pasado" }] },
+  { id: "z-hist-trauma", z: true, t: "Antecedente personal de trauma psicológico", pob: "ambas", dsm: "Z91.49", cie10: "Z91.4", cie11: "", crit: [{ t: "Experiencia traumática en el pasado que es relevante para la atención" }] },
+  { id: "z-hist-maltrato", z: true, t: "Antecedente de maltrato en la infancia", pob: "ambas", dsm: "Z62.810 (físico o sexual) · Z62.811 (psicológico) · Z62.812 (negligencia)", cie10: "", cie11: "", crit: [{ t: "Maltrato físico, sexual o psicológico, o negligencia, en la infancia" }] },
+  { id: "z-hist-pareja", z: true, t: "Antecedente de violencia de pareja", pob: "adultos", dsm: "Z91.410 (física o sexual) · Z91.411 (psicológica) · Z91.412 (negligencia)", cie10: "", cie11: "", crit: [{ t: "Violencia de pareja en el pasado" }] },
+
+  // Otras afecciones frecuentes.
+  { id: "z-victima", z: true, t: "Víctima de delito (incluido el conflicto armado)", pob: "ambas", dsm: "Z65.4", cie10: "Z65.4", cie11: "", crit: [{ t: "Ha sido víctima de un delito, incluidos hechos del conflicto armado" }] },
+  { id: "z-crianza", z: true, t: "Crianza lejos de los padres", pob: "infancia", dsm: "Z62.29", cie10: "Z62.2", cie11: "", crit: [{ t: "Crece al cuidado de familiares, en hogar sustituto o en una institución" }] },
+  { id: "z-hermanos", z: true, t: "Problema de relación entre hermanos", pob: "infancia", dsm: "Z62.891", cie10: "", cie11: "", crit: [{ t: "Conflicto entre hermanos que afecta el funcionamiento individual o familiar" }] },
+  { id: "z-emocion", z: true, t: "Alta emoción expresada en la familia", pob: "ambas", dsm: "Z63.8", cie10: "Z63.8", cie11: "", crit: [{ t: "Hostilidad, crítica o sobreimplicación emocional marcadas en la familia" }] },
+  { id: "z-embarazo", z: true, t: "Problemas relacionados con un embarazo no deseado", pob: "ambas", dsm: "Z64.0", cie10: "Z64.0", cie11: "", crit: [{ t: "Embarazo no deseado que es objeto de atención" }] },
+  { id: "z-alimentaria", z: true, t: "Inseguridad alimentaria", pob: "ambas", dsm: "Z59.41", cie10: "", cie11: "", crit: [{ t: "Acceso insuficiente o inseguro a los alimentos" }] },
+  { id: "z-acceso", z: true, t: "Falta de acceso a servicios de salud", pob: "ambas", dsm: "Z75.3", cie10: "Z75.3", cie11: "", crit: [{ t: "No puede acceder a los servicios de salud que necesita" }] },
+  { id: "z-antisocial", z: true, t: "Comportamiento antisocial (sin trastorno que lo explique)", pob: "ambas", dsm: "Z72.811 (adulto) · Z72.810 (niño o adolescente)", cie10: "", cie11: "", crit: [{ t: "Conducta antisocial que no se debe a un trastorno mental" }] },
+  { id: "z-simulacion", z: true, t: "Simulación", pob: "ambas", dsm: "Z76.5", cie10: "Z76.5", cie11: "", crit: [{ t: "Produce o exagera síntomas de forma intencional para obtener un beneficio externo" }] },
+  { id: "z-limite", z: true, t: "Funcionamiento intelectual límite", pob: "ambas", dsm: "R41.83", cie10: "", cie11: "", crit: [{ t: "Funcionamiento intelectual límite que es objeto de atención (confirmar con evaluación)" }] },
+  { id: "z-declive", z: true, t: "Declive cognitivo relacionado con la edad", pob: "adultos", dsm: "R41.81", cie10: "", cie11: "", crit: [{ t: "Declive cognitivo esperable para la edad, sin trastorno neurocognitivo" }] }
 ];
 
 
@@ -1020,10 +1102,10 @@ const HIPOTESIS = [
 const CAPITULOS = [
   ["Neurodesarrollo", ["tdah", "tea", "di", "aprendizaje", "lenguaje", "tics"]],
   ["Psicosis", ["psicosis", "tp-esquizotipico"]],
-  ["Bipolar y depresivos", ["bipolar", "tdm", "distimia", "ddae", "tdpm"]],
-  ["Ansiedad", ["panico", "agorafobia", "social", "tag", "separacion", "mutismo", "fobia"]],
+  ["Bipolar y depresivos", ["bipolar", "tdm", "distimia", "ddae", "tdpm", "otro-depresivo", "otro-bipolar", "animo-ne"]],
+  ["Ansiedad", ["panico", "agorafobia", "social", "tag", "separacion", "mutismo", "fobia", "otra-ansiedad"]],
   ["Obsesivo-compulsivo y relacionados", ["toc", "tdc", "acumulacion", "trico", "excoriacion"]],
-  ["Trauma y estrés", ["tept", "adaptacion", "duelo", "apego-reactivo", "apego-desinhibido"]],
+  ["Trauma y estrés", ["tept", "adaptacion", "duelo", "apego-reactivo", "apego-desinhibido", "otro-trauma"]],
   ["Disociativos", ["despersonalizacion", "disociativo"]],
   ["Síntomas somáticos", ["somaticos", "enfermedad", "f54", "facticio"]],
   ["Alimentación", ["anorexia", "bulimia", "atracon", "teria"]],
@@ -1034,7 +1116,9 @@ const CAPITULOS = [
   ["Sustancias y adicciones", ["sustancias", "sust-aguda", "juego", "videojuegos"]],
   ["Neurocognitivos", ["delirium", "neurocognitivo"]],
   ["Personalidad", ["limite", "tp-paranoide", "tp-esquizoide", "tp-antisocial", "tp-histrionico", "tp-narcisista", "tp-evitativo", "tp-dependiente", "tp-obsesivo"]],
-  ["Otras afecciones (Z y T)", ["z-suicida", "z-maltrato", "z-violencia-pareja", "z-pareja", "z-separacion", "z-conflicto-parental", "z-padres", "z-duelo", "z-empleo", "z-escolar", "z-vivienda", "z-pobreza", "z-legal", "z-discriminacion", "z-exclusion", "z-aculturacion", "z-solo", "z-cuidador", "z-fase", "z-adherencia"]]
+  ["Sin trastorno u otro trastorno mental", ["z-sin-dx", "z-consulta", "f99"]],
+  ["Antecedentes (Z)", ["z-hist-suicida", "z-hist-autolesion", "z-hist-trauma", "z-hist-maltrato", "z-hist-pareja"]],
+  ["Otras afecciones (Z y T)", ["z-suicida", "z-maltrato", "z-violencia-pareja", "z-pareja", "z-separacion", "z-conflicto-parental", "z-padres", "z-duelo", "z-empleo", "z-escolar", "z-vivienda", "z-pobreza", "z-legal", "z-discriminacion", "z-exclusion", "z-aculturacion", "z-solo", "z-cuidador", "z-fase", "z-adherencia", "z-victima", "z-crianza", "z-hermanos", "z-emocion", "z-embarazo", "z-alimentaria", "z-acceso", "z-antisocial", "z-simulacion", "z-religioso", "z-limite", "z-declive"]]
 ];
 const VARIABLES = {
   tdah: { a: ["TDAH en adultos"], i: ["Inatención, hiperactividad e impulsividad", "Funciones ejecutivas, flexibilidad y rehabilitación neuropsicológica"] },
@@ -1127,13 +1211,32 @@ const VARIABLES = {
   "z-solo": { a: ["Soledad y aislamiento social"] },
   "z-cuidador": { a: ["Sobrecarga del cuidador"] },
   "z-fase": { a: ["Adaptación a cambios y transiciones vitales"] },
-  "z-adherencia": { a: ["Adherencia al tratamiento"] }
+  "z-adherencia": { a: ["Adherencia al tratamiento"] },
+  "otro-depresivo": { a: ["Depresión"], i: ["Depresión"] },
+  "otro-bipolar": { a: ["Estabilidad del ánimo en el trastorno bipolar"], i: ["Trastorno bipolar"] },
+  "animo-ne": { a: ["Depresión"], i: ["Depresión"] },
+  "otra-ansiedad": { a: ["Ansiedad"], i: ["Ansiedad y miedos"] },
+  "otro-trauma": { a: ["Trauma y estrés postraumático"], i: ["Estrés postraumático"] },
+  "z-hist-suicida": { a: ["Riesgo suicida y autolesión"], i: ["Autolesión y riesgo suicida"] },
+  "z-hist-autolesion": { a: ["Riesgo suicida y autolesión"], i: ["Autolesión y riesgo suicida"] },
+  "z-hist-trauma": { a: ["Trauma y estrés postraumático"], i: ["Estrés postraumático"] },
+  "z-hist-maltrato": { a: ["Trauma y estrés postraumático"], i: ["Maltrato y crianza violenta"] },
+  "z-hist-pareja": { a: ["Violencia de pareja"] },
+  "z-victima": { a: ["Trauma y estrés postraumático", "Migración y desplazamiento forzado"], i: ["Estrés postraumático"] },
+  "z-crianza": { i: ["Vínculo y crianza en los primeros años"] },
+  "z-antisocial": { i: ["Problemas de conducta graves en la adolescencia"] },
+  "z-declive": { a: ["Deterioro cognitivo y demencia leve a moderada"] }
 };
 const BUSCAR = {
   tdah: "tda deficit atencion hiperactividad", tea: "autismo asperger", di: "retraso mental", tdm: "depresion", distimia: "depresion cronica",
   tag: "ansiedad generalizada preocupacion", panico: "angustia crisis", social: "fobia social timidez", toc: "obsesiones compulsiones",
   tept: "trauma estres postraumatico", tnd: "oposicionista desafiante", limite: "tlp borderline", sustancias: "alcohol drogas adiccion",
-  "z-suicida": "suicidio autolesion cortes", ddae: "rabietas irritabilidad", tdc: "dismorfofobia apariencia", teria: "selectividad alimentaria"
+  "z-suicida": "suicidio autolesion cortes", ddae: "rabietas irritabilidad", tdc: "dismorfofobia apariencia", teria: "selectividad alimentaria",
+  "z-sin-dx": "ninguno sin trastorno normal sano", "z-consulta": "orientacion asesoria psicoeducacion pautas crianza", f99: "no especificado otro especificado",
+  "otro-depresivo": "depresion subumbral no especificado", "otra-ansiedad": "ansiedad subumbral no especificada", "otro-trauma": "estres no especificado", "animo-ne": "animo no especificado",
+  "z-hist-suicida": "antecedente historia intento suicidio", "z-hist-autolesion": "antecedente historia autolesion cortes", "z-hist-trauma": "antecedente historia trauma",
+  "z-hist-maltrato": "antecedente historia abuso maltrato infancia", "z-hist-pareja": "antecedente historia violencia pareja", "z-victima": "conflicto armado desplazamiento victima delito",
+  "z-limite": "inteligencia limitrofe", "z-simulacion": "simulador fingir"
 };
 
 
@@ -2193,7 +2296,465 @@ $("#esc").addEventListener("change", () => pintar());
 $("#buscar").addEventListener("input", buscar);
 
 
+// ---------- Registro (solo en la versión local; la publicada no lleva nada de esto) ----------
+/* Almacén del registro de atenciones (solo en el equipo; nunca se publica).
+
+   Los registros viven en una carpeta que el clínico elige una vez (File System Access API:
+   Chrome o Edge). La carpeta queda recordada en el navegador (IndexedDB) y cada sesión se
+   pide de nuevo el permiso y la contraseña.
+
+   Cifrado: AES-GCM de 256 bits con una clave derivada de la contraseña (PBKDF2-SHA-256,
+   310 000 iteraciones, sal propia de la carpeta). La contraseña no se guarda en ningún
+   lado: si se olvida, los registros no se pueden abrir.
+
+   Carpeta:
+     clave.json               sal, iteraciones y una prueba cifrada para validar la contraseña
+     pacientes/<id>.jbr       datos de identificación del paciente (cifrados)
+     atenciones/<id>.jbr      cada atención: consulta inicial o seguimiento (cifrada)
+   Los nombres de archivo no llevan datos del paciente. */
+const Almacen = (() => {
+  const ITER = 310000, PRUEBA = "registro-jb-ok";
+  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  let carpeta = null, clave = null;
+
+  // ---------- Carpeta recordada (IndexedDB) ----------
+  function bd() {
+    return new Promise((ok, mal) => {
+      const r = indexedDB.open("registro-jb", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("cfg");
+      r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error);
+    });
+  }
+  async function cfg(k, v) {
+    const db = await bd();
+    return new Promise((ok, mal) => {
+      const tx = db.transaction("cfg", v === undefined ? "readonly" : "readwrite"), st = tx.objectStore("cfg");
+      const r = v === undefined ? st.get(k) : st.put(v, k);
+      r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error);
+    });
+  }
+  const soportado = () => typeof window.showDirectoryPicker === "function";
+  async function recordada() { try { return await cfg("carpeta"); } catch { return null; } }
+  async function elegirCarpeta() {
+    const h = await window.showDirectoryPicker({ id: "registro-jb", mode: "readwrite" });
+    await cfg("carpeta", h);
+    carpeta = h; clave = null;
+    return h;
+  }
+  // Pide permiso de lectura y escritura (necesita un clic del usuario si no está concedido).
+  async function permiso(h, pedir) {
+    const o = { mode: "readwrite" };
+    if ((await h.queryPermission(o)) === "granted") return true;
+    return pedir ? (await h.requestPermission(o)) === "granted" : false;
+  }
+
+  // ---------- Archivos ----------
+  async function leerTexto(dir, nombre) {
+    try { return await (await (await dir.getFileHandle(nombre)).getFile()).text(); }
+    catch (e) { if (e.name === "NotFoundError") return null; throw e; }
+  }
+  async function escribirTexto(dir, nombre, texto) {
+    const w = await (await dir.getFileHandle(nombre, { create: true })).createWritable();
+    await w.write(texto); await w.close();
+  }
+  const sub = nombre => carpeta.getDirectoryHandle(nombre, { create: true });
+
+  // ---------- Cifrado ----------
+  async function derivar(pass, sal) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt: sal, iterations: ITER, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  }
+  async function cifrar(obj, k = clave) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, new TextEncoder().encode(JSON.stringify(obj)));
+    return JSON.stringify({ v: 1, iv: b64(iv), ct: b64(ct) });
+  }
+  async function descifrar(texto, k = clave) {
+    const { iv, ct } = JSON.parse(texto);
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(iv) }, k, deB64(ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  async function tieneClave() { return !!(await leerTexto(carpeta, "clave.json")); }
+  async function crearClave(pass) {
+    if (await tieneClave()) throw new Error("Esta carpeta ya tiene contraseña.");
+    const sal = crypto.getRandomValues(new Uint8Array(16)), k = await derivar(pass, sal);
+    await escribirTexto(carpeta, "clave.json", JSON.stringify({ v: 1, iter: ITER, sal: b64(sal), prueba: JSON.parse(await cifrar(PRUEBA, k)) }, null, 1));
+    clave = k;
+  }
+  async function abrir(pass) {
+    const c = JSON.parse(await leerTexto(carpeta, "clave.json"));
+    const k = await derivar(pass, deB64(c.sal));
+    try { if ((await descifrar(JSON.stringify(c.prueba), k)) !== PRUEBA) throw 0; }
+    catch { throw new Error("Contraseña incorrecta."); }
+    clave = k;
+  }
+
+  // ---------- Registros ----------
+  const nuevoId = p => p + "-" + Array.from(crypto.getRandomValues(new Uint8Array(6)), b => b.toString(16).padStart(2, "0")).join("");
+  async function guardar(tipo, obj) { await escribirTexto(await sub(tipo), obj.id + ".jbr", await cifrar(obj)); }
+  async function listar(tipo) {
+    const dir = await sub(tipo), out = [];
+    for await (const [nombre, h] of dir.entries()) {
+      if (h.kind !== "file" || !nombre.endsWith(".jbr")) continue;
+      try { out.push(await descifrar(await (await h.getFile()).text())); }
+      catch { out.push({ id: nombre.replace(/\.jbr$/, ""), ilegible: true }); }
+    }
+    return out;
+  }
+  async function borrar(tipo, id) {
+    try { await (await sub(tipo)).removeEntry(id + ".jbr"); }
+    catch (e) { if (e.name !== "NotFoundError") throw e; }
+  }
+  async function leer(tipo, id) { const t = await leerTexto(await sub(tipo), id + ".jbr"); return t ? descifrar(t) : null; }
+
+  // ---------- Desbloqueo (diálogo propio) ----------
+  // Muestra lo que haga falta (elegir carpeta, dar permiso, crear o escribir la contraseña) y
+  // resuelve cuando el almacén queda listo. Rechaza si el usuario cancela.
+  function estilos() {
+    if (document.getElementById("alm-estilos")) return;
+    const s = document.createElement("style"); s.id = "alm-estilos";
+    s.textContent = `#alm-dlg{border:0;border-radius:14px;padding:22px;max-width:440px;width:calc(100% - 32px);box-shadow:0 12px 40px rgba(0,0,0,.25);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#16232b}
+#alm-dlg::backdrop{background:rgba(22,35,43,.45)}
+#alm-dlg h2{font-size:1.15rem;margin:0 0 6px;color:#134349}
+#alm-dlg p{margin:6px 0;color:#4b5c63;font-size:.92rem}
+#alm-dlg input{font:inherit;width:100%;border:1px solid #dde5e5;border-radius:8px;padding:8px;margin:6px 0}
+#alm-dlg .alm-bot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+#alm-dlg button{font:inherit;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;background:#eef2f2;color:#16232b}
+#alm-dlg button.prim{background:#1f6f78;color:#fff;font-weight:600}
+#alm-dlg .alm-err{color:#a3342b;font-size:.88rem;min-height:1.2em}
+#alm-dlg .alm-aviso{background:#fbf1e4;color:#7a4a17;border-radius:8px;padding:8px 10px;font-size:.86rem}`;
+    document.head.appendChild(s);
+  }
+  function dialogo() {
+    estilos();
+    let d = document.getElementById("alm-dlg");
+    if (!d) { d = document.createElement("dialog"); d.id = "alm-dlg"; document.body.appendChild(d); }
+    return d;
+  }
+  function pantalla(d, html) {
+    d.innerHTML = html;
+    if (!d.open) d.showModal();
+    return sel => d.querySelector(sel);
+  }
+  async function listo() { return !!(carpeta && clave && (await permiso(carpeta, false))); }
+  function desbloquear() {
+    return new Promise(async (ok, mal) => {
+      if (await listo()) return ok();
+      const d = dialogo();
+      const cancelar = () => { d.close(); mal(new Error("cancelado")); };
+      d.oncancel = e => { e.preventDefault(); cancelar(); };
+      if (!soportado()) {
+        const q = pantalla(d, `<h2>Registro no disponible</h2><p>Este navegador no permite guardar en una carpeta del equipo. Abra la página en Chrome o Edge.</p><div class="alm-bot"><button type="button" data-c>Cerrar</button></div>`);
+        q("[data-c]").onclick = cancelar; return;
+      }
+      const pasoCarpeta = async () => {
+        const h = carpeta || await recordada();
+        const q = pantalla(d, `<h2>Carpeta de registros</h2>${h ? `<p>Carpeta recordada: <strong>${h.name}</strong>. Dé permiso para usarla en esta sesión.</p>` : `<p>Elija la carpeta del equipo donde se guardarán los registros (por ejemplo, una carpeta «registros» que no se sincronice con servicios públicos).</p>`}
+          <p class="alm-err"></p><div class="alm-bot"><button type="button" data-c>Cancelar</button>${h ? `<button type="button" data-otra>Elegir otra</button><button type="button" class="prim" data-usar>Usar esta carpeta</button>` : `<button type="button" class="prim" data-otra>Elegir carpeta</button>`}</div>`);
+        q("[data-c]").onclick = cancelar;
+        const err = q(".alm-err");
+        q("[data-otra]").onclick = async () => { try { await elegirCarpeta(); pasoClave(); } catch (e) { if (e.name !== "AbortError") err.textContent = e.message; } };
+        if (h) q("[data-usar]").onclick = async () => { try { if (await permiso(h, true)) { carpeta = h; pasoClave(); } else err.textContent = "Sin permiso no se puede usar la carpeta."; } catch (e) { err.textContent = e.message; } };
+      };
+      const pasoClave = async () => {
+        if (!(await permiso(carpeta, false))) return pasoCarpeta();
+        if (clave) { d.close(); return ok(); }
+        const nueva = !(await tieneClave());
+        pantalla(d, nueva
+          ? `<h2>Cree una contraseña</h2><p>Los registros de <strong>${carpeta.name}</strong> quedarán cifrados con ella.</p><p class="alm-aviso">No se guarda en ningún lado: si la olvida, los registros no se pueden abrir. Guárdela en un lugar seguro.</p>
+             <input type="password" data-p1 placeholder="Contraseña (mínimo 8 caracteres)" autocomplete="new-password"><input type="password" data-p2 placeholder="Repítala" autocomplete="new-password">`
+          : `<h2>Contraseña del registro</h2><p>Carpeta: <strong>${carpeta.name}</strong></p><input type="password" data-p1 placeholder="Contraseña" autocomplete="current-password">`);
+        const sel = s => d.querySelector(s);
+        d.insertAdjacentHTML("beforeend", `<p class="alm-err"></p><div class="alm-bot"><button type="button" data-c>Cancelar</button><button type="button" data-otra>Otra carpeta</button><button type="button" class="prim" data-ok>${nueva ? "Crear" : "Abrir"}</button></div>`);
+        const err = sel(".alm-err");
+        sel("[data-c]").onclick = cancelar;
+        sel("[data-otra]").onclick = async () => { try { await elegirCarpeta(); pasoClave(); } catch (e) { if (e.name !== "AbortError") err.textContent = e.message; } };
+        const enviar = async () => {
+          const p1 = sel("[data-p1]").value, p2 = nueva ? sel("[data-p2]").value : p1;
+          if (nueva && p1.length < 8) { err.textContent = "Use al menos 8 caracteres."; return; }
+          if (p1 !== p2) { err.textContent = "Las contraseñas no coinciden."; return; }
+          sel("[data-ok]").disabled = true; err.textContent = "Verificando…";
+          try { nueva ? await crearClave(p1) : await abrir(p1); d.close(); ok(); }
+          catch (e) { err.textContent = e.message; sel("[data-ok]").disabled = false; }
+        };
+        sel("[data-ok]").onclick = enviar;
+        d.querySelectorAll("input").forEach(i => i.addEventListener("keydown", e => { if (e.key === "Enter") enviar(); }));
+        sel("[data-p1]").focus();
+      };
+      (carpeta && (await permiso(carpeta, false))) ? pasoClave() : pasoCarpeta();
+    });
+  }
+  function cerrar() { clave = null; }
+  const nombreCarpeta = () => carpeta ? carpeta.name : "";
+
+  return { soportado, desbloquear, listo, cerrar, elegirCarpeta, nombreCarpeta, nuevoId, guardar, listar, leer, borrar,
+    _prueba: { derivar, cifrar, descifrar, poner: (c, k) => { carpeta = c; clave = k; } } };
+})();
+
+
+/* Recetas de Granola para convertir la transcripción de una sesión en el informe que se pega
+   en la página de consulta. Los títulos «## …» son fijos: el registro los usa para ordenar el
+   informe en el PDF. La receta no pide examen mental ni diagnóstico: el examen mental lo arma la
+   página con lo que el clínico observa y la impresión diagnóstica la marca el clínico.
+   construir.cjs copia estas recetas a JB\recetas-granola.md para leerlas fuera de la página. */
+const RECETAS = {
+  inicial: `Eres el asistente de un psicólogo clínico en Colombia. A partir de la transcripción de una consulta psicológica inicial, redacta la historia clínica de la sesión en español, en tercera persona y en registro clínico formal («refiere», «manifiesta», «niega»).
+
+Reglas:
+- Usa solo información que aparezca en la transcripción. No inventes, no supongas y no completes datos.
+- Si un apartado no se exploró, escribe exactamente «No se exploró en esta sesión.».
+- Distingue lo que dice el consultante de lo que dice un acompañante («la madre refiere…»).
+- No escribas diagnósticos ni impresiones diagnósticas, ni examen mental: los registra el profesional aparte.
+- El motivo de consulta textual ya está registrado aparte: no abras un apartado con ese nombre ni lo copies.
+- Omite saludos, el encuadre, el consentimiento y la conversación que no sea clínica.
+- No incluyas el nombre completo ni el número de documento del consultante.
+- Usa párrafos breves; usa viñetas solo para listas de antecedentes, factores o acuerdos.
+
+Usa exactamente estos títulos, en este orden y con este formato:
+
+## Historia del problema actual
+Qué le preocupa hoy y por qué consulta ahora; inicio, desencadenantes, curso, frecuencia e intensidad, situaciones en que aparece, qué lo alivia y qué lo empeora, intentos de solución y tratamientos previos.
+## Antecedentes
+Personales (médicos, psicológicos y psiquiátricos, medicación), familiares (salud mental y suicidio en la familia) y consumo de sustancias.
+## Historia personal y contexto
+Desarrollo (en niños y adolescentes), escolaridad u ocupación, familia y convivencia, pareja, red de apoyo, situación económica y legal cuando se mencionen.
+## Valoración del riesgo
+Ideas de muerte o de suicidio, plan, intentos, acceso a medios, autolesiones, violencia o maltrato, riesgo para otros y factores protectores. Si no se habló de riesgo, dilo.
+## Funcionamiento
+Cómo afecta el problema el trabajo o el estudio, la casa y las relaciones.
+## Recursos y expectativas
+Fortalezas, lo que le ha funcionado y lo que espera de la atención.
+## Acuerdos y plan
+Acuerdos de la sesión, tareas, remisiones y próxima cita.`,
+
+  seguimiento: `Eres el asistente de un psicólogo clínico en Colombia. A partir de la transcripción de una sesión de seguimiento psicológico, redacta la nota de evolución en español, en tercera persona y en registro clínico formal («refiere», «manifiesta», «niega»).
+
+Reglas:
+- Usa solo información que aparezca en la transcripción. No inventes, no supongas y no completes datos.
+- Si un apartado no se trató, escribe exactamente «No se trató en esta sesión.».
+- No escribas diagnósticos ni examen mental: los registra el profesional aparte.
+- Describe las técnicas o intervenciones por lo que se hizo (por ejemplo, «se practicó la exposición a…», «se revisó el registro de pensamientos»), sin evaluar su eficacia más allá de lo que se observó en la sesión.
+- El foco de la sesión ya está registrado aparte: no abras un apartado de objetivo o foco de la sesión.
+- Omite saludos y la conversación que no sea clínica.
+- No incluyas el nombre completo ni el número de documento del consultante.
+- Usa párrafos breves y viñetas solo para tareas y acuerdos.
+
+Usa exactamente estos títulos, en este orden y con este formato:
+
+## Evolución desde la sesión anterior
+Cambios en los síntomas, sucesos nuevos y cumplimiento de las tareas acordadas.
+## Intervenciones realizadas
+## Respuesta del consultante
+Lo que comprendió, practicó o resolvió en la sesión y las dificultades que aparecieron.
+## Valoración del riesgo
+Si se exploró riesgo suicida, violencia o autolesiones y qué se encontró. Si no se habló de riesgo, dilo.
+## Tareas y acuerdos
+## Plan para la próxima sesión`
+};
+
+
+const CAMPOS_PAC = [
+  ["nombre", "Nombre completo"], ["tipoDoc", "Tipo de documento", ["CC", "TI", "RC", "CE", "PPT", "Pasaporte"]], ["documento", "Número de documento"],
+  ["nacimiento", "Fecha de nacimiento", "date"], ["sexo", "Sexo", ["", "Femenino", "Masculino", "Intersexual", "No informa"]], ["genero", "Identidad de género (si la indica)"],
+  ["escolaridad", "Escolaridad"], ["ocupacion", "Ocupación"], ["estadoCivil", "Estado civil"], ["residencia", "Lugar de residencia"],
+  ["telefono", "Teléfono"], ["aseguradora", "EPS o aseguradora"], ["acudiente", "Acudiente o acompañante (nombre y parentesco)"], ["remite", "Remitido por"]];
+const CAMPOS_AT = [["fecha", "Fecha de la atención", "date"], ["modalidad", "Modalidad", ["Presencial", "Virtual"]], ["lugar", "Lugar o escenario"]];
+const hoyISO = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+let paciente = { tipoDoc: "CC" }, atencion = { fecha: hoyISO(), modalidad: "Presencial" }, pacienteGuardado = null, sesion = 1, atencionId = null, sucio = false;
+const imp = { estado: {}, codigo: {}, principal: null };
+function edadDe(f, en) {
+  if (!f) return null;
+  const n = new Date(f + "T00:00"), h = en ? new Date(en + "T00:00") : new Date();
+  let e = h.getFullYear() - n.getFullYear();
+  if (h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) e--;
+  return e >= 0 && e < 130 ? e : null;
+}
+// Obligatorios para guardar (los marca un asterisco; Guardar los verifica con faltantes()).
+const obligPac = () => ["nombre", "tipoDoc", "documento", "nacimiento", "sexo", ...(pob() === "infancia" ? ["acudiente"] : [])];
+const OBLIG_AT = ["fecha", "modalidad", "motivo"];
+function campoHtml([k, et, tipo], obj, pref) {
+  const v = obj[k] ?? "", cl = (pref === "pac" ? obligPac() : OBLIG_AT).includes(k) ? "campo oblig" : "campo";
+  if (Array.isArray(tipo)) return `<div class="${cl}"><label for="${pref}-${k}">${et}</label><select id="${pref}-${k}" data-${pref}="${k}">${tipo.map(o => `<option${o === v ? " selected" : ""} value="${esc(o)}">${esc(o || "—")}</option>`).join("")}</select></div>`;
+  return `<div class="${cl}"><label for="${pref}-${k}">${et}</label><input type="${tipo || "text"}" id="${pref}-${k}" data-${pref}="${k}" value="${esc(v)}" autocomplete="off"></div>`;
+}
+function pintarDatos() {
+  const seg = modo === "seguimiento";
+  $("#modo-et").textContent = seg ? `Seguimiento · sesión ${sesion}` : "Consulta inicial";
+  const edad = edadDe(paciente.nacimiento, atencion.fecha);
+  let html = seg
+    ? `<p style="margin:0 0 10px"><strong>${esc(paciente.nombre || "")}</strong> · ${esc(paciente.tipoDoc || "")} ${esc(paciente.documento || "")}${edad != null ? ` · ${edad} años` : ""}</p><p class="meta">Los datos del paciente se editan en el registro.</p>`
+    : `<div class="datos-grid">${CAMPOS_PAC.map(c => campoHtml(c, paciente, "pac")).join("")}</div><p class="meta" id="edad-calc">${edad != null ? `Edad: ${edad} años.` : ""}</p>`;
+  html += `<div class="datos-grid" style="margin-top:10px">${CAMPOS_AT.map(c => campoHtml(c, atencion, "at")).join("")}</div>
+    <div class="campo oblig" style="margin-top:10px"><label for="at-motivo">${seg ? "Foco de la sesión" : "Motivo de consulta (en sus palabras)"}</label><textarea id="at-motivo" data-at="motivo" rows="3">${esc(atencion.motivo || "")}</textarea></div>`;
+  $("#datos").innerHTML = html;
+  $("#receta-nombre").textContent = seg ? "«Seguimiento»" : "«Consulta inicial»";
+  $("#receta").textContent = RECETAS[seg ? "seguimiento" : "inicial"];
+}
+$("#datos").addEventListener("input", e => {
+  const i = e.target;
+  if (i.dataset.pac) paciente[i.dataset.pac] = i.value;
+  if (i.dataset.at) atencion[i.dataset.at] = i.value;
+  if (i.dataset.pac === "nacimiento" || i.dataset.at === "fecha") {
+    const edad = edadDe(paciente.nacimiento, atencion.fecha);
+    if ($("#edad-calc")) $("#edad-calc").textContent = edad != null ? `Edad: ${edad} años.` : "";
+    // La población y el rango de edad de las guías siguen a la edad.
+    if (edad != null) {
+      const p = edad < 18 ? "infancia" : "adultos";
+      if (pob() !== p) { document.querySelector(`input[name=pob][value=${p}]`).checked = true; prepararFiltros(); }
+      if (p === "infancia") { const r = edad <= 5 ? "0-5" : edad <= 11 ? "6-11" : "12-17"; if ([...$("#edad").options].some(o => o.value === r)) { $("#edad").value = r; pintar(); } }
+    }
+  }
+});
+$("#datos").addEventListener("change", e => { const i = e.target; if (i.tagName === "SELECT") { if (i.dataset.pac) paciente[i.dataset.pac] = i.value; if (i.dataset.at) atencion[i.dataset.at] = i.value; } pintarFaltantes(); });
+$("#datos").addEventListener("input", () => pintarFaltantes());
+$("#granola").addEventListener("input", () => pintarFaltantes());
+// El acudiente es obligatorio solo en infancia: el asterisco sigue a la población.
+document.querySelectorAll('input[name=pob]').forEach(r => r.addEventListener("change", () => { if (modo === "inicial") pintarDatos(); pintarFaltantes(); }));
+document.body.classList.add("local");
+
+// ---------- Obligatorios ----------
+let intento = false; // tras el primer intento de guardar, la página señala lo que falta
+// Todos los obligatorios, cada uno como [texto, id del campo, ¿completo?]: de aquí salen lo que
+// falta para guardar y la barra de progreso del lateral.
+function requeridos() {
+  const r = [], lleno = v => !!String(v ?? "").trim();
+  if (modo === "inicial") for (const [k, et] of CAMPOS_PAC) if (obligPac().includes(k)) r.push([et, "pac-" + k, lleno(paciente[k])]);
+  for (const [k, et] of [...CAMPOS_AT, ["motivo", modo === "seguimiento" ? "Foco de la sesión" : "Motivo de consulta"]]) if (OBLIG_AT.includes(k)) r.push([et, "at-" + k, lleno(atencion[k])]);
+  r.push(["Escenario", "esc", !!$("#esc").value]);
+  if (!$("#campo-edad").hidden) r.push(["Rango de edad", "edad", !!$("#edad").value]);
+  for (const a of rutaActual().filter(b => b.fijo || b.obligatorio).flatMap(b => areasDe(b))) r.push([a.t, "area-" + a.id, !!ruta.resp[a.id]]);
+  for (const d of EXAMEN) if (d.ops) r.push(["Examen mental: " + d.t.toLowerCase(), "eem-" + d.id, !!(eem[d.id] && eem[d.id].size)]);
+  r.push(["Informe de la sesión", "granola", lleno($("#granola").value)]);
+  r.push(["Impresión diagnóstica", "s-impresion", elegidas.some(id => (imp.estado[id] || "presuntiva") !== "descartada")]);
+  return r;
+}
+const faltantes = () => requeridos().filter(x => !x[2]);
+function pintarProgreso() {
+  const r = requeridos(), hechos = r.filter(x => x[2]).length, pct = Math.round(100 * hechos / r.length);
+  if (!$("#lat-prog")) return;
+  $("#lat-prog").innerHTML = `<div class="prog-cab"><span>Diligenciamiento</span><strong>${pct} %</strong></div>
+    <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
+    <div class="meta">${hechos} de ${r.length} obligatorios</div>`;
+}
+function pintarFaltantes() {
+  pintarProgreso();
+  document.querySelectorAll(".falta").forEach(el => el.classList.remove("falta"));
+  if (!intento) { $("#faltan").hidden = true; return; }
+  const f = faltantes();
+  f.forEach(([, id]) => document.getElementById(id)?.classList.add("falta"));
+  const lista = f.map(([t, id]) => `<button type="button" data-ir="${id}" data-ir-tab="entrevista">${esc(t)}</button>`).join("");
+  $("#faltan").hidden = !f.length;
+  if (/^Falta/.test($("#copiado").textContent)) $("#copiado").textContent = f.length ? `Faltan ${f.length} ${f.length === 1 ? "campo obligatorio" : "campos obligatorios"}.` : "";
+  $("#faltan").innerHTML = f.length ? `Para guardar falta: ${lista}` : "";
+  if ($("#lat-pend")) $("#lat-pend").innerHTML = f.length ? `<div class="pendiente">Para guardar falta: ${lista}</div>` : "";
+}
+$("#faltan").addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) irA(b.dataset.ir, b.dataset.irTab); });
+$("#receta-copiar").addEventListener("click", () => copiarTexto($("#receta").textContent));
+
+// Impresión diagnóstica: las hipótesis elegidas, con su estado y el código que se registra.
+const ESTADOS_IMP = [["presuntiva", "Presuntiva (en verificación)"], ["confirmada", "Confirmada"], ["descartada", "Descartada"]];
+function pintarImpresion() {
+  if (!elegidas.length) { $("#impresion").innerHTML = '<p class="meta">Elija hipótesis en la pestaña «Hipótesis y criterios» (o con los botones «+» de la ruta); aquí indica su estado y el código que registra.</p>'; return; }
+  if (!elegidas.includes(imp.principal)) imp.principal = elegidas.find(id => !H[id].z && imp.estado[id] !== "descartada") || null;
+  $("#impresion").innerHTML = '<div class="caja" style="margin:0">' + elegidas.map(id => {
+    const h = H[id], r = resumenDx(id);
+    return `<div class="imp"><div><strong>${esc(h.t)}</strong><div class="meta">${h.z ? "Afección que es objeto de atención" : `${r.cumplidos} de ${r.total} criterios marcados`}</div></div>
+      <select data-imp-estado="${id}" aria-label="Estado">${ESTADOS_IMP.map(([v, t]) => `<option value="${v}"${(imp.estado[id] || "presuntiva") === v ? " selected" : ""}>${t}</option>`).join("")}</select>
+      <div class="cods"><label class="meta">Código que registra <input type="text" data-imp-cod="${id}" value="${esc(imp.codigo[id] ?? (h.dsm || h.cie10 || ""))}"></label>
+      ${h.z ? "" : `<label class="meta"><input type="radio" name="imp-principal" value="${id}"${imp.principal === id ? " checked" : ""}> Principal</label>`}
+      <span class="meta">CIE-10 ${esc(h.cie10 || "—")} · CIE-11 ${esc(h.cie11 || "—")}</span></div></div>`;
+  }).join("") + "</div>";
+}
+$("#impresion").addEventListener("input", e => { const i = e.target; if (i.dataset.impCod) imp.codigo[i.dataset.impCod] = i.value; });
+$("#impresion").addEventListener("change", e => {
+  const i = e.target;
+  if (i.dataset.impEstado) imp.estado[i.dataset.impEstado] = i.value;
+  if (i.name === "imp-principal") imp.principal = i.value;
+  pintarFaltantes();
+});
+function impresionGuardada() {
+  return elegidas.map(id => {
+    const h = H[id], r = resumenDx(id);
+    return { id, t: h.t, z: !!h.z, estado: imp.estado[id] || "presuntiva", codigo: imp.codigo[id] ?? (h.dsm || h.cie10 || ""), dsm: h.dsm || "", cie10: h.cie10 || "", cie11: h.cie11 || "",
+      principal: imp.principal === id, criterios: h.z ? "" : `${r.cumplidos} de ${r.total}`,
+      marcados: h.z ? [] : indices(id).filter(k => estadoCriterio(id, k).cumple).map(k => crit(id, k).t) };
+  });
+}
+
+// Guardar: paciente y atención cifrados en la carpeta del registro.
+document.addEventListener("input", () => { sucio = true; });
+document.addEventListener("click", e => { if (e.target.closest("[data-r], [data-op], [data-add], [data-abrir]")) sucio = true; });
+document.addEventListener("change", () => { sucio = true; });
+window.addEventListener("beforeunload", e => { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
+function mensaje(t) { $("#copiado").textContent = t; }
+$("#guardar").addEventListener("click", async () => {
+  intento = true;
+  const f = faltantes();
+  if (f.length) { pintarFaltantes(); mensaje(`Faltan ${f.length} ${f.length === 1 ? "campo obligatorio" : "campos obligatorios"}.`); irA(f[0][1], "entrevista"); return; }
+  const inc = incongruencias();
+  if (inc.length && !confirm(`Hay ${inc.length} ${inc.length === 1 ? "incongruencia" : "incongruencias"} por revisar:\n\n${inc.map(x => "• " + x.t).join("\n")}\n\n¿Guardar de todos modos?`)) { irA("eem-avisos", "entrevista"); return; }
+  try { await Almacen.desbloquear(); } catch { mensaje("No se guardó."); return; }
+  try {
+    if (!pacienteGuardado) {
+      // Si ya hay un paciente con el mismo documento, la atención se suma a su registro.
+      const doc = (paciente.documento || "").replace(/\D/g, "");
+      const previo = doc ? (await Almacen.listar("pacientes")).find(p => !p.ilegible && (p.documento || "").replace(/\D/g, "") === doc && p.tipoDoc === paciente.tipoDoc) : null;
+      if (previo && !confirm(`Ya hay un registro de ${previo.nombre} con ese documento. ¿Agregar esta atención a su registro?\n(Cancelar para no guardar todavía.)`)) { mensaje("No se guardó."); return; }
+      pacienteGuardado = previo ? { ...previo, ...Object.fromEntries(Object.entries(paciente).filter(([, v]) => v)) } : { id: Almacen.nuevoId("p"), creado: new Date().toISOString(), ...paciente };
+      if (previo) sesion = (await Almacen.listar("atenciones")).filter(a => a.pacienteId === previo.id).length + 1;
+    } else if (modo === "inicial") Object.assign(pacienteGuardado, paciente);
+    pacienteGuardado.actualizado = new Date().toISOString();
+    await Almacen.guardar("pacientes", pacienteGuardado);
+    atencionId = atencionId || Almacen.nuevoId("a");
+    const reg = {
+      id: atencionId, pacienteId: pacienteGuardado.id, tipo: modo, sesion, guardado: new Date().toISOString(),
+      atencion: { ...atencion }, paciente: { ...pacienteGuardado }, pob: pob(),
+      escenario: $("#esc").value ? $("#esc").selectedOptions[0].text : "", edadRango: $("#campo-edad").hidden ? "" : ($("#edad").selectedOptions[0] || {}).text || "",
+      ruta: resumenRuta(), examen: textoExamen(), granola: $("#granola").value, impresion: impresionGuardada(), observaciones: $("#imp-obs").value,
+      estado: { ruta, eem: Object.fromEntries(Object.entries(eem).map(([k, s]) => [k, [...s]])), elegidas: [...elegidas], marcas, imp,
+        // Criterios tal como quedaron (tarjeta y ruta juntas): el siguiente seguimiento parte de aquí.
+        efectivas: Object.fromEntries(elegidas.map(id => [id, Object.fromEntries(indices(id).map(k => {
+          const c = crit(id, k);
+          return [k, porSintomas(c) ? Object.fromEntries(itemsDe(c).map(([s]) => [s, marcaDe(id, k, s)])) : marcaDe(id, k)];
+        }))])) }
+    };
+    await Almacen.guardar("atenciones", reg);
+    sucio = false;
+    mensaje(`Guardado en el registro (${Almacen.nombreCarpeta()}).`);
+  } catch (e) { console.error(e); mensaje("No se pudo guardar: " + e.message); }
+});
+function reiniciarLocal() {
+  intento = false;
+  paciente = { tipoDoc: "CC" }; atencion = { fecha: hoyISO(), modalidad: "Presencial" }; pacienteGuardado = null; atencionId = null; sesion = 1; sucio = false;
+  for (const o of [imp.estado, imp.codigo]) for (const k in o) delete o[k];
+  imp.principal = null; modo = "inicial";
+  if (location.hash) history.replaceState(null, "", location.pathname);
+  $("#granola").value = ""; $("#imp-obs").value = "";
+  pintarDatos();
+}
+
+// Seguimiento: el registro abre esta página con #seg=<id del paciente>.
+async function cargarSeguimiento(id) {
+  modo = "seguimiento"; pintarDatos(); actualizarRuta();
+  try { await Almacen.desbloquear(); } catch { modo = "inicial"; history.replaceState(null, "", location.pathname); pintarDatos(); actualizarRuta(); return; }
+  const p = await Almacen.leer("pacientes", id);
+  if (!p) { mensaje("No se encontró el paciente en el registro."); return; }
+  const previas = (await Almacen.listar("atenciones")).filter(a => a.pacienteId === id && !a.ilegible).sort((a, b) => (a.atencion.fecha + a.guardado).localeCompare(b.atencion.fecha + b.guardado));
+  pacienteGuardado = p; paciente = { ...p }; sesion = previas.length + 1;
+  const edad = edadDe(p.nacimiento);
+  if (edad != null) document.querySelector(`input[name=pob][value=${edad < 18 ? "infancia" : "adultos"}]`).checked = true;
+  // La impresión vigente es la de la última atención (sin las descartadas).
+  const ult = previas[previas.length - 1];
+  if (ult) for (const d of ult.impresion || []) if (d.estado !== "descartada" && H[d.id]) { elegidas.push(d.id); if (((ult.estado || {}).efectivas || {})[d.id]) marcas[d.id] = JSON.parse(JSON.stringify(ult.estado.efectivas[d.id])); imp.estado[d.id] = d.estado; imp.codigo[d.id] = d.codigo; if (d.principal) imp.principal = d.id; }
+  prepararFiltros(); pintarDatos();
+}
+pintarDatos();
+const segId = (location.hash.match(/^#seg=([\w-]+)$/) || [])[1];
+
 prepararFiltros();
+
+if (segId) cargarSeguimiento(segId);
 
 </script>
 </body>
