@@ -1190,7 +1190,7 @@ const VERIF = {
        Los globos se agrupan por categoría (cat, en el orden de CATEGORIAS) y, dentro de cada
        una, en orden alfabético.
      fijo / obligatorio: bloques que siempre se muestran y deben responderse para guardar
-       (riesgo, que además va en rojo, y áreas básicas: ánimo, sueño y alimentación, que
+       (riesgo, que además va en rojo, y áreas básicas: ánimo y sueño, que
        alimentan el examen mental).
    Campos de un área:
      ops           respuestas propias en lugar de Presente / Dudoso / Ausente: [[código, texto]];
@@ -1211,7 +1211,7 @@ const VERIF = {
 
    EXAMEN: dominios del examen mental (los nueve de Sommers-Flanagan, cap. 8, más funciones
    somáticas, como se registra en la historia clínica). «ops» son observaciones de un toque
-   durante la entrevista; los dominios sin «ops» se llenan solo con lo que responde la ruta.
+   durante la entrevista; a todos se suman las frases que salen de la ruta.
    Lo que no se marca ni se responde queda como «no registrado», nunca como normal; «normal»
    son las opciones que marca el botón «Sin alteraciones en lo no marcado», que el clínico
    pulsa solo si observó esos dominios.
@@ -1296,8 +1296,10 @@ const RUTA = [
         { t: "Duerme mucho más de lo usual o tiene sueño todo el día", m: ["tdm:1:hipersomnia", "distimia:1:hipersomnia", "hipersomnia:0:i0"], sug: ["hipersomnia"], eem: "hipersomnia" },
         { t: "Pesadillas que lo despiertan", m: ["pesadillas:0"], sug: ["pesadillas"], eem: "pesadillas" },
         { t: "Horarios muy corridos: se duerme y despierta muy tarde", sug: ["circadiano"] },
-        { t: "Sonambulismo o terrores nocturnos", sug: ["parasomnia"] }] },
-    { id: "alimentacion", t: "Alimentación, peso y figura",
+        { t: "Sonambulismo o terrores nocturnos", sug: ["parasomnia"] }] }] },
+
+  { id: "areas", t: "Áreas para profundizar", tipo: "filtro", aDemanda: true, areas: [
+    { id: "alimentacion", cat: "conductual", t: "Alimentación, peso y figura",
       q: "¿Le preocupa mucho su peso o su figura? ¿Hace dietas muy estrictas, come grandes cantidades sin poder parar o vomita o usa laxantes después?",
       qInf: "¿Come muy poco o solo unos pocos alimentos, le preocupa mucho engordar o ha bajado de peso?",
       sug: ["anorexia", "bulimia", "atracon", "teria"],
@@ -1310,9 +1312,7 @@ const RUTA = [
         { t: "Vomita, usa laxantes, ayuna o hace ejercicio excesivo para compensar", m: ["bulimia:1"], eem: "conductas compensatorias" },
         { t: "Una vez por semana durante tres meses o más", m: ["bulimia:2", "atracon:2"] },
         { t: "Malestar marcado después de los atracones", m: ["atracon:1"] },
-        { t: "Evita alimentos por su textura, por miedo a atorarse o por falta de interés", m: ["teria:0"], sug: ["teria"] }] }] },
-
-  { id: "areas", t: "Áreas para profundizar", tipo: "filtro", aDemanda: true, areas: [
+        { t: "Evita alimentos por su textura, por miedo a atorarse o por falta de interés", m: ["teria:0"], sug: ["teria"] }] },
     { id: "euforia", cat: "emocional", t: "Euforia o aceleración",
       q: "¿Ha tenido días seguidos con euforia, con demasiada energía o con mucha irritabilidad, durmiendo poco sin sentir cansancio?",
       sug: ["bipolar"],
@@ -1591,7 +1591,10 @@ const EXAMEN = [
   { id: "psicomotor", t: "Psicomotricidad", normal: [0], ops: ["sin alteraciones", "inquietud", "enlentecimiento", "movimientos repetitivos o tics", "temblor"] },
   { id: "lenguaje", t: "Lenguaje", normal: [0], ops: ["fluido y coherente", "acelerado o presionado", "lento o escaso", "volumen bajo", "volumen alto", "dificultades de articulación o de expresión"] },
   { id: "afecto", t: "Afecto (observado)", normal: [0, 7], ops: ["eutímico", "triste", "ansioso", "irritable", "aplanado o restringido", "lábil", "expansivo", "congruente con lo que relata", "incongruente con lo que relata"] },
-  { id: "animo", t: "Ánimo (referido)" },
+  // Ánimo referido: sin «normal», porque lo dice el consultante y se marca a mano.
+  // negacionesSoloSinOps: las negaciones de la ruta («niega ánimo bajo», «sueño sin alteraciones
+  // referidas») solo se escriben si no hay un globo marcado en el dominio (evita repetirlo).
+  { id: "animo", t: "Ánimo (referido)", negacionesSoloSinOps: true, ops: ["estable", "triste o desanimado", "irritable", "ansioso o preocupado", "elevado"] },
   { id: "curso", t: "Curso del pensamiento", normal: [0], ops: ["lógico y coherente", "circunstancial", "tangencial", "fuga de ideas", "bloqueos", "desorganizado", "enlentecido"] },
   { id: "contenido", t: "Contenido del pensamiento", normal: [0], ops: ["acorde al motivo de consulta, sin ideas delirantes aparentes", "rumiativo", "ideas extrañas o sobrevaloradas"] },
   // soloSinHallazgos: el botón de «sin alteraciones» no lo marca si la ruta ya trae un hallazgo
@@ -1599,7 +1602,10 @@ const EXAMEN = [
   { id: "sensopercepcion", t: "Sensopercepción", normal: [0], soloSinHallazgos: true, ops: ["sin alteraciones aparentes durante la entrevista", "parece responder a estímulos que no están presentes"] },
   { id: "cognicion", t: "Atención y memoria", normal: [0], ops: ["atención y memoria conservadas durante la entrevista", "se distrae con facilidad", "olvida lo conversado o se confunde"] },
   { id: "inteligencia", t: "Inteligencia (impresión clínica)", normal: [0], ops: ["impresiona acorde a su escolaridad", "impresiona por debajo de lo esperado"] },
-  { id: "funciones", t: "Funciones somáticas (sueño y apetito)" },
+  // normalExcluye: la opción normal i no se marca si la ruta trae un hallazgo que contenga ese
+  // texto (por ejemplo, «sueño conservado» frente a «refiere alteraciones del sueño»).
+  { id: "funciones", t: "Funciones somáticas (sueño y apetito)", negacionesSoloSinOps: true, normal: [0, 3], normalExcluye: { 0: "sueño", 3: "apetito|alimentación" },
+    ops: ["sueño conservado", "dificultad para dormir", "duerme de más", "apetito conservado", "apetito disminuido", "apetito aumentado"] },
   { id: "introspeccion", t: "Introspección", normal: [0], ops: ["reconoce el problema y la necesidad de ayuda", "introspección parcial", "introspección escasa"] },
   { id: "juicio", t: "Juicio", normal: [0], ops: ["conservado", "comprometido (decisiones de riesgo)"] },
   { id: "fiabilidad", t: "Fiabilidad del relato", normal: [0], ops: ["relato fiable", "relato poco fiable o inconsistente"] }
@@ -2010,7 +2016,9 @@ function pintarExamen() {
 function textoExamen() {
   const der = derivadas(), lineas = [], faltan = [];
   for (const d of EXAMEN) {
-    const partes = [...[...(eem[d.id] || [])].sort((a, b) => a - b).map(i => d.ops[i]), ...(der[d.id] || [])];
+    const marcadas = [...(eem[d.id] || [])].sort((a, b) => a - b).map(i => d.ops[i]);
+    const negacion = t => /^(niega|sin reporte de|sueño sin|apetito sin)/.test(t);
+    const partes = [...marcadas, ...(der[d.id] || []).filter(t => !(d.negacionesSoloSinOps && marcadas.length && negacion(t)))];
     if (!partes.length) { faltan.push(d.t.replace(/ \(.*\)$/, "").toLowerCase()); continue; }
     const t = partes.join("; ");
     lineas.push(`${d.t}: ${t.charAt(0).toUpperCase() + t.slice(1)}.`);
@@ -2027,8 +2035,13 @@ $("#examen").addEventListener("click", e => {
 });
 $("#eem-normal").addEventListener("click", () => {
   const der = derivadas();
-  const hallazgo = d => (der[d.id] || []).some(t => !/^(niega|sin reporte de|sueño|apetito)/.test(t));
-  for (const d of EXAMEN) if (d.normal && !(eem[d.id] && eem[d.id].size) && !(d.soloSinHallazgos && hallazgo(d))) eem[d.id] = new Set(d.normal);
+  // Hallazgos de la ruta: frases que no son negaciones ni «… sin alteraciones referidas».
+  const hallazgos = d => (der[d.id] || []).filter(t => !/^(niega|sin reporte de|sueño|apetito)/.test(t));
+  for (const d of EXAMEN) {
+    if (!d.normal || (eem[d.id] && eem[d.id].size) || (d.soloSinHallazgos && hallazgos(d).length)) continue;
+    const ops = d.normal.filter(i => !(d.normalExcluye && d.normalExcluye[i] && hallazgos(d).some(t => new RegExp(d.normalExcluye[i]).test(t))));
+    if (ops.length) eem[d.id] = new Set(ops);
+  }
   pintarExamen();
 });
 $("#eem-copiar").addEventListener("click", async () => copiarTexto("Examen mental\n" + textoExamen()));
