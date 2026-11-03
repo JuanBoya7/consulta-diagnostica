@@ -68,34 +68,43 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 .hoja .firma .linea{border-top:0.8px solid var(--ink);padding-top:3px;font-size:9.5px;line-height:1.35}
 .hoja .salto{break-before:page}
 
-/* Temas: adultos (verde azulado y ámbar, como las fichas de adultos) e infancia (colores planos de
-   las fichas infantiles). Ilustraciones de Codex en arte\: cabecera a la derecha y una franja en el
-   margen derecho que se repite en cada página impresa. */
+/* Temas: adultos (acuarela botánica y paisaje en verde azulado y ámbar) e infancia (pasteles suaves).
+   Fondos de página generados con Codex (arte\fondo-*.webp), muy pálidos y con transparencia:
+   en la primera página, uno ocupa el cuadrante superior derecho (detrás del encabezado) y otro el
+   inferior derecho, en diagonal; en las siguientes, solo el inferior derecho, que se repite en cada
+   página. El texto va a la izquierda y las tablas llevan fondo blanco translúcido para leerse bien.
+   La casilla «Con fondo decorativo» del registro permite imprimir sin ellos (ahorro de tinta). */
 .hoja.t-adultos{--acento:#1f6f78;--acento-osc:#134349;--suave:#e2eff0;--fondo-k:#f3f8f8;--linea:#c9d6d6;--calido:#b8722a}
 .hoja.t-infancia{--acento:#e8604f;--acento-osc:#2b2d42;--suave:#ffe9e4;--fondo-k:#fff7ef;--linea:#f1d6cc;--calido:#56b6e8}
-.hoja .h-cab{position:relative;min-height:40mm;border:0;border-radius:4mm;overflow:hidden;padding:5mm 6mm;margin-bottom:5mm;display:block;background:linear-gradient(90deg,var(--suave) 0%,#fff 55%)}
-.hoja .h-cab .arte{position:absolute;right:2mm;top:0;height:100%;width:auto;max-width:45%;object-fit:contain;mix-blend-mode:multiply}
-.hoja .h-cab .txt{position:relative;max-width:62%}
+.hoja{position:relative}
+.hoja .atn{position:relative}
+.hoja .h-cab{display:block;border:0;padding:2mm 0 4mm;margin-bottom:5mm;min-height:36mm;position:relative}
+.hoja .h-cab .txt{max-width:58%}
+.hoja .h-cab::after{content:"";position:absolute;left:0;bottom:0;width:58%;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--acento),transparent)}
+.hoja h1{font-size:21px;color:var(--acento-osc);margin-top:3px}
 .hoja .h-var{color:var(--acento)}
-.hoja .h-prof{text-align:left;margin-top:4px;font-size:8.5px}
+.hoja .h-prof{text-align:left;margin-top:5px;font-size:8.5px}
 .hoja h2{color:var(--acento-osc);border-bottom:0;display:flex;align-items:center;gap:6px}
 .hoja h2::before{content:"";flex:0 0 auto;width:3.2mm;height:3.2mm;border-radius:1mm;background:var(--acento)}
 .hoja.t-infancia h2::before{border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffc845 0 40%,var(--acento) 41%)}
 .hoja.t-infancia h2{letter-spacing:.05em}
-.hoja.t-infancia .h-cab{border-radius:7mm}
+.hoja table{background:rgba(255,255,255,.88)}
 .hoja th,.hoja td{border-color:var(--linea)}
 .hoja th{background:var(--suave);color:var(--acento-osc)}
 .hoja .datos td.k,.hoja .eem td.k{background:var(--fondo-k)}
 .hoja .cita{border-left-color:var(--calido);background:var(--fondo-k);border-radius:0 2mm 2mm 0;padding:4px 8px}
 .hoja .firma .linea{border-top-color:var(--acento-osc)}
-.hoja .margen{display:none}
+.hoja .fondo{display:none}
 #hoja{display:none}
 @media print{
   body[data-hoja] main{display:none!important}
   body[data-hoja] #hoja{display:block!important}
-  body[data-hoja] #hoja{padding-right:17mm}
-  body[data-hoja] .hoja .margen{display:block;position:fixed;right:0;top:0;width:13mm;height:100%;object-fit:contain;object-position:center top;opacity:.9;mix-blend-mode:multiply}
-  body[data-hoja] .hoja.t-adultos .margen{width:15mm;object-position:center bottom;opacity:.7}
+  body[data-hoja] .hoja .fondo{display:block;width:100%;height:100%;object-fit:cover;object-position:right center;z-index:-1;pointer-events:none}
+  body[data-hoja] .hoja .fondo.abajo{position:fixed;inset:0;opacity:.75}
+  body[data-hoja] .hoja .fondo.arriba{position:absolute;top:0;left:0;height:266mm;opacity:.8}
+  body[data-hoja] .hoja.t-infancia .fondo.arriba{opacity:1}
+  body[data-hoja] .hoja.t-infancia .fondo.abajo{opacity:.9}
+  body[data-hoja] .hoja.sin-fondo .fondo{display:none}
   @page{margin:14mm 14mm 17mm;
     @bottom-left{content:"Historia clínica psicológica · Documento confidencial · Juan Boya Guerra, T.P. 186609";vertical-align:top;padding-top:5px;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}
     @bottom-right{content:counter(page);width:12mm;vertical-align:top;padding-top:5px;text-align:right;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}}
@@ -112,6 +121,7 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
   <span style="flex:1"></span>
   <button type="button" class="prim" id="abrir">Abrir registro</button>
   <button type="button" class="sec" id="bloquear" hidden>Bloquear</button>
+  <label class="meta" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="con-fondo" checked> Con fondo decorativo</label>
   <button type="button" class="sec" id="firma-btn" hidden>Cargar firma</button><input type="file" id="firma-archivo" accept="image/png,image/jpeg" hidden>
   <a class="boton sec" href="./">Nueva consulta inicial</a>
 </div>
@@ -371,6 +381,10 @@ async function abrir() {
 }
 $("#abrir").addEventListener("click", abrir);
 
+// Preferencia «Con fondo decorativo» (solo de este navegador; si no se puede guardar, queda marcada).
+try { if (localStorage.getItem("registro-fondo") === "no") $("#con-fondo").checked = false; } catch {}
+$("#con-fondo").addEventListener("change", e => { try { localStorage.setItem("registro-fondo", e.target.checked ? "si" : "no"); } catch {} });
+
 // ---------- Firma (en la carpeta, cifrada) ----------
 function pintarBotonFirma() { $("#firma-btn").hidden = false; $("#firma-btn").textContent = FIRMA ? "Cambiar firma" : "Cargar firma"; }
 $("#firma-btn").addEventListener("click", () => $("#firma-archivo").click());
@@ -520,7 +534,7 @@ function firmaHtml(a) {
 const temaDe = (a, p) => a.pob === "infancia" || (!a.pob && (edadDe(p.nacimiento, a.atencion.fecha) ?? 99) < 18) ? "infancia" : "adultos";
 function hojaAtencion(a, p, salto) {
   const seg = a.tipo === "seguimiento", tema = temaDe(a, p);
-  let h = `<div class="${salto ? "salto" : ""}"><div class="h-cab"><img class="arte" src="arte/cabecera-${tema}.webp" alt=""><div class="txt"><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
+  let h = `<div class="atn${salto ? " salto" : ""}"><img class="fondo arriba" src="arte/fondo-${tema}-arriba.webp" alt=""><div class="h-cab"><div class="txt"><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
     <h1>${esc(p.nombre)}</h1><div class="h-sub">${esc(tipoEt(a))} · ${esc(fechaLarga(a.atencion.fecha))}</div>
     <div class="h-prof"><b>${esc(PROFESIONAL.nombre)}</b> · ${esc(PROFESIONAL.titulo)} · T.P. ${esc(PROFESIONAL.tp)}</div></div></div>`;
   h += `<h2>Datos de identificación</h2>${datosTabla(p, a)}`;
@@ -537,8 +551,8 @@ function exportar(lista, titulo) {
   if (!FIRMA && !confirm("Aún no ha cargado su firma en el registro (botón «Cargar firma»). ¿Exportar sin la imagen de la firma?")) return;
   // El tema lo fija la primera atención (en la historia completa, todas son del mismo paciente).
   const tema = temaDe(lista[0], actual);
-  $("#hoja").className = "hoja t-" + tema;
-  $("#hoja").innerHTML = `<img class="margen" src="arte/lateral-${tema}.webp" alt="">` + lista.map((a, i) => hojaAtencion(a, actual, i > 0)).join("");
+  $("#hoja").className = "hoja t-" + tema + ($("#con-fondo").checked ? "" : " sin-fondo");
+  $("#hoja").innerHTML = `<img class="fondo abajo" src="arte/fondo-${tema}-abajo.webp" alt="">` + lista.map((a, i) => hojaAtencion(a, actual, i > 0)).join("");
   const t = document.title;
   document.title = titulo.replace(/[\\/:*?"<>|]/g, "-");
   document.body.dataset.hoja = "1";
