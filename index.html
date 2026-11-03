@@ -119,6 +119,18 @@ body.local .campo.oblig>label::after,body.local h3.oblig>span:first-child::after
 .falta{box-shadow:0 0 0 2px var(--rojo)!important;border-radius:8px}
 .faltan{flex-basis:100%;font-size:.84rem;color:var(--rojo)}
 .faltan button,.pendiente button{font-size:.8rem;background:var(--rojo-soft);color:var(--rojo);border-radius:999px;padding:2px 9px;margin:2px 3px}
+/* Incongruencias: avisos en ámbar; no bloquean el guardado. */
+.avisos-inc{background:var(--ambar-soft);color:#7a4a17;border-radius:8px;padding:8px 12px;font-size:.88rem;margin:10px 0}
+.avisos-inc ul{margin:4px 0 0;padding-left:18px}
+.eem-fila.choque{background:var(--ambar-soft);border-radius:6px}
+.aviso-inc{margin:0 0 10px}
+.aviso-inc button{width:100%;text-align:left;font-size:.82rem;background:var(--ambar-soft);color:#7a4a17;border-radius:6px;padding:6px 8px}
+/* Barra de progreso del lateral (versión local). */
+.prog-cab{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink-soft);margin-bottom:4px}
+.prog-cab strong{color:var(--accent-dark);font-variant-numeric:tabular-nums}
+.prog{height:8px;border-radius:999px;background:var(--surface-alt);overflow:hidden}
+.prog span{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .25s}
+#lat-prog:not(:empty){margin:0 0 12px}
 /* Laterales: solo en pantallas anchas; en las angostas los globos siguen dentro de la ruta. */
 .lat-izq,.lat-der{display:none}
 .lat-t{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;margin:14px 0 6px}
@@ -206,6 +218,7 @@ button.globo:hover{border-color:var(--accent)}
     <h3 class="oblig"><span>Examen mental</span></h3>
     <div class="caja" id="examen"></div>
     <div class="fila" style="gap:8px"><button type="button" class="sec" id="eem-normal">Sin alteraciones en lo no marcado</button><button type="button" class="sec" id="eem-copiar">Copiar examen mental</button></div>
+    <div class="avisos-inc" id="eem-avisos" hidden></div>
     <div class="texto" id="eem-texto"></div>
   </div>
   
@@ -1611,6 +1624,62 @@ const EXAMEN = [
   { id: "fiabilidad", t: "Fiabilidad del relato", normal: [0], ops: ["relato fiable", "relato poco fiable o inconsistente"] }
 ];
 
+/* Incongruencias: avisos (no bloquean el guardado) cuando lo marcado se contradice.
+   CHOQUES[dominio] = [[opción, [opciones que la contradicen]], …] dentro de un mismo dominio
+   del examen mental (por índice de «ops»).
+   INCONGRUENCIAS: reglas entre la ruta y el examen mental, o entre dos dominios. Se cumplen
+   todas las condiciones de «si»:
+     { area, resp: [códigos] }   respuesta del área en la ruta
+     { area, det: índice }       detalle marcado (con el área en Presente o Dudoso)
+     { dom, ops: [índices] }     alguna de esas opciones marcada en el examen mental
+   «t» es el aviso; «dom» el dominio que se resalta. */
+const CHOQUES = {
+  apariencia: [[0, [1]]],
+  actitud: [[0, [4, 7]], [1, [2]]],
+  conciencia: [[0, [3, 4]], [1, [2]]],
+  psicomotor: [[0, [1, 2, 3, 4]]],
+  lenguaje: [[0, [1, 2, 5]], [3, [4]]],
+  afecto: [[0, [1, 2, 3, 4, 5, 6]], [7, [8]]],
+  animo: [[0, [1, 2, 3, 4]]],
+  curso: [[0, [1, 2, 3, 4, 5, 6]]],
+  contenido: [[0, [2]]],
+  sensopercepcion: [[0, [1]]],
+  cognicion: [[0, [1, 2]]],
+  inteligencia: [[0, [1]]],
+  funciones: [[0, [1, 2]], [3, [4, 5]], [4, [5]]],
+  introspeccion: [[0, [1, 2]], [1, [2]]],
+  juicio: [[0, [1]]],
+  fiabilidad: [[0, [1]]]
+};
+const INCONGRUENCIAS = [
+  { si: [{ area: "animo", resp: ["P", "D"] }, { dom: "animo", ops: [0] }], dom: "animo",
+    t: "En la ruta hay ánimo bajo o pérdida de interés, y el ánimo referido figura como estable." },
+  { si: [{ area: "animo", resp: ["A"] }, { dom: "animo", ops: [1] }], dom: "animo",
+    t: "En la ruta niega ánimo bajo, y el ánimo referido figura como triste o desanimado." },
+  { si: [{ area: "sueno", resp: ["P", "D"] }, { dom: "funciones", ops: [0] }], dom: "funciones",
+    t: "En la ruta hay alteraciones del sueño, y el examen mental dice «sueño conservado»." },
+  { si: [{ area: "sueno", resp: ["A"] }, { dom: "funciones", ops: [1, 2] }], dom: "funciones",
+    t: "En la ruta niega alteraciones del sueño, y el examen mental registra dificultad para dormir o hipersomnia." },
+  { si: [{ area: "animo", det: 2 }, { dom: "funciones", ops: [3] }], dom: "funciones",
+    t: "En la ruta hay cambios en el apetito o el peso, y el examen mental dice «apetito conservado»." },
+  { si: [{ area: "alimentacion", resp: ["P", "D"] }, { dom: "funciones", ops: [3] }], dom: "funciones",
+    t: "En la ruta hay alteraciones de la alimentación, y el examen mental dice «apetito conservado»." },
+  { si: [{ area: "psicosis", det: 0 }, { dom: "sensopercepcion", ops: [0] }], dom: "sensopercepcion",
+    t: "En la ruta refiere alucinaciones, y la sensopercepción figura sin alteraciones (si no las presentó durante la entrevista, conviene precisarlo)." },
+  { si: [{ area: "psicosis", det: 1 }, { dom: "contenido", ops: [0] }], dom: "contenido",
+    t: "En la ruta hay ideas de persecución o de daño, y el contenido figura sin ideas delirantes aparentes." },
+  { si: [{ area: "psicosis", det: 2 }, { dom: "contenido", ops: [0] }], dom: "contenido",
+    t: "En la ruta hay ideas de misión, poderes o mensajes especiales, y el contenido figura sin ideas delirantes aparentes." },
+  { si: [{ area: "memoria", resp: ["P", "D"] }, { dom: "cognicion", ops: [0] }], dom: "cognicion",
+    t: "En la ruta refiere fallas de memoria, y la atención y la memoria figuran conservadas (precise si es lo observado en la entrevista)." },
+  { si: [{ area: "atencion", resp: ["P", "D"] }, { dom: "cognicion", ops: [0] }], dom: "cognicion",
+    t: "En la ruta hay dificultades de atención, y la atención figura conservada (precise si es lo observado en la entrevista)." },
+  { si: [{ dom: "afecto", ops: [0] }, { dom: "animo", ops: [1, 2, 3] }], dom: "afecto",
+    t: "Afecto eutímico con ánimo referido alterado: discordancia entre afecto y ánimo. Regístrela si es un hallazgo." },
+  { si: [{ dom: "afecto", ops: [1] }, { dom: "animo", ops: [0, 4] }], dom: "afecto",
+    t: "Afecto triste con ánimo referido estable o elevado: discordancia entre afecto y ánimo. Regístrela si es un hallazgo." }
+];
+
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1924,7 +1993,7 @@ function pintarLaterales() {
   let h = "";
   const sinRiesgo = rutaActual().filter(b => b.fijo).flatMap(b => areasDe(b, ab)).filter(a => !ruta.resp[a.id]);
   // En la versión local, tras intentar guardar, este aviso pasa a ser la lista de obligatorios que faltan.
-  h += `<div id="lat-pend">${sinRiesgo.length ? `<p class="pendiente">Antes de cerrar: ${esc(sinRiesgo.map(a => a.t.toLowerCase()).join("; "))}.</p>` : ""}</div>`;
+  h += `<div id="lat-prog"></div><div id="lat-inc"></div><div id="lat-pend">${sinRiesgo.length ? `<p class="pendiente">Antes de cerrar: ${esc(sinRiesgo.map(a => a.t.toLowerCase()).join("; "))}.</p>` : ""}</div>`;
   h += `<div class="lat-t">Entrevista</div><ul>`;
   if ($("#s-datos")) h += item("s-datos", "Datos de la atención", "entrevista");
   for (const b of rutaActual()) {
@@ -1942,6 +2011,7 @@ function pintarLaterales() {
     return item("dx-" + id, H[id].t, "hipotesis", true, null, H[id].z ? "" : `${r.cumplidos}/${r.total}`);
   }).join("")}</ul>`;
   $("#lat-der").innerHTML = h;
+  pintarIncongruencias();
   if (typeof pintarFaltantes === "function") pintarFaltantes();
 }
 // Lleva a una sección o campo: cambia de pestaña si hace falta y enfoca el campo.
@@ -2011,7 +2081,31 @@ function pintarExamen() {
     return `<div class="eem-fila" id="eem-${d.id}"><span class="rot">${esc(d.t)}</span><div>${ops}${dv}</div></div>`;
   }).join("");
   $("#eem-texto").textContent = textoExamen();
+  pintarIncongruencias();
   if (typeof pintarFaltantes === "function") pintarFaltantes();
+}
+// ---------- Incongruencias ----------
+// Avisos (no bloquean) cuando la ruta y el examen mental, o dos opciones de un dominio, se
+// contradicen. Reglas en ruta.js (CHOQUES e INCONGRUENCIAS).
+function incongruencias() {
+  const out = [], visibles = new Set(areasVisibles().map(a => a.id));
+  const tiene = (dom, ops) => ops.some(i => eem[dom] && eem[dom].has(i));
+  const cumple = c => c.dom ? tiene(c.dom, c.ops)
+    : !visibles.has(c.area) ? false
+    : c.det != null ? ["P", "D"].includes(ruta.resp[c.area]) && !!(ruta.det[c.area] || {})[c.det]
+    : c.resp.includes(ruta.resp[c.area]);
+  for (const r of INCONGRUENCIAS) if (r.si.every(cumple)) out.push({ dom: r.dom, t: r.t });
+  for (const d of EXAMEN) for (const [a, bs] of CHOQUES[d.id] || []) for (const b of bs)
+    if (tiene(d.id, [a]) && tiene(d.id, [b])) out.push({ dom: d.id, t: `${d.t}: «${d.ops[a]}» junto con «${d.ops[b]}».` });
+  return out;
+}
+function pintarIncongruencias() {
+  const inc = incongruencias();
+  document.querySelectorAll(".eem-fila.choque").forEach(el => el.classList.remove("choque"));
+  inc.forEach(x => document.getElementById("eem-" + x.dom)?.classList.add("choque"));
+  $("#eem-avisos").hidden = !inc.length;
+  $("#eem-avisos").innerHTML = inc.length ? `<strong>Revise estas incongruencias</strong><ul>${inc.map(x => `<li>${esc(x.t)}</li>`).join("")}</ul>` : "";
+  if ($("#lat-inc")) $("#lat-inc").innerHTML = inc.length ? `<p class="aviso-inc"><button type="button" data-ir="eem-avisos" data-ir-tab="entrevista">${inc.length} ${inc.length === 1 ? "incongruencia" : "incongruencias"} por revisar</button></p>` : "";
 }
 function textoExamen() {
   const der = derivadas(), lineas = [], faltan = [];
