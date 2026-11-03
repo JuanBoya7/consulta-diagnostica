@@ -70,9 +70,11 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 
 /* Temas: adultos (acuarela botánica y paisaje en verde azulado y ámbar) e infancia (pasteles suaves).
    Fondos de página generados con Codex (arte\fondo-*.webp), muy pálidos y con transparencia:
-   en la primera página, uno ocupa el cuadrante superior derecho (detrás del encabezado) y otro el
-   inferior derecho, en diagonal; en las siguientes, solo el inferior derecho, que se repite en cada
-   página. El texto va a la izquierda y las tablas llevan fondo blanco translúcido para leerse bien.
+   la primera página de cada atención lleva solo el cuadrante superior derecho (detrás del
+   encabezado); las siguientes, solo el inferior derecho. El inferior es fijo (se repite en todas las
+   páginas), así que en la primera lo tapa un velo blanco del alto de la página (.fondo-p1), extendido
+   con una sombra para no ocupar espacio y no empujar el contenido a otra página. El texto va a la
+   izquierda y las tablas llevan fondo blanco translúcido para leerse bien.
    La casilla «Con fondo decorativo» del registro permite imprimir sin ellos (ahorro de tinta). */
 .hoja.t-adultos{--acento:#1f6f78;--acento-osc:#134349;--suave:#e2eff0;--fondo-k:#f3f8f8;--linea:#c9d6d6;--calido:#b8722a}
 .hoja.t-infancia{--acento:#e8604f;--acento-osc:#2b2d42;--suave:#ffe9e4;--fondo-k:#fff7ef;--linea:#f1d6cc;--calido:#56b6e8}
@@ -101,13 +103,14 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 .hoja .datos td.k,.hoja .eem td.k{background:var(--fondo-k)}
 .hoja .cita{border-left-color:var(--calido);background:var(--fondo-k);border-radius:0 2mm 2mm 0;padding:4px 8px}
 .hoja .firma .linea{border-top-color:var(--acento-osc)}
-.hoja .fondo{display:none}
+.hoja .fondo,.hoja .fondo-p1{display:none}
 #hoja{display:none}
 @media print{
   body[data-hoja] main{display:none!important}
   body[data-hoja] #hoja{display:block!important}
   body[data-hoja] .hoja .fondo{display:block;width:100%;height:100%;object-fit:cover;object-position:right center;z-index:-1;pointer-events:none}
   body[data-hoja] .hoja .fondo.abajo{position:fixed;inset:0;opacity:.75}
+  body[data-hoja] .hoja .fondo-p1{display:block;position:absolute;top:0;left:0;right:0;height:230mm;background:#fff;box-shadow:0 36mm 0 0 #fff;z-index:-1;pointer-events:none}
   body[data-hoja] .hoja .fondo.arriba{position:absolute;top:0;left:0;height:135mm;object-position:right top;opacity:.8}
   body[data-hoja] .hoja.t-infancia .fondo.arriba{opacity:1}
   body[data-hoja] .hoja.t-infancia .fondo.abajo{opacity:.9}
@@ -549,7 +552,7 @@ function temaDe(a, p) {
 }
 function hojaAtencion(a, p, salto) {
   const seg = a.tipo === "seguimiento", tema = temaDe(a, p);
-  let h = `<div class="atn${salto ? " salto" : ""}"><img class="fondo arriba" src="arte/fondo-${tema}-arriba.webp" alt=""><div class="h-cab"><div class="txt"><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
+  let h = `<div class="atn${salto ? " salto" : ""}"><div class="fondo-p1"><img class="fondo arriba" src="arte/fondo-${tema}-arriba.webp" alt=""></div><div class="h-cab"><div class="txt"><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
     <h1>${esc(p.nombre)}</h1><div class="h-sub">${esc(tipoEt(a))} · ${esc(fechaLarga(a.atencion.fecha))}</div>
     <div class="h-prof"><b>${esc(PROFESIONAL.nombre)}</b> · ${esc(PROFESIONAL.titulo)} · T.P. ${esc(PROFESIONAL.tp)}</div></div></div>`;
   h += `<h2>Datos de identificación</h2>${datosTabla(p, a)}`;
