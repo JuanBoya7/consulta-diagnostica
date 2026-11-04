@@ -123,6 +123,7 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 }
 @media (max-width:600px){h1{font-size:1.4rem}}
 .hoja .cierre-atencion{break-inside:avoid}
+.hoja .fichas-tarea a{color:var(--acento-osc);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -551,6 +552,17 @@ function temaDe(a, p) {
   if (!menor) return "adultos";
   return (edad != null ? edad >= 12 : /12/.test(a.edadRango || "")) ? "adolescentes" : "infancia";
 }
+function fichasTareaHtml(a) {
+  const fichas = new Map();
+  for (const tarea of a.tareasIniciales || []) {
+    const f = tarea.ficha;
+    if (f?.t && /^https:\/\/juanboya7\.github\.io\/seminario-clinico\/fichas(?:-infancia)?\/[a-z0-9-]+\.pdf$/.test(f.url)) fichas.set(f.url, f);
+  }
+  if (!fichas.size) return "";
+  return '<div class="fichas-tarea"><h3>Fichas para la tarea</h3><ul>' +
+    [...fichas.values()].map(f => `<li><a href="${esc(f.url)}" rel="noreferrer">${esc(f.t)}</a>${f.uso ? ' · ' + esc(f.uso) : ''}</li>`).join("") +
+    '</ul></div>';
+}
 function hojaAtencion(a, p, salto) {
   const seg = a.tipo === "seguimiento", tema = temaDe(a, p);
   let h = `<div class="atn${salto ? " salto" : ""}"><div class="fondo-p1"><img class="fondo arriba" src="arte/fondo-${tema}-arriba.webp" alt=""></div><div class="h-cab"><div class="txt"><div class="h-var">${seg ? "Nota de evolución psicológica" : "Historia clínica psicológica"}</div>
@@ -564,7 +576,7 @@ function hojaAtencion(a, p, salto) {
   if ((a.observaciones || "").trim()) h += `<h3>Observaciones</h3>${md(a.observaciones)}`;
   const firma = firmaHtml(a);
   if ((a.recomendaciones || "").trim()) {
-    h += `<div class="cierre-atencion"><h2>Recomendaciones para la próxima sesión</h2>${md(a.recomendaciones)}${firma}</div>`;
+    h += `<div class="cierre-atencion"><h2>Recomendaciones para la próxima sesión</h2>${md(a.recomendaciones)}${fichasTareaHtml(a)}${firma}</div>`;
   } else {
     h += firma;
   }
