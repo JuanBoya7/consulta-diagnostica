@@ -1912,7 +1912,7 @@ function tareaInicialHtml(p, descartado) {
         <textarea rows="4" data-tarea-texto="${esc(k)}">${esc(t.texto)}</textarea>
       </label>
       ${base.ficha ? `<div class="tarea-ficha">
-        <label class="meta"><input type="checkbox" data-tarea-ficha="${esc(k)}"${t.conFicha !== false ? ' checked' : ''}${descartado ? ' disabled' : ''}> Incluir ficha de apoyo</label>
+        <label class="meta"><input type="checkbox" data-tarea-ficha="${esc(k)}"${t.incluir && t.conFicha !== false && !descartado ? ' checked' : ''}${!t.incluir || descartado ? ' disabled' : ''}> Incluir ficha de apoyo</label>
         ${enlaceFichaTarea(base.ficha)}
         ${base.ficha.uso ? `<p class="meta">${esc(base.ficha.uso)}</p>` : ''}
       </div>` : ''}
@@ -1931,7 +1931,10 @@ function pintarRecomendaciones() {
     i.checked = !i.disabled && !!tareasElegidas[i.dataset.tareaIncluir]?.incluir;
   });
   document.querySelectorAll('[data-tarea-ficha]').forEach(i => {
-    i.checked = tareasElegidas[i.dataset.tareaFicha]?.conFicha !== false;
+    const t = tareasElegidas[i.dataset.tareaFicha];
+    const casillaTarea = i.closest('.tarea-inicial').querySelector('[data-tarea-incluir]');
+    i.disabled = !casillaTarea.checked;
+    i.checked = !i.disabled && t?.conFicha !== false;
   });
 }
 function reiniciarTareas() {
@@ -1950,7 +1953,12 @@ $('#tab-hipotesis').addEventListener('change', e => {
     t.conFicha = i.checked;
   } else {
     t.incluir = i.checked;
-    if (i.checked) i.closest('.tarea-inicial').querySelector('details').open = true;
+    t.conFicha = i.checked && !!base.ficha;
+    document.querySelectorAll('[data-tarea-incluir]').forEach(casilla => {
+      if (casilla.dataset.tareaIncluir === k) {
+        casilla.closest('.tarea-inicial').querySelector('details').open = t.incluir && !casilla.disabled;
+      }
+    });
   }
   pintarRecomendaciones();
 });
