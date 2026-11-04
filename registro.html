@@ -122,6 +122,7 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
     @bottom-right{content:counter(page);width:12mm;vertical-align:top;padding-top:5px;text-align:right;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}}
 }
 @media (max-width:600px){h1{font-size:1.4rem}}
+.hoja .cierre-atencion{break-inside:avoid}
 </style>
 </head>
 <body>
@@ -561,7 +562,13 @@ function hojaAtencion(a, p, salto) {
   h += `<h2>Examen mental</h2>${eemTabla(a.examen)}`;
   h += `<h2>Impresión diagnóstica</h2>${impresionTabla(a)}`;
   if ((a.observaciones || "").trim()) h += `<h3>Observaciones</h3>${md(a.observaciones)}`;
-  h += firmaHtml(a) + "</div>";
+  const firma = firmaHtml(a);
+  if ((a.recomendaciones || "").trim()) {
+    h += `<div class="cierre-atencion"><h2>Recomendaciones para la próxima sesión</h2>${md(a.recomendaciones)}${firma}</div>`;
+  } else {
+    h += firma;
+  }
+  h += "</div>";
   return h;
 }
 function exportar(lista, titulo) {

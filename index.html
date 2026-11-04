@@ -175,6 +175,10 @@ button.globo:hover{border-color:var(--accent)}
 .estado-guardado{font-size:.85rem;color:var(--accent-dark)}
 .texto{white-space:pre-wrap;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.92rem;margin:10px 0}
 @media (max-width:600px){h1{font-size:1.4rem} .sint{margin-left:0} .a-cab{flex-direction:column} .eem-fila{grid-template-columns:1fr}}
+.tarea-inicial{margin:10px 0 6px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.tarea-inicial>label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.tarea-inicial textarea{margin-top:6px;width:100%;box-sizing:border-box}
+.texto-tarea{white-space:pre-wrap;font-size:.92rem}
 </style>
 </head>
 <body>
@@ -240,6 +244,11 @@ button.globo:hover{border-color:var(--accent)}
     <div id="impresion"></div>
     <div class="campo" style="margin-top:10px"><label for="imp-obs">Observaciones o análisis (opcional)</label><textarea id="imp-obs" rows="3"></textarea></div>
   </div>
+  <div class="bloque" id="s-recomendaciones">
+    <h3>Recomendaciones para la próxima sesión</h3>
+    <div class="caja" id="tareas-seleccionadas"></div>
+    <div class="campo"><label for="recomendaciones-libres">Otras recomendaciones (opcional)</label><textarea id="recomendaciones-libres" rows="3"></textarea></div>
+  </div>
   
 </div>
 
@@ -254,6 +263,7 @@ button.globo:hover{border-color:var(--accent)}
 </div>
 
 <div id="tarjetas"></div>
+<div id="planes-directos"></div>
 </div>
 
 <div class="barra" id="barra">
@@ -1828,6 +1838,3262 @@ function prepararFiltros() {
   actualizarRuta();
 }
 
+const TAREAS_INICIALES = {
+  "adultos": {
+    "ans-act": {
+      "plan": "Aceptación y acción guiada por valores",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Anotar un episodio de ansiedad: qué estaba ocurriendo, qué pensó y sintió, qué hizo para controlarlo y qué actividad importante dejó de hacer. Llevarlo a la próxima sesión para revisar juntos esa respuesta.",
+      "fuente": "Eifert y Forsyth, 2005, cap. 7",
+      "actividad": "La ansiedad y lo que la vuelve un problema",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-tcc": {
+      "plan": "Exposición graduada con reestructuración cognitiva",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Registrar situaciones de ansiedad o evitación: qué ocurrió, qué temió que pasara, qué sintió en el cuerpo y qué hizo. Llevar un ejemplo para construir la explicación del problema en la próxima sesión.",
+      "fuente": "Ruiz et al., cap. 2 (§5 y §6) y cap. 4 (§5)",
+      "actividad": "Evaluación conductual y formulación funcional",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-panico": {
+      "plan": "Tratamiento cognitivo-conductual del pánico",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Si aparece una crisis de pánico, anotar dónde estaba, qué sensaciones notó, qué interpretó y cómo respondió. Añadir una anotación diaria breve de ansiedad y ánimo, aunque ese día no haya crisis.",
+      "fuente": "Craske y Barlow, 2022, caps. 5 a 7 · Craske y Barlow, 2014, «Education» y sesión 1",
+      "actividad": "Educación sobre el pánico y autorregistro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-pan-mind": {
+      "plan": "Autoayuda guiada con mindfulness para el pánico",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Revisar el material introductorio acordado en consulta y señalar las dudas sobre el pánico y sus sensaciones. Elegir un momento posible para la práctica que se enseñará en sesión.",
+      "fuente": "Stahl y Millstine, 2017, fundamentos",
+      "actividad": "Fundamentos: descartar causas y empezar a practicar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-social": {
+      "plan": "Tratamiento cognitivo-conductual de la ansiedad social",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Anotar una situación social difícil: qué temió que los demás pensaran, qué hizo para protegerse y cómo terminó. Añadir otras situaciones que evita para ordenarlas juntos en la próxima consulta.",
+      "fuente": "Heimberg y Magee, 2014, «Segment 1: Psychoeducation»",
+      "actividad": "Psicoeducación y contrato de tratamiento",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-pu": {
+      "plan": "Protocolo Unificado para los trastornos emocionales",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Escribir qué ganaría y qué le costaría cambiar su manera de responder a las emociones. Elegir una situación de su vida que le gustaría recuperar y describir cómo reconocería un pequeño avance.",
+      "fuente": "Barlow et al., 2015, módulo 1 (cap. 5)",
+      "actividad": "Motivación para el cambio",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-wbt": {
+      "plan": "Terapia cognitivo-conductual seguida de terapia de bienestar para la ansiedad generalizada",
+      "variable": "Ansiedad",
+      "edad": [],
+      "texto": "Llevar un diario breve de los episodios de mayor malestar: situación, intensidad de 0 a 100, pensamientos y acciones. Revisarlo en la siguiente sesión antes de introducir el diario de bienestar.",
+      "fuente": "Fava, 2016, cap. 16",
+      "actividad": "El diario de malestar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "inc-tcc": {
+      "plan": "Tolerar la incertidumbre: protocolo cognitivo-conductual de Dugas",
+      "variable": "Intolerancia a la incertidumbre",
+      "edad": [],
+      "texto": "En los momentos acordados del día, anotar la preocupación, qué la desencadenó y qué intentó hacer para resolver la incertidumbre. Llevar el registro para distinguir problemas actuales de situaciones hipotéticas.",
+      "fuente": "Robichaud et al., 2019, caps. 4 y 5 (módulo 1)",
+      "actividad": "Psicoeducación y toma de conciencia de las preocupaciones",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "rum-mct": {
+      "plan": "Terapia metacognitiva",
+      "variable": "Rumiación y preocupación",
+      "edad": [],
+      "texto": "Registrar los episodios de preocupación de la semana: el disparador, cuánto duró y lo que hizo.",
+      "fuente": "Wells, 2020, cap. 6, «Conceptualización de caso»",
+      "actividad": "Conceptualización del caso",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "rum-abbt": {
+      "plan": "Terapia conductual basada en la aceptación para la ansiedad generalizada",
+      "variable": "Rumiación y preocupación",
+      "edad": [],
+      "texto": "Anotar un momento de ansiedad: qué estaba ocurriendo, qué sintió, cómo respondió y qué efecto tuvo esa respuesta en lo que necesitaba hacer. Traer el ejemplo para revisarlo juntos.",
+      "fuente": "Roemer y Orsillo, 2009, caps. 2 a 4",
+      "actividad": "Evaluación y formulación compartida",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "rum-act": {
+      "plan": "Protocolo breve de aceptación y compromiso para la preocupación y la rumiación",
+      "variable": "Rumiación y preocupación",
+      "edad": [],
+      "texto": "Notar un momento en que quedó dando vueltas a un pensamiento. Anotar qué lo inició, cuánto tiempo le ocupó y qué estaba haciendo o dejó de hacer mientras pensaba.",
+      "fuente": "Ruiz et al., 2018, sesión 1, apartados 1 y 2",
+      "actividad": "El esquema de trabajo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "toc-tcc": {
+      "plan": "Exposición con prevención de respuesta",
+      "variable": "Obsesiones y compulsiones",
+      "edad": [],
+      "texto": "Registrar cuándo aparecen las obsesiones y los rituales: qué los desencadenó, qué hizo para aliviarse y cuánto tiempo le ocupó. Llevar el registro para preparar juntos el tratamiento.",
+      "fuente": "Foa et al., 2012, caps. 2 y 4 (sesión 1)",
+      "actividad": "Historia, lógica del tratamiento y autorregistro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "toc-act": {
+      "plan": "Defusión, disposición y exposición guiada por valores",
+      "variable": "Obsesiones y compulsiones",
+      "edad": [],
+      "texto": "Registro de rituales y evitaciones de la semana, con lo que la llevó a cada uno.",
+      "fuente": "Zurita Ona, 2020, partes I y III",
+      "actividad": "Compulsiones, evitaciones y pensamientos que mandan",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "toc-perinatal": {
+      "plan": "Pensamientos atemorizantes de daño al bebé en el embarazo y el posparto",
+      "variable": "Obsesiones y compulsiones",
+      "edad": [],
+      "texto": "Anotar cuándo aparecen los pensamientos y qué hace después.",
+      "fuente": "Kleiman y Wenzel, 2021, caps. 2 y 4, «Nota para el clínico»",
+      "actividad": "Escuchar sin alarmarse y distinguir de la psicosis",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sal-tcc": {
+      "plan": "Terapia cognitivo-conductual para la ansiedad por la salud",
+      "variable": "Ansiedad por la salud y síntomas somáticos",
+      "edad": [],
+      "texto": "Anotar una consulta, examen o búsqueda de información reciente sobre su salud: qué esperaba aclarar, cuánto duró el alivio y qué preocupación apareció después.",
+      "fuente": "Taylor y Asmundson, 2004, caps. 7 y 8",
+      "actividad": "Vincular a la persona y coordinar con el médico",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sal-grupo": {
+      "plan": "Psicoeducación en grupo para la ansiedad por la salud",
+      "variable": "Ansiedad por la salud y síntomas somáticos",
+      "edad": [],
+      "texto": "Elegir un pensamiento sobre la salud que haya aparecido en la semana. Anotar qué lo desencadenó, qué datos usó para interpretarlo y qué otra explicación trabajada en sesión podría considerar.",
+      "fuente": "Taylor y Asmundson, 2004, cap. 5 (sesiones 1 a 3)",
+      "actividad": "Los pensamientos y la atención en la ansiedad por la salud",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "som-acbt": {
+      "plan": "Terapia afectiva cognitivo-conductual para la somatización",
+      "variable": "Ansiedad por la salud y síntomas somáticos",
+      "edad": [],
+      "texto": "Completar el registro acordado de síntomas: situación, molestias, emociones y respuesta. Si la respiración se practicó en consulta, ensayarla según la pauta acordada y anotar cómo resultó.",
+      "fuente": "Woolfolk y Allen, 2007, apéndice A (sesiones 1 y 2)",
+      "actividad": "Vinculación, fundamento y registro de síntomas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdc-tcc": {
+      "plan": "Terapia cognitivo-conductual para el trastorno dismórfico corporal",
+      "variable": "Preocupación por la apariencia (trastorno dismórfico corporal)",
+      "edad": [],
+      "texto": "Anotar una situación en que apareció la preocupación por el aspecto físico: qué la desencadenó, qué hizo después y cómo se sintió. Si se entregó material en consulta, traer una pregunta sobre la lectura.",
+      "fuente": "Wilhelm et al., 2013, caps. 5 a 7",
+      "actividad": "Evaluación, motivación y psicoeducación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdc-act": {
+      "plan": "Aceptación y compromiso para la insatisfacción con la imagen corporal",
+      "variable": "Preocupación por la apariencia (trastorno dismórfico corporal)",
+      "edad": [],
+      "texto": "Anotar una situación de malestar con la imagen corporal, qué hizo para cambiarla u ocultarla y qué efecto tuvo en su vida ese día. Traerla para revisar los costos de esa lucha.",
+      "fuente": "Pearson et al., 2010, cap. 4",
+      "actividad": "Contar la historia y ver si funciona",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "crc-aebt": {
+      "plan": "Terapia de conducta potenciada con aceptación y compromiso para el arrancamiento del pelo",
+      "variable": "Conductas repetitivas centradas en el cuerpo",
+      "edad": [],
+      "texto": "Registrar los episodios de arrancamiento del pelo que logre advertir: lugar, actividad, sensaciones o ganas previas y qué ocurrió después. Si lo notó cuando ya había empezado, anotarlo también.",
+      "fuente": "Woods y Twohig, 2008, caps. 1 y 3",
+      "actividad": "Psicoeducación, expectativas y autorregistro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "crc-reversion": {
+      "plan": "Reversión del hábito para los hábitos nerviosos",
+      "variable": "Conductas repetitivas centradas en el cuerpo",
+      "edad": [],
+      "texto": "Anotar cuándo aparece el hábito, qué hacía en ese momento, qué señales notó antes y cuándo se dio cuenta. Llevar un ejemplo para practicar cómo reconocer su inicio.",
+      "fuente": "Miltenberger, 2024, cap. 21, «Habit Reversal Procedures»",
+      "actividad": "Entrenamiento en conciencia",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "acum-tcc": {
+      "plan": "Terapia cognitivo-conductual para la acumulación",
+      "variable": "Trastorno de acumulación",
+      "edad": [],
+      "texto": "Identificar un espacio de la vivienda afectado por la acumulación y describir qué actividad cotidiana dificulta. Anotar qué le preocupa de clasificar o desprenderse de los objetos para revisarlo en consulta.",
+      "fuente": "Steketee y Frost, 2014, caps. 1 y 3",
+      "actividad": "Evaluación en consulta y en casa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-tcc-ep": {
+      "plan": "Terapia de exposición prolongada",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Revisar la explicación del tratamiento acordada en consulta y anotar dudas, expectativas y situaciones cotidianas que ha dejado de hacer desde el trauma. Llevarlas para preparar el trabajo de las próximas sesiones.",
+      "fuente": "Foa et al., 2019, cap. 3 (sesión 1) y apéndice A",
+      "actividad": "Presentación del programa y entrevista sobre el trauma",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-cpt": {
+      "plan": "Terapia de procesamiento cognitivo",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Anotar cómo cree que el trauma ha afectado sus ideas sobre sí misma, otras personas y el mundo, sin relatar detalles del acontecimiento. Revisar en consulta si está preparada para la declaración de impacto del tratamiento.",
+      "fuente": "Resick et al., 2024, cap. 6 (sesión 1)",
+      "actividad": "Presentación del tratamiento y declaración de impacto",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-ac": {
+      "plan": "Activación conductual para el estrés postraumático",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Lista de conductas de evitación y de sus costos.",
+      "fuente": "Jakupcak et al., 2019, cap. 1",
+      "actividad": "Orientación: el estrés postraumático como respuesta aprendida",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-act": {
+      "plan": "Aceptación y compromiso para el trauma",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Anotar durante la semana las formas en que intenta no sentir y lo que le cuestan.",
+      "fuente": "Walser y Westrup, 2007, caps. 3 y 4",
+      "actividad": "Consentimiento y desesperanza creativa",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-cft": {
+      "plan": "Terapia centrada en la compasión por fases para el trauma complejo",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Anotar una reacción cotidiana de malestar que quiera comprender y una pregunta sobre cómo responderse con más amabilidad. Si recibió la guía en consulta, puede elegir la pregunta a partir de su primera parte.",
+      "fuente": "Gilbert y Simos, 2022, cap. 25 · Lee y James, 2011, caps. 1 a 5",
+      "actividad": "Diferenciar: formulación y psicoeducación sobre el trauma",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-tcc-eie": {
+      "plan": "Inoculación de estrés",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Autorregistro de situaciones de estrés: qué pasó, qué pensó, qué sintió y qué hizo.",
+      "fuente": "Ruiz et al., cap. 9 (§3.3.1)",
+      "actividad": "Conceptualización del problema",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tept-dbt": {
+      "plan": "Terapia dialéctico-conductual con el protocolo de exposición prolongada",
+      "variable": "Trauma y estrés postraumático",
+      "edad": [],
+      "texto": "Anotar los pros y contras de hacer el tratamiento del trauma.",
+      "fuente": "Harned, 2022, caps. 3 y 5",
+      "actividad": "Pretratamiento: el trauma como meta y la exposición como opción",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dis-estabilizacion": {
+      "plan": "Entrenamiento en habilidades para la fase de estabilización",
+      "variable": "Trastornos disociativos complejos",
+      "edad": [],
+      "texto": "Revisar los acuerdos de participación entregados en consulta y anotar dudas. Identificar qué le ayuda a orientarse en el presente y qué situaciones dificultan hacerlo, para preparar el trabajo de estabilización.",
+      "fuente": "Boon et al., 2011, cap. 33",
+      "actividad": "Requisitos, diagnóstico y admisión",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-tcc-tc": {
+      "plan": "Terapia cognitiva de Beck",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Registrar el ánimo de 0 a 100 a lo largo del día y en qué situaciones sube o baja.",
+      "fuente": "Beck et al., 2024, caps. 2 a 4 · J. S. Beck, 2021, caps. 3, 5 y 6 · Young et al., 2014, «Collaboration»",
+      "actividad": "Evaluación, formulación y estructura de la sesión",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-ipt": {
+      "plan": "Psicoterapia interpersonal",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Contarle a alguien de confianza que está en tratamiento por depresión, si lo considera útil.",
+      "fuente": "Bleiberg y Markowitz, 2014, «Diagnosing Major Depression» y «The Sick Role»",
+      "actividad": "Diagnóstico y rol de enfermo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-tcc-tsp": {
+      "plan": "Terapia de solución de problemas",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Anotar durante la semana los problemas que aparecen y qué hizo con cada uno.",
+      "fuente": "Ruiz et al., cap. 9 (§4.3.2)",
+      "actividad": "Evaluación de la solución de problemas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-ac": {
+      "plan": "Activación conductual",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Registrar las actividades del día y el ánimo asociado, incluyendo momentos de descanso, obligaciones y contacto con otras personas. Llevar el registro para elegir juntos cambios pequeños y posibles.",
+      "fuente": "Lejuez et al., 2011, sesión 1 · Martell et al., 2010, «The Core Principles of Behavioral Activation» · Dimidjian et al., 2014, tabla 9.1",
+      "actividad": "Explicación del tratamiento y monitoreo diario",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-act": {
+      "plan": "Aceptación y acción guiada por valores",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Diario de regulación del ánimo: anotar cada cambio de ánimo que no le gustó y todo lo que hizo o pensó para cambiarlo.",
+      "fuente": "Zettle, 2007, caps. 4 y 9 (sesión previa y sesión 1)",
+      "actividad": "Consentimiento, historia de vida y primera desesperanza creativa",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-mbct": {
+      "plan": "Terapia cognitiva basada en mindfulness para prevenir recaídas",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Realizar la práctica de atención acordada y ensayada en consulta, usando el audio si se entregó. Anotar qué notó y qué dificultades aparecieron; llevarlo para ajustar la práctica.",
+      "fuente": "Segal et al., 2015, cap. 7 (sesión 1)",
+      "actividad": "Consciencia y piloto automático",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-rodbt": {
+      "plan": "Terapia dialéctico-conductual radicalmente abierta para el sobrecontrol",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Observar una situación en que le costó mostrar lo que sentía, aceptar ayuda o cambiar un plan. Anotar qué hizo y qué efecto tuvo en la relación con otras personas, para revisarlo en consulta.",
+      "fuente": "Lynch, 2018a, cap. 3 y apéndices 1 a 3",
+      "actividad": "Evaluación del sobrecontrol",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-wbt": {
+      "plan": "Terapia de bienestar en la fase residual y la prevención de recaídas",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Registrar los episodios de malestar residual: situación, intensidad de 0 a 100 y lo que pensó o hizo. Traer el diario para valorar qué dificultades necesitan atención antes del trabajo de bienestar.",
+      "fuente": "Fava, 2016, caps. 4 y 14",
+      "actividad": "Evaluación de la fase residual",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-pp": {
+      "plan": "Psicoterapia positiva",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Anotar un momento de la semana que haya valorado y qué lo hizo significativo. Traerlo para conversar sobre lo que ese momento dice de sus fortalezas.",
+      "fuente": "Rashid y Seligman, 2018, cap. 7 (sesión 1)",
+      "actividad": "Presentación positiva y diario de gratitud",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-mayores": {
+      "plan": "Terapia cognitivo-conductual para la depresión en personas mayores",
+      "variable": "Depresión",
+      "edad": [],
+      "texto": "Conservar las metas acordadas en una libreta y anotar una situación cotidiana en que la depresión le dificultó acercarse a ellas. Si necesita ayuda para escribir, acordar con quién desea hacerlo.",
+      "fuente": "Laidlaw et al., 2003, caps. 3 y 4",
+      "actividad": "Socializar a la persona en la terapia",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pos-tcc": {
+      "plan": "Pensar saludable: manejo psicosocial de la depresión perinatal",
+      "variable": "Depresión posparto",
+      "edad": [],
+      "texto": "Registrar el estado de ánimo en el calendario y notar la relación entre pensamientos y sentimientos.",
+      "fuente": "FICR, 2022 (sesión inicial; sección 17)",
+      "actividad": "Sesión inicial con la madre y la familia",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pos-wenzel": {
+      "plan": "Terapia cognitivo-conductual para el malestar perinatal basada en la conceptualización del caso",
+      "variable": "Depresión posparto",
+      "edad": [],
+      "texto": "Practicar la herramienta que se ensayó y acordó en consulta. Anotar en qué situación la usó, qué efecto tuvo y qué obstáculo apareció, para ajustar la pauta en la siguiente sesión.",
+      "fuente": "Wenzel y Kleiman, 2015, caps. 4 y 5",
+      "actividad": "Fase inicial: apoyo, evaluación y motivación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "duelo-ases": {
+      "plan": "Asesoramiento en el duelo: las cuatro tareas",
+      "variable": "Duelo",
+      "edad": [],
+      "texto": "Si le resulta posible, anotar un momento de la semana en que sintió la ausencia de la persona fallecida y qué necesitó entonces. Llevarlo para conversar sobre su experiencia y los apoyos que le sirven.",
+      "fuente": "Worden, 2013, cap. 2 (tarea I) y cap. 4 (principio 1)",
+      "actividad": "Aceptar la realidad de la pérdida",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "duelo-compl": {
+      "plan": "Terapia del duelo complicado",
+      "variable": "Duelo",
+      "edad": [],
+      "texto": "Anotar recuerdos del fallecido que aparezcan en la semana.",
+      "fuente": "Worden, 2013, cap. 6 (procedimientos 1 y 2)",
+      "actividad": "Descartar enfermedad física y formar la alianza",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "duelo-act": {
+      "plan": "Autoayuda guiada con aceptación y compromiso ante la pérdida",
+      "variable": "Duelo",
+      "edad": [],
+      "texto": "Elegir una acción sencilla de cuidado personal que sea posible en este momento. Anotar cómo resultó y qué dificultad apareció, para revisarla junto con el material de lectura acordado.",
+      "fuente": "Harris, 2021b, caps. 1 a 3",
+      "actividad": "Lo primero: el dolor y el cuidado básico",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "anh-pat": {
+      "plan": "Tratamiento del afecto positivo",
+      "variable": "Anhedonia y afecto positivo bajo",
+      "edad": [],
+      "texto": "Notar y nombrar una emoción positiva al día, por pequeña que sea.",
+      "fuente": "Craske et al., 2022, caps. 2 a 4",
+      "actividad": "Qué es la anhedonia y el ciclo del ánimo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "desreg-dbt": {
+      "plan": "Entrenamiento en habilidades dialéctico-conductuales",
+      "variable": "Desregulación emocional",
+      "edad": [],
+      "texto": "Diario de conductas problema, emociones, impulsos y habilidades usadas cada día.",
+      "fuente": "Elices, cap. 1 (§1.2) y cap. 2 (§2.4.3 y §2.5) · Linehan, 2003, cap. 6",
+      "actividad": "Orientación y compromiso",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "desreg-pu": {
+      "plan": "Protocolo Unificado aplicado a la desregulación emocional",
+      "variable": "Desregulación emocional",
+      "edad": [],
+      "texto": "Registrar una experiencia emocional intensa: qué ocurrió antes, qué pensó y sintió, qué hizo y cuáles fueron las consecuencias inmediatas y posteriores.",
+      "fuente": "Barlow et al., 2015, módulos 1 y 2 (caps. 5 a 7)",
+      "actividad": "Motivación y comprensión de las emociones",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "desreg-tcc": {
+      "plan": "Entrenamiento en regulación emocional",
+      "variable": "Desregulación emocional",
+      "edad": [],
+      "texto": "Anotar tres emociones del día y qué función cumplió cada una.",
+      "fuente": "Ruiz et al., cap. 12 (§10 y §10.1, tablas 4 y 5)",
+      "actividad": "Psicoeducación sobre las emociones",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "emo-dbt": {
+      "plan": "Atender, comprender y reparar las emociones",
+      "variable": "Estados emocionales",
+      "edad": [],
+      "texto": "Tres pausas diarias para observar y describir qué se siente en el cuerpo.",
+      "fuente": "Linehan, 2020, cap. 7 · Linehan, 2003, cap. 7",
+      "actividad": "Atención: observar la emoción",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "auto-cft": {
+      "plan": "Terapia centrada en la compasión",
+      "variable": "Autocrítica y vergüenza",
+      "edad": [],
+      "texto": "Anotar una situación de amenaza o autocrítica, una de búsqueda de logro y una de tranquilidad o conexión, si aparecen. Describir cómo cambió su forma de tratarse en cada una.",
+      "fuente": "Kolts, 2016, caps. 4 a 6 · Gilbert, 2009",
+      "actividad": "Comprender sin culpa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "auto-msc": {
+      "plan": "Programa de autocompasión consciente",
+      "variable": "Autocrítica y vergüenza",
+      "edad": [],
+      "texto": "En un momento de malestar manejable, practicar la pausa de autocompasión ensayada en consulta: reconocer que duele y responderse con una frase amable. Anotar qué facilitó o dificultó la práctica.",
+      "fuente": "Germer y Neff, 2019, sesión 1",
+      "actividad": "Descubrir la autocompasión",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "auto-autoperdon": {
+      "plan": "Autoperdón responsable en seis pasos",
+      "variable": "Autocrítica y vergüenza",
+      "edad": [],
+      "texto": "Anotar el hecho por el que se reprocha, la responsabilidad que reconoce y qué reparación considera posible. Llevarlo para diferenciar responsabilidad, condena personal y expectativas de perdón.",
+      "fuente": "Worthington et al., 2013, paso 1",
+      "actividad": "La ofensa y la decisión",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "per-tcc": {
+      "plan": "Terapia cognitivo-conductual para el perfeccionismo clínico",
+      "variable": "Perfeccionismo",
+      "edad": [],
+      "texto": "Elegir una situación en que se exigió que algo quedara perfecto. Anotar qué ventaja esperaba conseguir y qué costo tuvo esa exigencia. Si se entregó la hoja en consulta, puede usarla.",
+      "fuente": "Egan et al., 2014, cap. 6",
+      "actividad": "Evaluación, metas y motivación para cambiar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "per-act": {
+      "plan": "Autoayuda guiada con aceptación y compromiso para el perfeccionismo",
+      "variable": "Perfeccionismo",
+      "edad": [],
+      "texto": "Anotar una conducta perfeccionista de la semana: qué se exigió, cómo intentó cumplirlo y qué costo tuvo. Revisar las dudas del material introductorio acordado en consulta.",
+      "fuente": "Ong y Twohig, 2022, caps. 1 y 2 · Kemp, 2021, cap. 1",
+      "actividad": "El costo de la perfección",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "aut-fennell": {
+      "plan": "Terapia cognitivo-conductual para la baja autoestima",
+      "variable": "Baja autoestima",
+      "edad": [],
+      "texto": "Anotar las situaciones de la semana en que se sintió incómoda consigo misma y qué regla estaba en juego.",
+      "fuente": "Fennell, 2016, caps. 2 y 3",
+      "actividad": "Entender cómo se formó y qué la mantiene",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-tcc": {
+      "plan": "Inoculación de estrés para el control de la ira",
+      "variable": "Ira e impulsividad",
+      "edad": [],
+      "texto": "Registro diario de episodios de ira: situación, pensamientos, sensaciones, intensidad de 0 a 10, conducta y consecuencias.",
+      "fuente": "Ruiz et al., cap. 9 (§3.3.1)",
+      "actividad": "Conceptualización de la ira",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-kt": {
+      "plan": "Programa de manejo de la ira de Kassinove y Tafrate",
+      "variable": "Ira e impulsividad",
+      "edad": [],
+      "texto": "Usar el termómetro de ira acordado para anotar un episodio: qué ocurrió, qué señales avisaron que la ira subía y qué hizo después. Llevar el registro para identificar el momento en que conviene intervenir.",
+      "fuente": "Kassinove y Tafrate, 2002, caps. 1 y 18",
+      "actividad": "Qué es la ira: definiciones y termómetro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-dbt": {
+      "plan": "Habilidades dialéctico-conductuales para la ira",
+      "variable": "Ira e impulsividad",
+      "edad": [],
+      "texto": "Registro diario de episodios de ira con su intensidad de 0 a 100.",
+      "fuente": "Linehan, 2020, cap. 9 · Elices, cap. 2 (§2.5.3)",
+      "actividad": "Para qué sirve la ira",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-act": {
+      "plan": "Autoayuda guiada con aceptación y compromiso para la ira",
+      "variable": "Ira e impulsividad",
+      "edad": [],
+      "texto": "Anotar un episodio de ira y qué costo tuvo su forma de responder para usted y para otras personas. Llevarlo para revisar sus razones para actuar de otra manera.",
+      "fuente": "Eifert et al., 2006, caps. 1 y 2",
+      "actividad": "Los mitos y el costo de la ira",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "perd-enright": {
+      "plan": "Terapia de perdón: modelo de proceso",
+      "variable": "Resentimiento y perdón",
+      "edad": [],
+      "texto": "Diario de los momentos en que la ofensa vuelve a la mente y lo que siente entonces.",
+      "fuente": "Enright y Fitzgibbons, 2015, cap. 4",
+      "actividad": "Descubrir la herida",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "perd-reach": {
+      "plan": "Grupo REACH para aprender a perdonar",
+      "variable": "Resentimiento y perdón",
+      "edad": [],
+      "texto": "Pensar en una herida concreta con la que se sienta en condiciones de trabajar. Anotar cómo le afecta hoy y qué espera del proceso; revisar la elección en consulta antes de empezar los ejercicios.",
+      "fuente": "Worthington y Scherer, 2006, sesión 1",
+      "actividad": "Perdonar en contexto",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sui-est": {
+      "plan": "Intervención en crisis y plan de seguridad",
+      "variable": "Riesgo suicida y autolesión",
+      "edad": [],
+      "texto": "Mantener accesible el plan de seguridad elaborado en consulta y revisar que los contactos y pasos acordados puedan utilizarse. Seguir ese plan ante las señales de alerta; llevar las dificultades encontradas al próximo contacto acordado.",
+      "fuente": "Deza, 2007",
+      "actividad": "Contacto psicológico",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sui-cams": {
+      "plan": "Evaluación y manejo colaborativo de la suicidalidad (CAMS)",
+      "variable": "Riesgo suicida y autolesión",
+      "edad": [],
+      "texto": "Conservar el plan de estabilización acordado en la sesión y comprobar que puede acceder a los apoyos previstos. Anotar obstáculos para aplicarlo y revisarlos en el siguiente contacto clínico acordado.",
+      "fuente": "Jobes, 2016, caps. 1 y 4",
+      "actividad": "Abrir el tema y la evaluación que hace la persona",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sui-dbt": {
+      "plan": "Programa para la conducta suicida y las autolesiones",
+      "variable": "Riesgo suicida y autolesión",
+      "edad": [],
+      "texto": "Usar la tarjeta diaria acordada para registrar impulsos, conductas y habilidades utilizadas. Mantener accesible el plan de crisis trabajado en consulta y seguir sus pasos cuando corresponda.",
+      "fuente": "Elices, cap. 2 (§2.4.1 y §2.4.3, tabla 3)",
+      "actividad": "Pretratamiento y compromiso",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-est": {
+      "plan": "Intervención motivacional por estadios de cambio",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Registrar el consumo de cada día durante una semana: cantidad, situación y compañía.",
+      "fuente": "OMS, 2023 (DRU1) · Marlatt y Donovan, cap. 9",
+      "actividad": "Tamizaje y retroalimentación personalizada",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-em": {
+      "plan": "Entrevista motivacional",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Observar una ocasión en que consumió o sintió ganas de hacerlo. Anotar qué buscaba conseguir, qué le agradó y qué le preocupó, para explorar sus propias razones de cambio.",
+      "fuente": "Miller y Rollnick, 2023, caps. 1, 2 y 4 · Miller y Arkowitz, 2015, «Basic Engaging Skills of MI»",
+      "actividad": "Vincularse: la primera conversación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-pr": {
+      "plan": "Prevención de recaídas",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Registro de las situaciones en que aparece el deseo de consumir: dónde, con quién, qué sentía.",
+      "fuente": "Marlatt y Donovan, cap. 1",
+      "actividad": "Situaciones de alto riesgo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-mbrp": {
+      "plan": "Prevención de recaídas basada en mindfulness",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Practicar la atención plena ensayada en consulta en una actividad cotidiana. Anotar cuándo funcionó en piloto automático y qué notó al detenerse a observar.",
+      "fuente": "Bowen et al., 2021, parte I y sesión 1",
+      "actividad": "Reunión previa y sesión 1: piloto automático",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-dbt": {
+      "plan": "Habilidades dialéctico-conductuales para conductas adictivas",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Completar los pros y contras de consumir y de cambiar esa conducta. Llevar un ejemplo reciente para revisar qué ocurre cuando aparece el impulso y qué apoyo necesita.",
+      "fuente": "Linehan, 2020, cap. 10 · Elices, cap. 2 (§2.4.3)",
+      "actividad": "Pros y contras del consumo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-act": {
+      "plan": "Aceptación y acción guiada por valores",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Registrar qué se buscaba dejar de sentir en cada consumo y qué pasó después.",
+      "fuente": "Díaz Corbobés, caps. 2.2 y 3.1 · Ruiz et al., cap. 11 (§3.2)",
+      "actividad": "Desesperanza creativa",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-cra": {
+      "plan": "Aproximación de reforzamiento comunitario",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Registrar las situaciones de consumo y de no consumo de la semana.",
+      "fuente": "Meyers y Smith, 1995, cap. 2",
+      "actividad": "Análisis funcional del consumo y de no consumir",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-craft": {
+      "plan": "Reforzamiento comunitario y entrenamiento familiar para familiares de quien rechaza el tratamiento",
+      "variable": "Consumo de sustancias",
+      "edad": [],
+      "texto": "Observar un episodio de consumo o de deseo de consumir de su familiar: qué ocurrió antes y cómo respondió usted. Registrar únicamente lo que pueda observar sin ponerse en riesgo ni confrontarlo.",
+      "fuente": "Meyers y Wolfe, 2004, caps. 1 y 2",
+      "actividad": "Mapa del consumo y línea de base",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "jue-tcc": {
+      "plan": "Terapia cognitivo-conductual centrada en las ideas erróneas sobre el azar",
+      "variable": "Juego y apuestas",
+      "edad": [],
+      "texto": "Escribir qué le gusta del juego, qué detesta de él y sus razones para dejarlo, y el lugar que ocupa hoy el juego en su vida frente al que quiere que ocupe al final.",
+      "fuente": "Ladouceur y Lachance, 2007, caps. 2 y 3",
+      "actividad": "Evaluación previa y motivación para el cambio",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "jue-petry": {
+      "plan": "Terapia cognitivo-conductual breve con refuerzo de los días sin jugar",
+      "variable": "Juego y apuestas",
+      "edad": [],
+      "texto": "Registrar los disparadores de la semana y si logró no jugar ante cada uno.",
+      "fuente": "Petry, 2005, cap. 13 (sesiones 1 y 2)",
+      "actividad": "Días sin jugar y disparadores del juego",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "jue-breve": {
+      "plan": "Consejo breve para el juego de riesgo",
+      "variable": "Juego y apuestas",
+      "edad": [],
+      "texto": "Anotar durante dos semanas los días que juega, el tiempo y el dinero.",
+      "fuente": "Petry, 2005, cap. 14 (anexo 14.1)",
+      "actividad": "Tamizaje y ubicación entre los tipos de jugadores",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "int-juego": {
+      "plan": "Terapia cognitivo-conductual para el trastorno por videojuegos",
+      "variable": "Uso problemático de internet y videojuegos",
+      "edad": [],
+      "texto": "Anotar qué espera ganar si juega menos, en sus propias palabras.",
+      "fuente": "King y Delfabbro, 2018, caps. 5, 6 y 7",
+      "actividad": "Formular el caso y acordar la meta",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "int-uso": {
+      "plan": "Terapia cognitivo-conductual para el uso problemático de internet",
+      "variable": "Uso problemático de internet y videojuegos",
+      "edad": [],
+      "texto": "Llevar una tarjeta con los cinco problemas principales que le trae el uso excesivo y los cinco beneficios de reducirlo, y revisarla en las situaciones de riesgo.",
+      "fuente": "Young y de Abreu, 2011, cap. 9",
+      "actividad": "Reorganizar el tiempo en línea",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-est": {
+      "plan": "Entrevista motivacional por síntoma",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Autorregistro de la alimentación: qué, cuándo, dónde y qué sentía.",
+      "fuente": "Cassin y Geller, 2015, «Engaging» · Marlatt y Donovan, cap. 9",
+      "actividad": "Vincularse y evaluar por síntoma",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-tcc": {
+      "plan": "Terapia cognitivo-conductual mejorada para los trastornos alimentarios",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Autorregistro de todo lo que come y bebe, justo después de hacerlo.",
+      "fuente": "Fairburn y Cooper, 2014, «The Initial Preparatory Session»",
+      "actividad": "Sesión inicial: compromiso y formulación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-agras": {
+      "plan": "Terapia cognitivo-conductual para la bulimia y el trastorno por atracón",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Traer un ejemplo de cómo transcurrió un momento de comida y una pregunta que quiera aclarar. Usar el registro o la lectura solo si se acordaron y se entregaron en consulta.",
+      "fuente": "Agras y Apple, 2008, caps. 1, 3 y 4 (sesión 1)",
+      "actividad": "El modelo, el pronóstico y el registro diario",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-dbt": {
+      "plan": "Terapia dialéctico-conductual para los atracones y la bulimia",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Anotar una razón por la que le resulta difícil cambiar su respuesta ante un impulso de atracón y una razón por la que le gustaría intentar un cambio. Revisarlas en consulta.",
+      "fuente": "Safer et al., 2009, cap. 3",
+      "actividad": "Entrevista previa y compromiso con la abstinencia",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-cft": {
+      "plan": "Autoayuda guiada centrada en la compasión para comer en exceso",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Anotar una ocasión en que recurrió a la comida ante una emoción difícil: qué sentía, cómo se trató a sí misma y qué ocurrió después. Revisar las preguntas que surjan del material acordado.",
+      "fuente": "Goss, 2011, caps. 1 a 3 · Gilbert y Simos, 2022, cap. 22",
+      "actividad": "Entender la relación con la comida sin culpa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-sscm": {
+      "plan": "Manejo clínico de apoyo especializado para la anorexia",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Pensar en lo que espera del tratamiento y en lo que le preocupa de él.",
+      "fuente": "McIntosh et al., 2010, «Orienting the Patient to SSCM» y «First Sessions»",
+      "actividad": "Evaluación y orientación al tratamiento",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-act": {
+      "plan": "Aceptación y compromiso para la anorexia y la bulimia",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Completar las medidas acordadas en consulta y anotar una situación en que pensamientos o emociones sobre la comida o el cuerpo limitaron algo importante. Llevarla para conversar sobre las metas del tratamiento.",
+      "fuente": "Sandoz et al., 2010, cap. 12 (sesión 1)",
+      "actividad": "Consentimiento informado y entrevista inicial",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-pr": {
+      "plan": "Prevención de recaídas",
+      "variable": "Conducta alimentaria",
+      "edad": [],
+      "texto": "Registrar una situación de riesgo de recaída: qué la desencadenó, qué señales reconoció y qué respuesta o apoyo utilizó. Traerla para revisar el plan de mantenimiento.",
+      "fuente": "Marlatt y Donovan, cap. 9",
+      "actividad": "Situaciones de alto riesgo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "estres-tcc": {
+      "plan": "Inoculación de estrés",
+      "variable": "Estrés percibido",
+      "edad": [],
+      "texto": "Autorregistro de situaciones estresantes: qué pasó, qué pensó, qué sintió y qué hizo.",
+      "fuente": "Ruiz et al., cap. 9 (§3.3.1)",
+      "actividad": "Evaluación de los estresores",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "estres-mind": {
+      "plan": "Reducción del estrés basada en mindfulness",
+      "variable": "Estrés percibido",
+      "edad": [],
+      "texto": "Preparar un espacio y un horario para la práctica diaria.",
+      "fuente": "Woods y Rockman, 2021, cap. 3 y sesión de orientación",
+      "actividad": "Orientación y entrevista previa",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "estres-act": {
+      "plan": "Aceptación y acción guiada por valores",
+      "variable": "Estrés percibido",
+      "edad": [],
+      "texto": "Registrar los intentos de no sentir el estrés y qué pasó después.",
+      "fuente": "Díaz Corbobés, caps. 2.2 y 3.1 · Ruiz et al., cap. 11 (§3.2)",
+      "actividad": "Desesperanza creativa",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "estres-hlqi": {
+      "plan": "Autoayuda guiada: «Haz lo que importa»",
+      "variable": "Estrés percibido",
+      "edad": [],
+      "texto": "Si ensayó en consulta el ejercicio de poner los pies en la tierra, repetirlo en un momento tranquilo y anotar qué notó. Si aún no lo ensayó, traer un ejemplo de cuándo le gustaría practicarlo juntos.",
+      "fuente": "OPS, 2022a, parte 1",
+      "actividad": "Poner los pies en la tierra",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "estres-fact": {
+      "plan": "Aceptación y compromiso focalizada en pocas sesiones",
+      "variable": "Estrés percibido",
+      "edad": [],
+      "texto": "Notar durante la semana una situación en que usó su estrategia de siempre y qué le costó.",
+      "fuente": "Strosahl et al., 2012, caps. 4 y 5",
+      "actividad": "Entrevista focalizada",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sp-pst": {
+      "plan": "Terapia de solución de problemas",
+      "variable": "Solución de problemas y toma de decisiones",
+      "edad": [],
+      "texto": "Elegir un problema actual y describir qué ocurre, cuándo, con quién y qué ha intentado hacer. Anotar qué cambio concreto le gustaría lograr para trabajarlo en la siguiente sesión.",
+      "fuente": "D'Zurilla, 1986, cap. 8 (unidad 1)",
+      "actividad": "Estructuración inicial y autorregistro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sp-pm": {
+      "plan": "Enfrentando problemas plus (EP+)",
+      "variable": "Solución de problemas y toma de decisiones",
+      "edad": [],
+      "texto": "Revisar la presentación de Enfrentando problemas plus entregada en consulta. Anotar qué problema cotidiano quiere priorizar y qué le dificulta abordarlo.",
+      "fuente": "OMS, 2016, caps. 4 y 5",
+      "actividad": "Evaluación y comprensión de la adversidad",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "evit-matriz": {
+      "plan": "Matriz ACT: movimientos hacia y movimientos de alejamiento",
+      "variable": "Afrontamiento evitativo e inflexibilidad psicológica",
+      "edad": [],
+      "texto": "Anotar una acción que le acercó a algo importante y otra que hizo para alejarse de una experiencia incómoda. Describir qué ocurrió antes y qué efecto tuvo cada una.",
+      "fuente": "Polk et al., 2016, paso 1",
+      "actividad": "Presentar el punto de vista de la matriz",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "burnout-act": {
+      "plan": "Entrenamiento en aceptación y compromiso en el trabajo (2 + 1)",
+      "variable": "Estrés laboral y burnout",
+      "edad": [],
+      "texto": "Revisar el material de la sesión y anotar una situación laboral difícil: qué sintió, qué hizo para manejarlo y cómo influyó en la forma de trabajar que desea mantener.",
+      "fuente": "Flaxman et al., 2013, cap. 5 (parte I)",
+      "actividad": "Presentación y las dos habilidades",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "trans-ipt": {
+      "plan": "Psicoterapia interpersonal: transición de rol",
+      "variable": "Adaptación a cambios y transiciones vitales",
+      "edad": [],
+      "texto": "Anotar los cambios que trajo la transición en las relaciones y en la rutina.",
+      "fuente": "Weissman et al., 2018, caps. 4 y 7",
+      "actividad": "Fase inicial: nombrar la transición",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "trans-tipg": {
+      "plan": "Terapia interpersonal grupal: cambios en la vida",
+      "variable": "Adaptación a cambios y transiciones vitales",
+      "edad": [],
+      "texto": "Anotar un cambio reciente en una relación y qué le gustaría poder conversar o hacer de otra manera. Llevar el ejemplo para precisar su meta para el grupo.",
+      "fuente": "OPS, 2022b, caps. 1 y 2",
+      "actividad": "Sesión individual previa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "estres-cuid": {
+      "plan": "Apoyo psicológico a cuidadores",
+      "variable": "Sobrecarga del cuidador",
+      "edad": [],
+      "texto": "Registrar durante una semana las tareas de cuidado y los momentos de mayor tensión.",
+      "fuente": "OMS, 2017 (recomendación 13)",
+      "actividad": "Identificar al cuidador y sus necesidades",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cuid-isupport": {
+      "plan": "iSupport: formación y apoyo para cuidadores de personas con demencia",
+      "variable": "Sobrecarga del cuidador",
+      "edad": [],
+      "texto": "Anotar una dificultad cotidiana del cuidado de la persona con demencia y una duda que surgió al revisar el material acordado. Llevarlas para elegir qué apoyo necesita primero.",
+      "fuente": "OMS, 2019, módulos 1 y 2 (lección 1)",
+      "actividad": "Conocer la demencia y el rol de cuidador",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sol-multi": {
+      "plan": "Intervención combinada para la soledad y el aislamiento",
+      "variable": "Soledad y aislamiento social",
+      "edad": [],
+      "texto": "Registrar en la semana los contactos que tuvo y cómo se sintió en cada uno.",
+      "fuente": "OMS, 2025, caps. 1 y 8",
+      "actividad": "Evaluar la soledad, el aislamiento y la red",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "mig-capas": {
+      "plan": "Apoyo psicosocial por capas para población migrante y desplazada",
+      "variable": "Migración y desplazamiento forzado",
+      "edad": [],
+      "texto": "Identificar una necesidad prioritaria y un recurso de apoyo al que la persona o familia considere posible acudir. Llevar la información disponible para revisar juntos cómo acceder a ese apoyo.",
+      "fuente": "ACNUR, 2013, cap. 4 (principios 1 y 3)",
+      "actividad": "Consultar a la comunidad y evaluar necesidades y recursos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "min-afirm": {
+      "plan": "Práctica psicológica afirmativa ante el estrés de minorías",
+      "variable": "Estrés de minorías en la diversidad sexual y de género",
+      "edad": [],
+      "texto": "Si resulta seguro, anotar una situación de rechazo o discriminación y otra en que se sintió reconocido o apoyado. Llevar lo que desee compartir para identificar necesidades y apoyos.",
+      "fuente": "APA, 2000, guías 1 y 2 · APA, 2015, guías 4 y 5",
+      "actividad": "Revisar las propias actitudes y conocimientos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "min-act": {
+      "plan": "Aceptación y compromiso para el estigma interiorizado y la vergüenza",
+      "variable": "Estrés de minorías en la diversidad sexual y de género",
+      "edad": [],
+      "texto": "Anotar situaciones de la semana en que anticipó rechazo y qué hizo.",
+      "fuente": "Skinta y Curtin, 2016, caps. 3, 5 y 11",
+      "actividad": "El estrés de minorías y la propia historia",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hhss-tcc": {
+      "plan": "Entrenamiento en habilidades sociales",
+      "variable": "Habilidades sociales",
+      "edad": [],
+      "texto": "Registrar una situación social que quiera mejorar: qué deseaba conseguir, qué dijo o hizo, cómo respondió la otra persona y qué le gustaría ensayar en consulta.",
+      "fuente": "Ruiz et al., cap. 6 (§3.3.1) · Caballo, 2007, cap. 5",
+      "actividad": "Evaluación y selección de habilidades",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hhss-dbt": {
+      "plan": "Efectividad interpersonal",
+      "variable": "Habilidades sociales",
+      "edad": [],
+      "texto": "Elegir una situación interpersonal y anotar tres prioridades: qué necesita obtener, qué quiere cuidar de la relación y cómo desea respetarse a sí misma. Llevarla para preparar una respuesta.",
+      "fuente": "Elices, cap. 2 (§2.5.4) · Linehan, 2020, cap. 8",
+      "actividad": "Qué es prioritario",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hhss-fap": {
+      "plan": "Psicoterapia analítica funcional",
+      "variable": "Habilidades sociales",
+      "edad": [],
+      "texto": "Anotar qué le resultó útil o difícil del encuentro y qué le gustaría decir al terapeuta en la próxima sesión. Relacionarlo, si puede, con una situación parecida fuera de consulta.",
+      "fuente": "Holman et al., 2017, cap. 7 · Valero y Ferro, 2015, cap. 2, «La fase inicial»",
+      "actividad": "Presentar la terapia y acordar la retroalimentación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "par-tip": {
+      "plan": "Terapia integral de pareja",
+      "variable": "Malestar en la pareja",
+      "edad": [],
+      "texto": "Completar por separado las medidas de satisfacción y conflicto acordadas. Anotar cada integrante una situación que represente la dificultad que desean trabajar, para revisarla en consulta.",
+      "fuente": "Christensen et al., 2014, «Assessment» · Barraca, 2015, cap. 9 (§9.1 y §9.2)",
+      "actividad": "Evaluación conjunta e individual",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "par-act": {
+      "plan": "Aceptación y compromiso en la relación de pareja",
+      "variable": "Malestar en la pareja",
+      "edad": [],
+      "texto": "Anotar las historias que aparecen en una discusión.",
+      "fuente": "Dahl et al., 2013, cap. 5",
+      "actividad": "Historias, reglas y roles",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "par-eft": {
+      "plan": "Terapia de pareja focalizada en las emociones",
+      "variable": "Malestar en la pareja",
+      "edad": [],
+      "texto": "Observar durante la semana cuándo aparece la discusión de siempre.",
+      "fuente": "Johnson, 2004, cap. 5 (pasos 1 y 2)",
+      "actividad": "Alianza y evaluación de la pareja",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "par-gottman": {
+      "plan": "Confianza y sintonía emocional en la pareja: método Gottman",
+      "variable": "Malestar en la pareja",
+      "edad": [],
+      "texto": "Notar una ocasión en que usted o su pareja buscó atención, ayuda o cercanía y cómo respondió la otra persona. Llevar el ejemplo para revisar cómo se conectan en la vida diaria.",
+      "fuente": "Gottman, 2011, cap. 1",
+      "actividad": "Evaluar la relación y los patrones del conflicto",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "par-infidelidad": {
+      "plan": "Tratamiento integrador para recuperarse de una infidelidad",
+      "variable": "Malestar en la pareja",
+      "edad": [],
+      "texto": "Anotar las principales preocupaciones y necesidades para continuar el proceso, cada integrante por separado. Revisarlas en consulta junto con las dudas sobre el material de lectura acordado.",
+      "fuente": "Baucom et al., 2009, caps. 2 y 3",
+      "actividad": "Evaluación inicial y formulación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sex-deseo": {
+      "plan": "Terapia cognitiva basada en mindfulness y focalización sensorial para el bajo deseo y la poca excitación en la mujer",
+      "variable": "Disfunciones sexuales",
+      "edad": [],
+      "texto": "Anotar durante la semana los momentos en que aparece algo de interés o de excitación y qué los precedió.",
+      "fuente": "Hall y Binik, 2020, cap. 1, «Assessment and Diagnostic Issues» y figura 1.1",
+      "actividad": "Evaluación biopsicosocial con la mujer y con la pareja",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sex-erecion": {
+      "plan": "Terapia sexual cognitivo-conductual combinada con el tratamiento médico para la disfunción eréctil",
+      "variable": "Disfunciones sexuales",
+      "edad": [],
+      "texto": "Describir un encuentro reciente: qué pensó, qué sintió y qué hicieron.",
+      "fuente": "Hall y Binik, 2020, cap. 4, «Integrative Biopsychosocial Assessment of ED»",
+      "actividad": "Evaluación integrativa y coordinación con urología",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sex-orgasmo": {
+      "plan": "Masturbación dirigida para los problemas de orgasmo en la mujer",
+      "variable": "Disfunciones sexuales",
+      "edad": [],
+      "texto": "Anotar qué ideas sobre el orgasmo y la masturbación aprendió en su historia.",
+      "fuente": "Hall y Binik, 2020, cap. 5, «Assessment of Women Presenting with Orgasm Issues» y «Pharmacological Interventions»",
+      "actividad": "Evaluación y permiso",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sex-ep": {
+      "plan": "Técnica de parar y empezar y terapia sexual para la eyaculación precoz",
+      "variable": "Disfunciones sexuales",
+      "edad": [],
+      "texto": "Anotar las estrategias que usa para retrasar la eyaculación y qué efecto tienen.",
+      "fuente": "Hall y Binik, 2020, cap. 6, «Evaluation» y «The First Decisions»",
+      "actividad": "Evaluación con la pareja y decisión compartida",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sex-dolor": {
+      "plan": "Terapia cognitivo-conductual de pareja para el dolor genito-pélvico",
+      "variable": "Disfunciones sexuales",
+      "edad": [],
+      "texto": "Pensar cada uno qué querría recuperar de su vida sexual.",
+      "fuente": "Hall y Binik, 2020, cap. 8, caso de Nadine y Ben",
+      "actividad": "Evaluación en pareja y metas realistas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sex-vaginismo": {
+      "plan": "Exposición en vivo asistida por el terapeuta para la imposibilidad de la penetración vaginal",
+      "variable": "Disfunciones sexuales",
+      "edad": [],
+      "texto": "Anotar los temores principales ante la penetración y qué anticipa que podría ocurrir. Llevarlos para revisar la evaluación y preparar la jerarquía con el terapeuta.",
+      "fuente": "Hall y Binik, 2020, cap. 9, «Assessment and Diagnostic Issues» y caso de Julie y Peter",
+      "actividad": "Evaluación y sesión informativa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "vp-oms": {
+      "plan": "Respuesta de primera línea a la violencia de pareja",
+      "variable": "Violencia de pareja",
+      "edad": [],
+      "texto": "Conservar de la forma segura acordada los apoyos y el próximo contacto que decidió utilizar. Revisar qué necesita para acceder a ellos; si llevar un registro escrito supone riesgo, comentarlo verbalmente en consulta.",
+      "fuente": "OMS, 2013, recomendaciones 2 a 4",
+      "actividad": "Preguntar por la violencia cuando hay indicios",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "vp-ctt": {
+      "plan": "Terapia cognitiva del trauma para mujeres que vivieron maltrato de pareja",
+      "variable": "Violencia de pareja",
+      "edad": [],
+      "texto": "Si es seguro, anotar una situación reciente en que le costó expresar una necesidad o proteger un límite. Llevarla para revisar opciones de respuesta y apoyo, sin confrontar a quien pueda ponerla en riesgo.",
+      "fuente": "Kubany y Ralston, 2008, módulos 1 y 5",
+      "actividad": "Inicio del tratamiento y estrategias para abogar por sí misma",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pers-esq": {
+      "plan": "Terapia de esquemas",
+      "variable": "Patrones interpersonales y de personalidad",
+      "edad": [],
+      "texto": "Anotar un momento de malestar en una relación: qué pasó, qué interpretación surgió y cómo respondió. Si recibió material sobre los esquemas en consulta, traer también una pregunta.",
+      "fuente": "Young et al., 2015, cap. 2",
+      "actividad": "Evaluación y educación en esquemas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pers-act": {
+      "plan": "Aceptación y compromiso con conciencia de los esquemas",
+      "variable": "Patrones interpersonales y de personalidad",
+      "edad": [],
+      "texto": "Diario de experiencias interpersonales: disparador, esquema, emoción y conducta.",
+      "fuente": "McKay et al., 2012, caps. 2 y 3 y apéndice C (sesión 1)",
+      "actividad": "Esquemas, disparadores y conductas de afrontamiento",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pers-fap": {
+      "plan": "Psicoterapia analítica funcional para los problemas del yo",
+      "variable": "Patrones interpersonales y de personalidad",
+      "edad": [],
+      "texto": "Anotar durante la semana situaciones en que no supo qué quería, sentía o pensaba, y quién estaba presente.",
+      "fuente": "Kohlenberg y Tsai, 2022, cap. 6, «Desarrollo desadaptativo de la experiencia del Yo» e «Implicaciones clínicas» · Valero y Ferro, 2015, cap. 10, «Trastornos leves del yo», «Trastornos graves del yo» y «La evaluación del yo»",
+      "actividad": "Evaluar los problemas del yo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tlp-dbt": {
+      "plan": "Terapia dialéctico-conductual estándar",
+      "variable": "Trastorno límite de la personalidad",
+      "edad": [],
+      "texto": "Escribir las razones para comprometerse con el tratamiento.",
+      "fuente": "Neacsiu y Linehan, 2014, «Pretreatment: Orienting and Commitment» y «Case Study»",
+      "actividad": "Pretratamiento: orientación y compromiso",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tlp-esq": {
+      "plan": "Terapia de esquemas para el trastorno límite",
+      "variable": "Trastorno límite de la personalidad",
+      "edad": [],
+      "texto": "Anotar una situación que activó una emoción intensa, qué necesitó en ese momento y cómo respondió. Llevarla para reconocer juntos los estados emocionales que se trabajarán.",
+      "fuente": "Arntz y van Genderen, 2021, caps. 2 y 3",
+      "actividad": "Inicio: modelo de modos y acuerdos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tlp-mbt": {
+      "plan": "Tratamiento basado en la mentalización",
+      "variable": "Trastorno límite de la personalidad",
+      "edad": [],
+      "texto": "Leer la formulación y anotar lo que cambiaría.",
+      "fuente": "Bateman y Fonagy, 2016, caps. 4 y 5",
+      "actividad": "Evaluación, diagnóstico y formulación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-wbt": {
+      "plan": "Terapia de bienestar",
+      "variable": "Bienestar psicológico",
+      "edad": [],
+      "texto": "Anotar un momento de bienestar, aunque sea breve: qué estaba haciendo, cómo lo reconoció y qué pensamiento o situación lo interrumpió. Llevarlo para empezar el diario de bienestar.",
+      "fuente": "Fava, 2016, caps. 4 y 5",
+      "actividad": "La historia y la autoterapia",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-fortalezas": {
+      "plan": "Intervenciones con fortalezas del carácter",
+      "variable": "Bienestar psicológico",
+      "edad": [],
+      "texto": "Anotar cada día un momento en que usó alguna de sus fortalezas.",
+      "fuente": "Niemiec, 2018, cap. 3",
+      "actividad": "Conocer las propias fortalezas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ins-tcc": {
+      "plan": "Terapia cognitivo-conductual para el insomnio",
+      "variable": "Insomnio",
+      "edad": [],
+      "texto": "Completar el diario de sueño cada mañana con las horas aproximadas de acostarse, dormirse y levantarse, los despertares y las siestas. Llevarlo a la siguiente consulta para acordar las pautas.",
+      "fuente": "Kaplan y Harvey, 2014, «Assessment» y «Functional Analysis and Case Formulation»",
+      "actividad": "Evaluación, diario de sueño y formulación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ins-perlis": {
+      "plan": "Tratamiento conductual del insomnio sesión por sesión",
+      "variable": "Insomnio",
+      "edad": [],
+      "texto": "Completar cada mañana el diario de sueño acordado: tiempo en cama, tiempo estimado dormido, despertares y siestas. Traerlo para revisar el patrón antes de ajustar los horarios.",
+      "fuente": "Perlis et al., 2005, cap. 4 (sesión 1)",
+      "actividad": "Evaluación y diario de sueño de base",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ins-act": {
+      "plan": "Aceptación y compromiso para el insomnio",
+      "variable": "Insomnio",
+      "edad": [],
+      "texto": "Llevar el diario de sueño cada mañana y anotar qué hizo durante los periodos de vigilia para intentar dormir. Revisarlo en la próxima sesión junto con el costo de esos esfuerzos.",
+      "fuente": "El Rafihi-Ferreira, 2024, caps. 7 y 15 (sesión 1)",
+      "actividad": "Vínculo, propuesta de trabajo y educación sobre el sueño",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ins-mbti": {
+      "plan": "Terapia basada en mindfulness para el insomnio",
+      "variable": "Insomnio",
+      "edad": [],
+      "texto": "Llevar el diario de sueño y anotar un momento en que apareció tensión por intentar dormir. Traer el registro para comprender el patrón y preparar la práctica de atención plena.",
+      "fuente": "Ong, 2017, cap. 4",
+      "actividad": "Evaluación previa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "psi-tcc": {
+      "plan": "Terapia cognitivo-conductual para la psicosis",
+      "variable": "Síntomas psicóticos",
+      "edad": [],
+      "texto": "Registrar cuándo aparecen las voces o las ideas, qué pasaba y qué hizo.",
+      "fuente": "Tarrier y Taylor, 2014, «Assessment» y «The Context of Therapy»",
+      "actividad": "Vínculo y evaluación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "psi-morrison": {
+      "plan": "Terapia cognitiva para la psicosis basada en la formulación",
+      "variable": "Síntomas psicóticos",
+      "edad": [],
+      "texto": "Pensar qué querría cambiar si la terapia funcionara.",
+      "fuente": "Morrison et al., 2004, caps. 6 y 7",
+      "actividad": "Enganche",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "psi-act": {
+      "plan": "Aceptación y compromiso para las voces y las ideas delirantes",
+      "variable": "Síntomas psicóticos",
+      "edad": [],
+      "texto": "Registrar las voces de la semana y lo que hizo con ellas.",
+      "fuente": "Morris et al., 2013, caps. 4 a 7",
+      "actividad": "Vínculo y formulación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "psi-mhgap": {
+      "plan": "Manejo psicosocial de la psicosis en atención no especializada",
+      "variable": "Síntomas psicóticos",
+      "edad": [],
+      "texto": "Seguir la rutina de descanso y los apoyos acordados con el equipo tratante. Anotar cambios de sueño o dificultades para sostener esa rutina y comunicarlos en el contacto previsto.",
+      "fuente": "OPS, 2017, módulo PSI (2.1)",
+      "actividad": "Psicoeducación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-fft": {
+      "plan": "Tratamiento centrado en la familia",
+      "variable": "Estabilidad del ánimo en el trastorno bipolar",
+      "edad": [],
+      "texto": "Gráfico diario del ánimo, del sueño y de los acontecimientos.",
+      "fuente": "Miklowitz, 2014, «Pretreatment Assessments»",
+      "actividad": "Evaluación de la familia y registro del ánimo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-pe": {
+      "plan": "Psicoeducación grupal para el trastorno bipolar: programa de Barcelona",
+      "variable": "Estabilidad del ánimo en el trastorno bipolar",
+      "edad": [],
+      "texto": "Revisar el material de la sesión y anotar dudas sobre el trastorno, su tratamiento y las señales personales de cambio. Llevarlas al siguiente encuentro del programa.",
+      "fuente": "Colom y Vieta, 2006, sesión 1",
+      "actividad": "Presentación y reglas del grupo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-wbt": {
+      "plan": "Terapia cognitivo-conductual seguida de terapia de bienestar para la ciclotimia",
+      "variable": "Estabilidad del ánimo en el trastorno bipolar",
+      "edad": [],
+      "texto": "Registro de malestar con situación, intensidad y pensamientos.",
+      "fuente": "Fava, 2016, cap. 15",
+      "actividad": "Evaluación y registro del malestar",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-safren": {
+      "plan": "Terapia cognitivo-conductual para el TDAH en adultos",
+      "variable": "TDAH en adultos",
+      "edad": [],
+      "texto": "Registrar una dificultad de atención u organización de la semana: qué tarea intentaba hacer, qué la interrumpió y cómo trató de retomarla. Llevar el ejemplo y las dudas del material acordado.",
+      "fuente": "Safren et al., 2017, caps. 1 a 3",
+      "actividad": "Información sobre el TDAH y sesión con la familia",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-solanto": {
+      "plan": "Terapia grupal para la disfunción ejecutiva",
+      "variable": "TDAH en adultos",
+      "edad": [],
+      "texto": "Registrar una tarea de la semana que haya costado organizar: cómo intentó empezar, qué lo interrumpió y qué quedó pendiente. Llevarla para elegir el sistema de organización.",
+      "fuente": "Solanto, 2011, sesión 1",
+      "actividad": "Hacer las paces con el diagnóstico",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dca-atencion-memoria": {
+      "plan": "Rehabilitación de la atención y la memoria con ayudas externas",
+      "variable": "Daño cerebral adquirido",
+      "edad": [],
+      "texto": "Lista, con un familiar, de las tareas diarias que más cuesta hacer desde la lesión.",
+      "fuente": "Sohlberg y Mateer, 2001, caps. 1 y 4",
+      "actividad": "Evaluación funcional y metas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dca-ejecutivas": {
+      "plan": "Funciones ejecutivas y conciencia de los déficits",
+      "variable": "Daño cerebral adquirido",
+      "edad": [],
+      "texto": "Con el apoyo acordado, describir una tarea cotidiana que se haya vuelto difícil desde la lesión: qué pasos logró y dónde necesitó ayuda. Llevar el ejemplo para ajustar las metas y los apoyos.",
+      "fuente": "Sohlberg y Mateer, 2001, cap. 9",
+      "actividad": "Evaluar la conciencia de los déficits",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dca-ajuste": {
+      "plan": "Ajuste emocional, conducta y trabajo con la familia",
+      "variable": "Daño cerebral adquirido",
+      "edad": [],
+      "texto": "Con el apoyo que necesite, anotar un cambio cotidiano que haya notado desde la lesión y una pregunta que quiera resolver. Si recibió material en consulta, puede señalar en él lo que reconoce.",
+      "fuente": "Sohlberg y Mateer, 2001, cap. 12",
+      "actividad": "Alianza, validación y psicoeducación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dca-leve": {
+      "plan": "Traumatismo craneoencefálico leve: información temprana y síntomas persistentes",
+      "variable": "Daño cerebral adquirido",
+      "edad": [],
+      "texto": "Revisar la información entregada y seguir el plan de regreso gradual indicado por el equipo. Anotar qué actividades pudo realizar, qué síntomas aparecieron y qué dudas necesita aclarar.",
+      "fuente": "Sohlberg y Mateer, 2001, cap. 15",
+      "actividad": "Información temprana",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "preq-tcc": {
+      "plan": "Preparación psicológica para la cirugía",
+      "variable": "Ansiedad prequirúrgica",
+      "edad": [],
+      "texto": "Escribir las preguntas que quiere hacerle al equipo de cirugía o de anestesia.",
+      "fuente": "Vergara-Romero et al., 2017 · Ruiz et al., cap. 9 (§3.3.1)",
+      "actividad": "Valorar la amenaza y lo que la persona necesita saber",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hosp-ans": {
+      "plan": "Manejo de la ansiedad en la persona hospitalizada",
+      "variable": "Ansiedad hospitalaria",
+      "edad": [],
+      "texto": "Anotar las preocupaciones que aparezcan y las preguntas para el equipo.",
+      "fuente": "Jongsma et al., 2021, «Medical Issues», intervenciones 1 a 10 y 17",
+      "actividad": "Evaluación de la ansiedad y de sus miedos",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hosp-ans-apt": {
+      "plan": "TCC para la ansiedad durante el tratamiento médico",
+      "variable": "Ansiedad hospitalaria",
+      "edad": [],
+      "texto": "Practicar la relajación que se ensayó en consulta, en la forma compatible con su condición médica. Anotar qué ayudó o dificultó hacerla para revisarlo en el próximo contacto.",
+      "fuente": "Moorey y Greer, 2012, caps. 8 y 11",
+      "actividad": "Relajación y control de síntomas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hosp-dep": {
+      "plan": "Pérdidas, activación y solución de problemas en la persona hospitalizada",
+      "variable": "Depresión hospitalaria",
+      "edad": [],
+      "texto": "Identificar una actividad o contacto significativo que sea posible durante la hospitalización. Conversar con el equipo sobre cómo realizarlo y comentar en el próximo encuentro cómo resultó.",
+      "fuente": "Jongsma et al., 2021, «Medical Issues», intervenciones 3 a 10 y 19",
+      "actividad": "Evaluación de la depresión y del riesgo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hosp-dep-apt": {
+      "plan": "TCC para la indefensión y la depresión durante el tratamiento médico",
+      "variable": "Depresión hospitalaria",
+      "edad": [],
+      "texto": "Realizar la actividad breve acordada y compatible con las indicaciones médicas. Anotar el ánimo antes y después, así como cualquier dificultad para llevarla a cabo.",
+      "fuente": "Moorey y Greer, 2012, cap. 8",
+      "actividad": "Actividad y dominio",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "adh-tcc": {
+      "plan": "Adherencia por dimensiones: información, motivación y habilidades",
+      "variable": "Adherencia al tratamiento",
+      "edad": [],
+      "texto": "Registrar durante una semana cada toma o conducta del tratamiento y lo que pasó cuando no se hizo.",
+      "fuente": "OMS, 2003, caps. I y V",
+      "actividad": "Evaluar las cinco dimensiones",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "adh-em": {
+      "plan": "Entrevista motivacional en salud",
+      "variable": "Adherencia al tratamiento",
+      "edad": [],
+      "texto": "Elegir una indicación del tratamiento que le resulte difícil seguir. Anotar qué le preocupa, qué beneficio espera y qué obstáculo encuentra para comentarlo en la próxima consulta.",
+      "fuente": "Rollnick et al., 2023, cap. 7 («Engaging») y cap. 8 («Reassure: “There Will Be No Lecture!”»)",
+      "actividad": "Conectar con la persona",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dolor-tc": {
+      "plan": "Terapia cognitiva para el dolor crónico",
+      "variable": "Dolor crónico",
+      "edad": [],
+      "texto": "Escribir una actividad importante que le gustaría recuperar o mantener pese al dolor y qué dificultad encuentra. Llevarla para acordar una meta realista y un primer paso.",
+      "fuente": "Thorn, 2017, módulo 1",
+      "actividad": "El cerebro en el dolor y las metas para vivir",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dolor-act": {
+      "plan": "Aceptación y compromiso para el dolor crónico",
+      "variable": "Dolor crónico",
+      "edad": [],
+      "texto": "Realizar el paso pequeño hacia una actividad valiosa que se acordó en consulta, dentro de sus posibilidades e indicaciones médicas. Anotar qué pensamientos, sensaciones o barreras aparecieron.",
+      "fuente": "Dahl et al., 2005, cap. 10, sesión 1 · cap. 6",
+      "actividad": "Brújula de vida y desesperanza creativa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cog-ecg": {
+      "plan": "Estimulación cognitiva en grupo y su mantenimiento",
+      "variable": "Deterioro cognitivo y demencia leve a moderada",
+      "edad": [],
+      "texto": "Que la familia anote durante dos semanas las dificultades que observa en la vida diaria.",
+      "fuente": "OMS, 2017, recomendación 5 y recuadro 4",
+      "actividad": "Identificar el deterioro cognitivo y derivar",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hab-comb": {
+      "plan": "Diseño del cambio de conducta con el modelo COM-B",
+      "variable": "Hábitos de salud",
+      "edad": [],
+      "texto": "Registrar la conducta que quiere cambiar: cuándo ocurre, qué facilita hacerla y qué lo dificulta. Llevar un ejemplo para revisar si necesita habilidades, oportunidades o apoyo motivacional.",
+      "fuente": "Michie et al., 2014, cap. 1 (pasos 1 a 3)",
+      "actividad": "Definir y especificar la conducta objetivo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "perd-est": {
+      "plan": "Intervención ajustada a la reacción ante la pérdida",
+      "variable": "Impacto psicológico de una pérdida corporal o un diagnóstico grave",
+      "edad": [],
+      "texto": "Identificar qué necesita hoy para afrontar la pérdida o el cambio de salud y a quién desearía pedir apoyo. Retomar esa necesidad en el próximo encuentro, de forma verbal si escribir resulta fatigante.",
+      "fuente": "Deza, 2007 · Livneh y Antonak, 2005",
+      "actividad": "Choque: primer contacto en la crisis",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "perd-apt": {
+      "plan": "Terapia psicológica adyuvante en el cáncer",
+      "variable": "Impacto psicológico de una pérdida corporal o un diagnóstico grave",
+      "edad": [],
+      "texto": "Registrar las situaciones de más malestar y los pensamientos que aparecen.",
+      "fuente": "Moorey y Greer, 2012, caps. 2, 5 y 6",
+      "actividad": "Evaluación y estilo de ajuste",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "perd-taylor": {
+      "plan": "Terapia cognitivo-conductual para la enfermedad crónica y la discapacidad",
+      "variable": "Impacto psicológico de una pérdida corporal o un diagnóstico grave",
+      "edad": [],
+      "texto": "Registrar los síntomas y su relación con el ánimo y las actividades.",
+      "fuente": "Taylor, 2006, caps. 3, 4 y 10",
+      "actividad": "Evaluación inicial y orientación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "fin-sent": {
+      "plan": "Psicoterapia centrada en el sentido",
+      "variable": "Sufrimiento y sentido al final de la vida",
+      "edad": [],
+      "texto": "Pensar en una experiencia, vínculo o actividad que le haya dado sentido a su vida y que desee comentar. Si se acordó una lectura y está a su alcance, señalar las ideas que quisiera conversar.",
+      "fuente": "Breitbart y Poppito, 2014, sesión 1",
+      "actividad": "Conceptos y fuentes de sentido",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "fin-apt": {
+      "plan": "TCC en la enfermedad avanzada y terminal",
+      "variable": "Sufrimiento y sentido al final de la vida",
+      "edad": [],
+      "texto": "Realizar la actividad valiosa acordada, ajustada a su energía y condición médica. Comentar en el siguiente encuentro qué significado tuvo y qué apoyo necesitó.",
+      "fuente": "Moorey y Greer, 2012, cap. 14",
+      "actividad": "Síntomas físicos y calidad de vida",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    }
+  },
+  "infancia": {
+    "ans-kendall": {
+      "plan": "Terapia cognitivo-conductual individual: el plan de cuatro pasos",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Anotar o dibujar una situación en que te sentiste bien y otra en que sentiste miedo o preocupación. Traerlas para conversar sobre lo que pensaste, sentiste e hiciste.",
+      "fuente": "Palitz et al., 2019, «Sessions 1–4»",
+      "actividad": "Vínculo y presentación del programa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-familia": {
+      "plan": "Terapia cognitivo-conductual en grupo con la familia",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Contar en casa una idea aprendida en el encuentro y escoger juntos una situación en que aparezca la ansiedad. Traer ese ejemplo para trabajar con el niño y su cuidador.",
+      "fuente": "Pahl y Barrett, 2010 (tablas 5.1 a 5.3)",
+      "actividad": "Conocerse y normalizar la ansiedad",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-pu": {
+      "plan": "Protocolo unificado para niños y adolescentes",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registrar una experiencia emocional: qué pasó antes, qué pensaste y sentiste, qué hiciste y cómo terminó. Si necesitas ayuda, acordar con qué adulto completar el registro.",
+      "fuente": "Ehrenreich-May et al., 2022, caps. 11 y 12 (sesiones 1 y 2)",
+      "actividad": "Conocer cómo me siento",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-act": {
+      "plan": "Aceptación y compromiso para adolescentes",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Anotar una situación en que intentaste evitar o quitarte la ansiedad: qué hiciste y qué actividad importante dejaste de hacer. Traerla para revisar otras formas de responder.",
+      "fuente": "Turrell y Bell, 2016, sesión 1",
+      "actividad": "Evaluación con mirada de ACT",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-kidflex": {
+      "plan": "Aceptación y compromiso para niños: el Kidflex",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Notar qué haces cuando aparece el miedo o la preocupación. Contar o dibujar un ejemplo para revisarlo en la próxima sesión, con ayuda del cuidador si se acordó.",
+      "fuente": "Black, 2022, cap. 2",
+      "actividad": "Primera sesión y conceptualización del caso",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-mbctc": {
+      "plan": "Terapia cognitiva basada en mindfulness para niños ansiosos",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "El cuidador practicará la atención plena ensayada en consulta en un momento tranquilo del día. Anotará qué notó y qué le dificultó sostener la atención, para preparar su participación en el programa.",
+      "fuente": "Semple y Lee, 2011, cap. 5",
+      "actividad": "Entrevista inicial y orientación de los padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-bcc": {
+      "plan": "Versión breve del programa de Kendall (ocho sesiones)",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Anotar o dibujar una situación de miedo de la semana: qué ocurrió, qué sintió el cuerpo y qué hiciste. Traerla para comenzar el trabajo con el plan de afrontamiento.",
+      "fuente": "Kendall et al., 2013, sesión 1",
+      "actividad": "Vínculo, orientación y reunión con los padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-space": {
+      "plan": "Programa para padres para reducir la acomodación a la ansiedad (SPACE)",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador anotará una ocasión en que el niño pidió ayuda por ansiedad, qué le respondió y qué terminó haciendo por él. Llevará el ejemplo para reconocer exigencias, apoyo y protección excesiva.",
+      "fuente": "Lebowitz, 2020, caps. 1 a 5",
+      "actividad": "Entender la ansiedad y la acomodación familiar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ans-act-padres": {
+      "plan": "Aceptación y compromiso para padres de niños ansiosos",
+      "variable": "Ansiedad y miedos",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Registrar una secuencia de ansiedad en la familia: qué hizo el niño, qué sintió e hizo usted y cómo respondió el niño después. Traerla para revisar juntos ese intercambio.",
+      "fuente": "McCurry, 2009, caps. 2 y 3",
+      "actividad": "El baile de la ansiedad",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "rech-tcc": {
+      "plan": "Tratamiento según la función del rechazo escolar",
+      "variable": "Rechazo escolar",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registro diario de asistencia, malestar y lo que pasó en la mañana.",
+      "fuente": "Kearney y Albano, 2018, caps. 2 y 3",
+      "actividad": "Evaluación de la función y del contexto escolar",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "mutismo-conductual": {
+      "plan": "Intervención conductual en casa, en el colegio y en la comunidad",
+      "variable": "Mutismo selectivo",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador anotará con quién, dónde y en qué actividades el niño habla con más tranquilidad. Llevará esa información para acordar cómo observar su comunicación sin presionarlo a hablar.",
+      "fuente": "Kotrba, 2015, caps. 1 y 3",
+      "actividad": "Evaluación: con quién, dónde y cómo se comunica",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "toc-erp": {
+      "plan": "Exposición con prevención de rituales",
+      "variable": "Obsesiones y compulsiones",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Anotar durante la semana las obsesiones y los rituales que aparecen.",
+      "fuente": "Franklin et al., 2010, «The Treatment Model and the Role of Assessment»",
+      "actividad": "Evaluación y psicoeducación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "toc-space": {
+      "plan": "Programa para padres para reducir la acomodación a las obsesiones y compulsiones (SPACE)",
+      "variable": "Obsesiones y compulsiones",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador registrará una ocasión en que participó en un ritual, respondió repetidamente una duda o cambió una rutina por el temor del niño. Anotará cómo respondió y qué ocurrió después.",
+      "fuente": "Lebowitz, 2020, caps. 1 a 5",
+      "actividad": "Entender la ansiedad y la acomodación familiar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-tcc": {
+      "plan": "Terapia cognitivo-conductual para la depresión",
+      "variable": "Depresión",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Revisar con el adulto de apoyo elegido el plan de seguridad elaborado en consulta y mantenerlo accesible. Anotar dificultades para utilizarlo y comentarlas en el próximo contacto acordado.",
+      "fuente": "Curry y Meyer, 2019, «Psychoeducation, Goal Setting, and Safety Planning»",
+      "actividad": "Evaluación, psicoeducación, metas y plan de seguridad",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-ipt": {
+      "plan": "Psicoterapia interpersonal para adolescentes",
+      "variable": "Depresión",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Anotar una situación de la semana en que el ánimo cambió al relacionarte con alguien: qué pasó, qué necesitabas y cómo respondiste. Traerla para elegir el foco interpersonal del tratamiento.",
+      "fuente": "Curry y Meyer, 2019, «Interpersonal Psychotherapy for Depressed Adolescents»",
+      "actividad": "Evaluación y relación entre la depresión y los eventos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-ac": {
+      "plan": "Activación conductual para adolescentes",
+      "variable": "Depresión",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Registrar las actividades del día y cómo te sentiste al hacerlas, incluyendo momentos de aislamiento y contacto con otras personas. Traer el registro para elegir juntos una actividad posible.",
+      "fuente": "McCauley et al., 2016, cap. 3 (módulo 1)",
+      "actividad": "Empezar: el modelo y la formulación compartida",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dep-bienestar": {
+      "plan": "Prevención de recaídas con terapia cognitivo-conductual y de bienestar",
+      "variable": "Depresión",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Anotar o dibujar una actividad del día y cómo se sintió antes y después. Traer uno o dos ejemplos para revisar qué actividades le hacen sentir mejor.",
+      "fuente": "Fava, 2016, cap. 19 · Curry y Meyer, 2019",
+      "actividad": "Evaluación de la vida diaria",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-pep": {
+      "plan": "Psicoterapia psicoeducativa para niños y sus familias",
+      "variable": "Trastorno bipolar",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El niño y su cuidador llevarán el gráfico de ánimo y sueño acordado. Anotarán los cambios observados y los acontecimientos del día para revisarlos con el equipo tratante.",
+      "fuente": "Fristad y Roley-Roberts, 2019, «Psychoeducational Psychotherapy» y «Treatment in Action»",
+      "actividad": "Entender el trastorno y su tratamiento",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-fft": {
+      "plan": "Terapia centrada en la familia para adolescentes",
+      "variable": "Trastorno bipolar",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registrar el ánimo, las horas de sueño y un acontecimiento importante de cada día. Revisar con la familia las dudas que surjan para llevarlas a la siguiente sesión.",
+      "fuente": "Fristad y Roley-Roberts, 2019, «Family-Focused Treatment»",
+      "actividad": "Psicoeducación y gráfico del ánimo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-rainbow": {
+      "plan": "Terapia cognitivo-conductual centrada en el niño y la familia (RAINBOW)",
+      "variable": "Trastorno bipolar",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Sostener con el cuidador los horarios de sueño y rutinas acordados con el equipo. Anotar qué momentos fueron difíciles y qué apoyo ayudó a mantenerlos.",
+      "fuente": "Fristad y Roley-Roberts, 2019, «Child- and Family-Focused CBT»",
+      "actividad": "Rutinas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bip-ipsrt": {
+      "plan": "Terapia interpersonal y de ritmos sociales para adolescentes",
+      "variable": "Trastorno bipolar",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Registrar a diario el sueño y las rutinas.",
+      "fuente": "Fristad y Roley-Roberts, 2019, «Interpersonal and Social Rhythm Therapy—Adolescents»",
+      "actividad": "Registro de síntomas y rutinas, medicación y área interpersonal",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-escolar": {
+      "plan": "Terapia de bienestar en el colegio",
+      "variable": "Bienestar psicológico",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Anotar en el diario las cosas buenas que pasen.",
+      "fuente": "Fava, 2016, cap. 19 (sesión 1)",
+      "actividad": "Reconocer las emociones positivas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-dnav": {
+      "plan": "DNA-V: descubridor, observador, consejero y valores",
+      "variable": "Bienestar psicológico",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Notar un momento difícil y anotar qué dijo tu mente, qué observaste en ti y alrededor, y qué hiciste. Traerlo para reconocer el consejero, el observador y el descubridor.",
+      "fuente": "Hayes y Ciarrochi, 2015, caps. 1 y 2",
+      "actividad": "Presentar DNA-V y los valores",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-mind": {
+      "plan": "Atención plena para niños con sus padres",
+      "variable": "Bienestar psicológico",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Practicar juntos el ejercicio breve de atención enseñado en consulta en el momento acordado. Comentar qué notaron y qué les costó, para contarlo en la siguiente sesión.",
+      "fuente": "Snel, 2013, cap. 2",
+      "actividad": "Padres que practican",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-autocomp": {
+      "plan": "Autoayuda guiada de autocompasión para adolescentes",
+      "variable": "Bienestar psicológico",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Practicar la respiración consciente ensayada en consulta, sin forzar el ritmo. Anotar qué notaste y cómo te trataste cuando te distrajiste.",
+      "fuente": "Bluth, 2020, caps. 1 y 2",
+      "actividad": "Atención plena y humanidad compartida",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bien-fort": {
+      "plan": "Fortalezas del carácter en la infancia",
+      "variable": "Bienestar psicológico",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Contar a la familia una fortaleza propia.",
+      "fuente": "Niemiec, 2018, cap. 2",
+      "actividad": "Descubrir mis fortalezas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "afr-ease": {
+      "plan": "Habilidades emocionales para adolescentes tempranos (EASE)",
+      "variable": "Afrontamiento y resiliencia",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Notar y nombrar una emoción cada día.",
+      "fuente": "OMS y UNICEF, 2023, sesión 1 de adolescentes",
+      "actividad": "Entender mis emociones",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "afr-steps-a": {
+      "plan": "Habilidades dialéctico-conductuales en el colegio (DBT STEPS-A)",
+      "variable": "Afrontamiento y resiliencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Practicar la habilidad de atención plena enseñada y marcar en la tarjeta cuándo se usó. Traer una situación que haya resultado fácil o difícil para revisarla.",
+      "fuente": "Mazza et al., 2016, lecciones 1 a 5",
+      "actividad": "Orientación, dialéctica y atención plena",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sui-seguridad": {
+      "plan": "Evaluación del riesgo y plan de seguridad",
+      "variable": "Autolesión y riesgo suicida",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El adolescente y el adulto de apoyo mantendrán accesible el plan de seguridad elaborado en consulta y comprobarán los apoyos y las medidas de protección acordadas. Seguirán el plan ante señales de alerta y revisarán obstáculos en el próximo contacto clínico.",
+      "fuente": "Berk et al., 2008, sesión 1",
+      "actividad": "Confidencialidad y sus límites",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sui-tc": {
+      "plan": "Terapia cognitiva para adolescentes con intento de suicidio",
+      "variable": "Autolesión y riesgo suicida",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Ensayar en un momento tranquilo la estrategia de afrontamiento elegida del plan de seguridad y revisar con el adulto de apoyo cómo pedir ayuda. Comentar las dificultades en el siguiente contacto acordado.",
+      "fuente": "Berk et al., 2008, sesión 1 (tabla 12.2)",
+      "actividad": "Plan de seguridad y compromiso con el tratamiento",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sui-dbt": {
+      "plan": "Terapia dialéctico-conductual para adolescentes",
+      "variable": "Autolesión y riesgo suicida",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Completar la tarjeta diaria de impulsos, conductas y habilidades acordada en consulta. Mantener accesible el plan de crisis y los apoyos establecidos con el terapeuta.",
+      "fuente": "Miller et al., 2007, caps. 6 y 7 · Rathus y Miller, 2022, caps. 1 y 3",
+      "actividad": "Pretratamiento: orientación y compromiso",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "per-dbtc": {
+      "plan": "Terapia dialéctico-conductual para niños preadolescentes y sus padres",
+      "variable": "Rasgos de personalidad en la infancia y la adolescencia",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "El cuidador practicará la habilidad de regulación que ensayó en consulta ante una dificultad manejable con su hijo. Anotará qué ocurrió y cómo cambió su respuesta.",
+      "fuente": "Perepletchikova y Nathanson, 2019, «Case Example», metas 3 y 4",
+      "actividad": "Regulación emocional de los padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "per-mbt": {
+      "plan": "Terapia basada en la mentalización para adolescentes",
+      "variable": "Rasgos de personalidad en la infancia y la adolescencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Anotar un malentendido con alguien importante: qué ocurrió, qué creíste que esa persona pensaba y qué sentiste tú. Traerlo para explorar distintas maneras de entenderlo.",
+      "fuente": "Perepletchikova y Nathanson, 2019, «Mentalization-Based Therapy»",
+      "actividad": "Una relación terapéutica cercana",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "per-cat": {
+      "plan": "Terapia cognitivo-analítica",
+      "variable": "Rasgos de personalidad en la infancia y la adolescencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Si se compartió la carta en consulta, leerla y señalar algo que reconoce, algo que cambiaría o algo que falta. Si todavía no tiene la carta, traer un ejemplo de una situación que se repite y le gustaría entender.",
+      "fuente": "Perepletchikova y Nathanson, 2019, «Cognitive Analytic Therapy»",
+      "actividad": "Reformulación y carta",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "irr-cps": {
+      "plan": "Solución colaborativa y proactiva de problemas",
+      "variable": "Irritabilidad y explosiones de rabia",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registrar cada explosión: qué se esperaba del niño, qué pasó antes y cómo terminó.",
+      "fuente": "Greene y Ablon, 2006, caps. 1 y 2",
+      "actividad": "Habilidades que faltan y situaciones que disparan",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "irr-dbt-padres": {
+      "plan": "Habilidades dialéctico-conductuales para padres de niños con emociones intensas",
+      "variable": "Irritabilidad y explosiones de rabia",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Elegir uno de los supuestos trabajados en consulta y recordarlo ante una situación difícil con su hijo. Anotar qué hizo usted al tenerlo presente y cómo respondió el niño.",
+      "fuente": "Harvey y Penzo, 2009, caps. 1 y 2",
+      "actividad": "Entender la intensidad emocional y los supuestos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "irr-act-adol": {
+      "plan": "Aceptación y compromiso para adolescentes emocionalmente sensibles",
+      "variable": "Irritabilidad y explosiones de rabia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Escribir o dibujar qué clase de persona quieres ser en una relación o actividad importante. Anotar una situación reciente en que una emoción intensa hizo difícil actuar en esa dirección.",
+      "fuente": "Zurita Ona, 2018, caps. 1 a 4",
+      "actividad": "Supersensible y lo que no ha funcionado",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-pmt": {
+      "plan": "Entrenamiento a padres para la conducta desafiante",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Anotar dos o tres situaciones de la semana en que hubo desobediencia o rabietas: qué pasó antes, qué hizo el niño y qué pasó después.",
+      "fuente": "Kazdin, 2005, cap. 1 y cap. 5 (tabla 5.1)",
+      "actividad": "Orientación y evaluación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-pcit": {
+      "plan": "Terapia de interacción padres-hijos",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "El cuidador observará un momento de juego cotidiano: qué inició el niño, cómo respondió usted y cuándo apareció una dificultad. Traerá el ejemplo para preparar el entrenamiento en sesión.",
+      "fuente": "Hembree-Kigin y McNeil, 1995, cap. 1 (tabla 1-2) y cap. 2",
+      "actividad": "Evaluación inicial y devolución",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-act": {
+      "plan": "Aceptación y compromiso para padres junto con el entrenamiento a padres",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "El cuidador elige una situación difícil y anota qué pasó antes, qué hizo el niño y cómo respondió el adulto. Traer el ejemplo para revisar qué le gustaría hacer como cuidador en ese momento.",
+      "fuente": "Whittingham y Coyne, 2019, caps. 4 y 5",
+      "actividad": "Conceptualización del caso con los padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-mp": {
+      "plan": "Crianza consciente para padres junto con el entrenamiento a padres",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "En un momento cotidiano, el cuidador observa al niño unos minutos y anota algo concreto que vio u oyó. Separar esa observación de lo que creyó que el niño quería o pensaba.",
+      "fuente": "Bögels y Restifo, 2014, caps. 5 y 6",
+      "actividad": "Sesiones 1 y 2: crianza automática y mente de principiante",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-psst": {
+      "plan": "Entrenamiento en solución de problemas para el niño",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Repasar con un familiar los pasos de solución de problemas enseñados en consulta y aplicarlos a una dificultad pequeña. Traer lo que intentaron y cómo resultó.",
+      "fuente": "Kazdin, 2010 (tabla 14.1, sesión 1)",
+      "actividad": "Aprender los pasos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-ydt": {
+      "plan": "Diez pasos con padres de adolescentes desafiantes",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Acordar un rato de convivencia positiva a solas entre cuidador y adolescente, con una actividad que ambos acepten. Anotar qué facilitó conversar o estar juntos.",
+      "fuente": "Barkley y Robin, 2014, paso 1",
+      "actividad": "Tiempo positivo a solas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "opos-act-nino": {
+      "plan": "Aceptación y compromiso con el niño junto con el manejo conductual",
+      "variable": "Conducta oposicionista y desafiante",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Los padres registran las situaciones en que aparece la conducta.",
+      "fuente": "Twohig et al., 2008",
+      "actividad": "Análisis funcional",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "conducta-fft": {
+      "plan": "Terapia familiar funcional",
+      "variable": "Problemas de conducta graves en la adolescencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Cada integrante identificará un momento reciente en que la familia logró manejar mejor una dificultad. Traerá qué ocurrió y qué aportó cada uno para revisarlo en sesión.",
+      "fuente": "Sexton, 2011, cap. 4",
+      "actividad": "Vinculación: alianza con todos y menos culpa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-coping": {
+      "plan": "Programa de afrontamiento de la ira para niños",
+      "variable": "Agresividad e ira",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Practicar la conducta concreta que se eligió como meta semanal y pedir al adulto acordado que registre cuándo se logró. Traer la hoja para revisar avances y dificultades.",
+      "fuente": "Lochman et al., 2010, sesiones 1 y 2",
+      "actividad": "Reglas del grupo y metas semanales",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-tame": {
+      "plan": "Manejo de la ira para adolescentes",
+      "variable": "Agresividad e ira",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Registrar un conflicto: qué ocurrió antes, qué pensaste, qué señales de ira notaste y qué hiciste. Traerlo para identificar el momento en que podrías responder de otra forma.",
+      "fuente": "Feindler y Gerber, 2008, sesión 1",
+      "actividad": "Orientación y registro de conflictos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ira-perdon": {
+      "plan": "Educación en el perdón para niños",
+      "variable": "Agresividad e ira",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Contarle a alguien de la familia lo que aprendió sobre el valor de las personas.",
+      "fuente": "Enright y Knutson Enright, 2008, lecciones 1 y 2",
+      "actividad": "Todas las personas tienen valor",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-met-tcc": {
+      "plan": "Entrevista motivacional y terapia cognitivo-conductual",
+      "variable": "Consumo de alcohol y otras sustancias",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Pensar en los pros y contras de seguir consumiendo.",
+      "fuente": "Chung y Bachrach, 2019, «Motivational Interviewing and MET» y tabla 19.2, sesión 1",
+      "actividad": "Vínculo, motivación y metas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "cons-mdft": {
+      "plan": "Terapia familiar multidimensional",
+      "variable": "Consumo de alcohol y otras sustancias",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "El adolescente y el cuidador anotarán por separado qué cambio esperan del tratamiento y qué dificultad les parece más urgente. Compartirán en consulta lo que deseen trabajar juntos.",
+      "fuente": "Chung y Bachrach, 2019, «Family-Based Therapies», fase 1",
+      "actividad": "Alianza y compromiso",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "acoso-colegio": {
+      "plan": "Programa de todo el colegio contra el acoso",
+      "variable": "Acoso escolar",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Con el adulto de confianza identificado, registrar de forma segura qué ocurre, dónde y a quién se ha pedido ayuda. Llevar la información para coordinar la protección y la respuesta del colegio.",
+      "fuente": "McMahon y Frick, 2019, «Bullying»",
+      "actividad": "Conocer el problema en el colegio",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "acoso-perdon": {
+      "plan": "Perdón para adolescentes que acosan y son acosados",
+      "variable": "Acoso escolar",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Escribir en privado lo que le ha costado cargar con ese enojo.",
+      "fuente": "Enright y Fitzgibbons, 2015, cap. 12 (lección 1)",
+      "actividad": "Mi enojo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "hhss-pehis": {
+      "plan": "Programa de enseñanza de habilidades de interacción social (PEHIS)",
+      "variable": "Habilidades sociales",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "El cuidador anotará una situación social difícil y otra que salió mejor: con quién estaba el niño, qué hizo y cómo respondieron los demás. Traerá los ejemplos para elegir la habilidad a practicar.",
+      "fuente": "Monjas, 2009, cap. 4",
+      "actividad": "Evaluación y selección de habilidades",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-pad": {
+      "plan": "Entrenamiento conductual a padres",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Registrar durante la semana las dos situaciones más difíciles del día.",
+      "fuente": "Evans et al., 2019 · Kazdin, 2005, cap. 1",
+      "actividad": "Qué es el TDAH y qué sostiene los conflictos",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-col": {
+      "plan": "Manejo conductual en el aula y nota diaria",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "El docente registrará la conducta observable elegida en los momentos de clase acordados y los apoyos que se ofrecieron. Compartirá el registro por el medio autorizado para ajustar el plan con la familia.",
+      "fuente": "Evans et al., 2019, «Relationship Development»",
+      "actividad": "Relación con el docente",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-org": {
+      "plan": "Entrenamiento en organización para adolescentes",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Llevar la carpeta y el cuaderno de tareas a la próxima sesión.",
+      "fuente": "Evans et al., 2019, «Psychosocial Treatments for Adolescents»",
+      "actividad": "Motivación y metas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-ost": {
+      "plan": "Entrenamiento en habilidades organizativas (OST)",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Poner en marcha con el cuidador el sistema de puntos que se explicó y acordó en sesión. Registrar la conducta concreta que gana puntos y traer dudas sobre su aplicación.",
+      "fuente": "Gallagher et al., 2014, sesiones 1 y 2",
+      "actividad": "Orientación y manejo conductual para padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-stand": {
+      "plan": "Terapia padres–adolescente para funciones ejecutivas (STAND)",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Aplicar el acuerdo de organización elegido por el adolescente y su cuidador: qué hará cada uno y cuándo lo revisarán. Traer qué funcionó y dónde se necesitaron más apoyos.",
+      "fuente": "Sibley, 2017, caps. 4 y 5",
+      "actividad": "Módulos de compromiso",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-barkley": {
+      "plan": "Entrenamiento a padres en diez pasos para niños desafiantes (Barkley)",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "El cuidador anota una fortaleza del niño, una rutina en la que necesita más apoyo y algo que le dificulta al adulto acompañarlo en esa rutina.",
+      "fuente": "Barkley, 2013, paso 1",
+      "actividad": "Por qué se portan mal los niños",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-mind-padres": {
+      "plan": "Crianza consciente para padres de niños con déficit de atención",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Si se ensayó en consulta la atención a la respiración, practicarla en un momento tranquilo y anotar cuándo fue fácil o difícil hacer la pausa.",
+      "fuente": "Bertin, 2015, caps. 1 y 2",
+      "actividad": "Entender el déficit de atención como un problema de funciones ejecutivas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tdah-mind-adol": {
+      "plan": "Atención plena y autocompasión para adolescentes con déficit de atención",
+      "variable": "Inatención, hiperactividad e impulsividad",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Antes de una tarea elegida en consulta, hacer tres respiraciones y notar qué le ayuda o le dificulta empezar. Traer un ejemplo para conversar.",
+      "fuente": "Bertin y Bluth, 2021, caps. 1 y 2",
+      "actividad": "Qué es el déficit de atención y cómo ayudan la atención plena y la autocompasión",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-ndbi": {
+      "plan": "Intervención naturalista con los padres para niños pequeños",
+      "variable": "Autismo",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "Anotar en qué momentos del día el niño pide, mira o muestra algo.",
+      "fuente": "Klinger y Dudley, 2019, «Naturalistic Developmental Behavioral Interventions» · Koegel et al., 2010",
+      "actividad": "Metas de comunicación y juego con los padres",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-esdm": {
+      "plan": "Modelo Denver de atención temprana",
+      "variable": "Autismo",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "Contar qué metas les parecen más importantes para la vida diaria de la familia.",
+      "fuente": "Rogers y Dawson, 2010, caps. 4 y 5",
+      "actividad": "Evaluación con el currículo y objetivos de 12 semanas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-visual": {
+      "plan": "Apoyos visuales y enseñanza estructurada",
+      "variable": "Autismo",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador describirá una rutina difícil: qué paso inicia el niño, dónde se detiene y qué ayuda recibe. Llevará el ejemplo para preparar un apoyo visual ajustado a esa rutina.",
+      "fuente": "Klinger y Dudley, 2019, «The TEACCH Approach»",
+      "actividad": "Entender la conducta desde el autismo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-ansiedad": {
+      "plan": "Terapia cognitivo-conductual para la ansiedad en el autismo",
+      "variable": "Autismo",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Usar la frase de afrontamiento que se acordó y ensayó en consulta cuando aparezca la preocupación. Anotar en qué situación se utilizó y si ayudó a continuar la actividad.",
+      "fuente": "Klinger y Dudley, 2019, sesiones 1 a 3",
+      "actividad": "Conocer la ansiedad",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-white": {
+      "plan": "Grupo de habilidades sociales para niños con autismo sin discapacidad intelectual",
+      "variable": "Autismo",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Pensar en qué situaciones le gustaría relacionarse mejor.",
+      "fuente": "White, 2011, caps. 1 a 3",
+      "actividad": "Evaluar las habilidades y el tipo de dificultad",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-peers": {
+      "plan": "Habilidades sociales para adolescentes con autismo",
+      "variable": "Autismo",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Practicar primero con el cuidador la conversación acordada y, si resulta posible, intentarla con un compañero. Traer qué dijo cada uno y qué resultó difícil para ensayarlo de nuevo.",
+      "fuente": "Klinger y Dudley, 2019, sesiones 1 a 3",
+      "actividad": "Conversar en dos direcciones",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-fct": {
+      "plan": "Entrenamiento en comunicación funcional para la conducta problema",
+      "variable": "Autismo",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador anota una ocasión en que al niño le costó pedir algo o hacerse entender: qué ocurrió antes, cómo se comunicó y qué hicieron los demás después.",
+      "fuente": "Fisher et al., 2011, cap. 20",
+      "actividad": "Identificar la función de la conducta",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-rubi": {
+      "plan": "Entrenamiento a padres para las conductas disruptivas en el autismo (RUBI)",
+      "variable": "Autismo",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Registrar el antes, la conducta y el después durante la semana.",
+      "fuente": "Bearss et al., 2018, sesión 1",
+      "actividad": "Principios de la conducta y registro del antes, la conducta y el después",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-ira-emociones": {
+      "plan": "Educación emocional y manejo del estrés y el enojo en el autismo",
+      "variable": "Autismo",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Recortar con los padres caras de alegría de revistas y ordenarlas por intensidad.",
+      "fuente": "Scarpa et al., 2013, cap. 7, sesiones 1 y 2",
+      "actividad": "Emociones positivas: alegría y relajación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-cst": {
+      "plan": "Entrenamiento de habilidades para cuidadores de niños con retrasos o discapacidades del desarrollo (OMS)",
+      "variable": "Autismo",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Observar los momentos en que el niño está más atento y conectado.",
+      "fuente": "OMS, 2022, visita a casa 1",
+      "actividad": "Primera visita a casa: conocer y fijar metas",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tea-act-aba": {
+      "plan": "Aceptación y compromiso dentro del análisis aplicado de la conducta en el autismo",
+      "variable": "Autismo",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Los cuidadores registrarán la conducta elegida en situaciones cotidianas: qué ocurrió antes, qué hizo el niño y qué pasó después. Llevarán un ejemplo para revisar su función y las metas del trabajo.",
+      "fuente": "Szabo, 2023, cap. 3",
+      "actividad": "Análisis funcional y decisión",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "di-conducta": {
+      "plan": "Evaluación funcional y apoyo conductual positivo",
+      "variable": "Discapacidad intelectual",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador anota un ejemplo de la conducta acordada en consulta: qué ocurría justo antes, qué hizo el niño y cómo respondió el entorno.",
+      "fuente": "Matson et al., 2019, «Alternative Methods»",
+      "actividad": "Definir y registrar la conducta",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "di-habilidades": {
+      "plan": "Habilidades adaptativas y sociales",
+      "variable": "Discapacidad intelectual",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Con el apoyo acordado, elegir una actividad cotidiana que la persona quiera hacer con mayor autonomía. Registrar qué pasos realiza y cuáles requieren ayuda para planear su enseñanza.",
+      "fuente": "Matson et al., 2019, «Adaptive Skills Training» y «Social Skills Interventions»",
+      "actividad": "Elegir las habilidades",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "di-fortalezas": {
+      "plan": "Fortalezas del carácter en la discapacidad intelectual",
+      "variable": "Discapacidad intelectual",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Que la familia anote durante la semana momentos en que vio esas fortalezas.",
+      "fuente": "Niemiec y Tomasulo, 2023, cap. 3",
+      "actividad": "Conocer las fortalezas con los apoyos necesarios",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "di-act-padres": {
+      "plan": "Aceptación y compromiso para padres de niños con discapacidad",
+      "variable": "Discapacidad intelectual",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Anotar un momento difícil de la crianza, qué sintió usted y cómo respondió. Añadir qué forma de acompañar a su hijo le habría gustado sostener en ese momento.",
+      "fuente": "Whittingham y Coyne, 2019, cap. 4",
+      "actividad": "Formulación con los padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "leng-lidcombe": {
+      "plan": "Programa Lidcombe para la tartamudez temprana con los padres",
+      "variable": "Lenguaje, comunicación social y fluidez",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "Si se acordó en consulta cómo usar la escala de tartamudez, el cuidador registra la valoración de cada día. Si todavía no tiene la escala, anota en qué situaciones notó más facilidad o dificultad para hablar.",
+      "fuente": "Onslow et al., 2003, caps. 1 y 5",
+      "actividad": "Explicación del programa y medida de la tartamudez",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "leng-estimulacion": {
+      "plan": "Estimulación del lenguaje mediada por los padres y el colegio",
+      "variable": "Lenguaje, comunicación social y fluidez",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Anotar las palabras y los gestos que usa el niño durante una semana.",
+      "fuente": "Paul et al., 2018, caps. 6 y 7",
+      "actividad": "Evaluación de la comunicación y plan con la familia",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "leng-pragmatica": {
+      "plan": "Comunicación social: conversación, narración y comprensión de los demás",
+      "variable": "Lenguaje, comunicación social y fluidez",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador anota un intercambio en que el niño y otra persona dejaron de entenderse: qué intentaba comunicar el niño, qué hizo la otra persona y cómo terminó el intercambio.",
+      "fuente": "Paul et al., 2018, caps. 8 y 11",
+      "actividad": "Evaluación de la comunicación social",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "apr-consulta": {
+      "plan": "Evaluación del entorno académico y consulta con el colegio",
+      "variable": "Dificultades de aprendizaje",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Reunir boletines, cuadernos e informes anteriores.",
+      "fuente": "McGill y Ndip, 2019, «DSM-5» y «Age, Developmental Course, and Comorbidity»",
+      "actividad": "Recibir la remisión y descartar otras explicaciones",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "apr-lectura": {
+      "plan": "Instrucción directa en lectura: decodificación, fluidez y comprensión",
+      "variable": "Dificultades de aprendizaje",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Practicar las palabras o los juegos de sonidos seleccionados en consulta, durante el tiempo breve acordado. Registrar qué pudo resolver y en qué necesitó ayuda.",
+      "fuente": "McGill y Ndip, 2019, «Phonemic Awareness/Phonics Instruction» · Shapiro, 2011, cap. 6",
+      "actividad": "Conciencia fonológica y relación entre letras y sonidos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "apr-calculo-escritura": {
+      "plan": "Instrucción directa en cálculo, ortografía y escritura",
+      "variable": "Dificultades de aprendizaje",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Practicar con las tarjetas de cálculo, ortografía o escritura seleccionadas para la habilidad que se está trabajando. Anotar aciertos, errores y ayuda necesaria para ajustar la práctica.",
+      "fuente": "Shapiro, 2011, cap. 6 · McGill y Ndip, 2019, «Number Sense, Math Calculation, and Math Fact Fluency»",
+      "actividad": "Sentido numérico y hechos básicos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "apr-neuro-fe": {
+      "plan": "Estrategias de función ejecutiva en la lectura, la escritura y las matemáticas",
+      "variable": "Dificultades de aprendizaje",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Los padres describen cómo hace las tareas en casa.",
+      "fuente": "Rosselli et al., 2010 · Meltzer, 2018, caps. 5 y 6",
+      "actividad": "Perfil neuropsicológico y de función ejecutiva",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "fe-unstuck": {
+      "plan": "Currículo de flexibilidad y metas para niños con autismo (Unstuck and On Target!)",
+      "variable": "Funciones ejecutivas, flexibilidad y rehabilitación neuropsicológica",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Agregar al diccionario de flexibilidad un ejemplo de casa en que cambió un plan o fue difícil hacerlo. Traer qué alternativas se consideraron y qué apoyo ayudó.",
+      "fuente": "Cannon et al., 2011, temas 1 y 2",
+      "actividad": "Qué es la flexibilidad y quedarse atascado",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "fe-aula-meltzer": {
+      "plan": "Estrategias de función ejecutiva y metacognición en el aula",
+      "variable": "Funciones ejecutivas, flexibilidad y rehabilitación neuropsicológica",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Reflexionar después de una tarea sobre qué estrategia usó y si funcionó.",
+      "fuente": "Meltzer, 2018, cap. 11",
+      "actividad": "Conciencia de cómo aprende cada estudiante",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "fe-rehab-infantil": {
+      "plan": "Rehabilitación de la atención y la memoria después de una lesión cerebral",
+      "variable": "Funciones ejecutivas, flexibilidad y rehabilitación neuropsicológica",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador anotará una tarea de casa o del colegio que cuesta desde la lesión: qué paso logra el niño, cuándo se fatiga y qué ayuda necesita. Llevará el ejemplo para ajustar los apoyos.",
+      "fuente": "Sohlberg y Mateer, 2001, cap. 14",
+      "actividad": "Evaluación funcional y repetida",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "tics-cbit": {
+      "plan": "Intervención conductual integral para los tics",
+      "variable": "Tics, síndrome de Tourette y tricotilomanía",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Observar el tic elegido durante los momentos acordados y registrar cuándo aparece, con qué frecuencia aproximada y qué estaba ocurriendo. Llevarlo para preparar el entrenamiento en conciencia.",
+      "fuente": "Woods et al., 2008, caps. 1 y 5",
+      "actividad": "Psicoeducación, jerarquía de tics y motivación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "ttm-aebt": {
+      "plan": "Reversión del hábito con aceptación y compromiso para la tricotilomanía en adolescentes",
+      "variable": "Tics, síndrome de Tourette y tricotilomanía",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Si nota ganas de arrancarse el pelo o un episodio, anotar en qué situación estaba, qué señal notó y qué hizo. Traer un ejemplo que se sienta cómodo conversando.",
+      "fuente": "Woods y Twohig, 2008, caps. 1 a 3",
+      "actividad": "Evaluación, explicación y autorregistro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "psi-psicosocial": {
+      "plan": "Intervención psicosocial que acompaña el tratamiento médico",
+      "variable": "Psicosis de inicio temprano",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Anotar las preguntas que surjan para la siguiente sesión.",
+      "fuente": "Sharma y McClellan, 2019, «Symptom Presentation», «Treatment Strategies» y «Psychotherapeutic Interventions»",
+      "actividad": "Psicoeducación de la familia",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "trauma-tfcbt": {
+      "plan": "Terapia cognitivo-conductual centrada en el trauma",
+      "variable": "Estrés postraumático",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Revisar con el cuidador seguro el material sobre las reacciones al trauma entregado en consulta. Anotar dudas y qué apoyo cotidiano le resulta útil al niño para comentarlo en la siguiente sesión.",
+      "fuente": "Deblinger et al., 2012, «Assessment Strategies» y «Psychoeducation»",
+      "actividad": "Evaluación y psicoeducación sobre el trauma",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "trauma-colegio": {
+      "plan": "Terapia centrada en el trauma en el colegio",
+      "variable": "Estrés postraumático",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Identificar con el adulto de apoyo un momento del día escolar que resulta difícil y otro en que se siente más seguro. Llevar esa información para coordinar apoyos con el colegio.",
+      "fuente": "Rivera, 2012, «Rationale for TF-CBT Applications in Schools»",
+      "actividad": "Alianza con el colegio",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "trauma-proteccion": {
+      "plan": "Terapia centrada en el trauma para niños bajo protección",
+      "variable": "Estrés postraumático",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "El cuidador seguro anotará qué rutinas ayudan al niño a sentirse acompañado y qué cambios lo alteran. Llevará la información para acordar continuidad y apoyos entre los adultos responsables.",
+      "fuente": "Dorsey y Deblinger, 2012, «Collaboration with Child Welfare»",
+      "actividad": "Coordinación con protección",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "duelo-mgt": {
+      "plan": "Terapia multidimensional del duelo",
+      "variable": "Duelo",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Si te resulta posible, identificar un momento en que extrañaste a la persona fallecida y qué apoyo necesitaste. Contarlo o dibujarlo para compartirlo en la próxima sesión.",
+      "fuente": "Kaplow et al., 2019, «Multidimensional Grief Therapy»",
+      "actividad": "Evaluación del perfil de duelo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "duelo-grupo": {
+      "plan": "Grupo de duelo para adolescentes en el colegio",
+      "variable": "Duelo",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Identificar un recordatorio de la pérdida que haya aparecido y cómo te sentiste. Traer solo lo que desees compartir con el grupo.",
+      "fuente": "Kaplow et al., 2019, módulo de duelo, sesión 1",
+      "actividad": "Psicoeducación sobre el duelo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "duelo-tfcbt": {
+      "plan": "TF-CBT para el duelo traumático",
+      "variable": "Duelo",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Practicar con el cuidador seguro la habilidad de regulación ensayada en sesión. Anotar qué ayudó ante un recordatorio de la pérdida y qué dificultad desean revisar.",
+      "fuente": "Cohen et al., 2017, caps. 6 a 15",
+      "actividad": "Componentes centrados en el trauma",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "maltrato-abc": {
+      "plan": "Programa de apego y ajuste bioconductual para cuidadores de bebés",
+      "variable": "Maltrato y crianza violenta",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "Consolar al bebé cada vez que se angustie.",
+      "fuente": "Wolfe y Kelly, 2019, «Attachment and Biobehavioral Catch-Up»",
+      "actividad": "Responder con cuidado al malestar del bebé",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "maltrato-pcit": {
+      "plan": "Terapia de interacción padres-hijos con familias con maltrato físico",
+      "variable": "Maltrato y crianza violenta",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "El cuidador observará un intercambio cotidiano con el niño: qué pidió, cómo respondió el niño y cómo reaccionó usted. Llevará el ejemplo para preparar formas de interacción seguras.",
+      "fuente": "Wolfe y Kelly, 2019, «Parent–Child Interaction Therapy»",
+      "actividad": "Evaluación y observación inicial",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "maltrato-cpc": {
+      "plan": "Terapia cognitivo-conductual combinada para padres e hijos",
+      "variable": "Maltrato y crianza violenta",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Seguir el acuerdo de crianza sin castigo físico y el plan de seguridad trabajado en consulta. El cuidador anotará qué señales de enojo reconoció y qué alternativa segura utilizó.",
+      "fuente": "Wolfe y Kelly, 2019, «Combined Parent–Child Cognitive-Behavioral Therapy», fase 1",
+      "actividad": "Compromiso y psicoeducación",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "maltrato-keep": {
+      "plan": "Entrenamiento y apoyo a cuidadores sustitutos",
+      "variable": "Maltrato y crianza violenta",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Aplicar la tabla de puntos acordada para una o dos conductas concretas, reconociendo el esfuerzo del niño. Traer el registro y las dudas sobre los premios y las metas.",
+      "fuente": "Wolfe y Kelly, 2019, «TFCO: Keeping Foster Parents Trained and Supported»",
+      "actividad": "Reforzar lo positivo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "maltrato-afcbt": {
+      "plan": "Terapia cognitivo-conductual centrada en la familia (AF-CBT)",
+      "variable": "Maltrato y crianza violenta",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Mantener accesible el plan de seguridad elaborado con la familia y seguir las acciones acordadas con los adultos responsables. Revisar en el próximo contacto cualquier dificultad para cumplirlo.",
+      "fuente": "Kolko y Swenson, 2002, caps. 4 y 6",
+      "actividad": "Seguridad y compromiso",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "temp-vipp": {
+      "plan": "Retroalimentación en video para una crianza sensible y una disciplina sensible",
+      "variable": "Vínculo y crianza en los primeros años",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "El cuidador elegirá una situación cotidiana de juego o cuidado que desee comprender mejor. Anotará qué señales da el niño y cómo responde usted, para preparar la observación conjunta.",
+      "fuente": "Acosta et al., 2019, «Video-Feedback Intervention to Promote Positive Parenting»",
+      "actividad": "Grabar interacciones cotidianas en casa",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "temp-chequeo": {
+      "plan": "Chequeo familiar",
+      "variable": "Vínculo y crianza en los primeros años",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "La familia anotará una preocupación prioritaria sobre la crianza y una situación que suele resolver bien. Llevará ambos ejemplos para acordar en qué conviene centrar el apoyo.",
+      "fuente": "Acosta et al., 2019, «The Family Check-Up»",
+      "actividad": "Evaluación en el hogar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "temp-cpp": {
+      "plan": "Psicoterapia padres-hijo",
+      "variable": "Vínculo y crianza en los primeros años",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "El cuidador observará un momento en que le resultó fácil responder al niño y otro en que fue difícil. Anotará qué sintió y qué necesitaban ambos para conversarlo en sesión.",
+      "fuente": "Acosta et al., 2019, «Child–Parent Psychotherapy»",
+      "actividad": "La historia de crianza de los padres",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "temp-circulo": {
+      "plan": "Círculo de Seguridad para padres",
+      "variable": "Vínculo y crianza en los primeros años",
+      "edad": [
+        "0-5"
+      ],
+      "texto": "El cuidador anotará una ocasión en que el niño buscó cercanía y otra en que quiso explorar. Describirá cómo respondió y qué le resultó difícil para revisarlo en consulta.",
+      "fuente": "Acosta et al., 2019, «Circle of Security»",
+      "actividad": "Evaluar el apego antes del grupo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sep-codip": {
+      "plan": "Grupo de apoyo para hijos de padres separados",
+      "variable": "Separación de los padres",
+      "edad": [
+        "6-11"
+      ],
+      "texto": "Contar a un adulto de confianza una cosa que quieras compartir del encuentro. Traer una pregunta o preocupación sobre la separación para trabajarla en el grupo.",
+      "fuente": "Pedro-Carroll, 2008, sesión 1 y «Parent Involvement»",
+      "actividad": "Un grupo seguro",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sep-padres": {
+      "plan": "Orientación a los padres que se separan: poner a los hijos primero",
+      "variable": "Separación de los padres",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Observar qué dice y qué hace cada hijo esta semana, y qué podría estar sintiendo.",
+      "fuente": "Pedro-Carroll, 2010, caps. 1 y 2",
+      "actividad": "Lo que viven los hijos y lo que los protege",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sueno-ninos": {
+      "plan": "Tratamiento conductual del insomnio infantil con los padres",
+      "variable": "Problemas de sueño",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "El cuidador llevará un diario con la rutina de la noche, las horas de acostarse y dormirse, los despertares y la ayuda que el niño pide. Lo revisarán antes de cambiar las pautas de sueño.",
+      "fuente": "Mindell y Owens, 2010, cap. 6 · Graef y Byars, 2019, «Promoting Healthy Sleep Habits»",
+      "actividad": "Registro, horario y rutina",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "sueno-adolescentes": {
+      "plan": "Tratamiento cognitivo-conductual del sueño en adolescentes",
+      "variable": "Problemas de sueño",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Llevar un diario de sueño: horas de acostarte, dormirte y levantarte, despertares, siestas y diferencias entre días de clase y fines de semana. Traerlo para acordar los cambios.",
+      "fuente": "Mindell y Owens, 2010, cap. 18 · Graef y Byars, 2019, «Promoting Healthy Sleep Habits»",
+      "actividad": "Registro y hábitos",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "enuresis-alarma": {
+      "plan": "Entrenamiento completo en casa con alarma",
+      "variable": "Enuresis",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Completar con el cuidador el calendario de noches secas y mojadas, sin castigar los accidentes. Llevarlo junto con las dudas sobre el acuerdo y el uso de la alarma antes de iniciarla.",
+      "fuente": "Houts, 2010, «The Family Support Agreement»",
+      "actividad": "Evaluación y acuerdo familiar",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "incontinencia-diurna": {
+      "plan": "Uroterapia para la incontinencia urinaria diurna",
+      "variable": "Enuresis",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Registro de dos días de idas al baño y de lo que bebe.",
+      "fuente": "Von Gontard y Nevéus, 2006, caps. 4 y 7",
+      "actividad": "Evaluación y registro de las idas al baño",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "encopresis-conductual": {
+      "plan": "Tratamiento conductual de la encopresis",
+      "variable": "Encopresis",
+      "edad": [
+        "0-5",
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registro de una semana de deposiciones y de las veces que se ensucia.",
+      "fuente": "Von Gontard y Nevéus, 2006, cap. 9",
+      "actividad": "Evaluación con el médico",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dolor-tcc-pediatrico": {
+      "plan": "Terapia cognitivo-conductual para el dolor crónico en niños y adolescentes",
+      "variable": "Dolor crónico",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Llevar el diario de dolor acordado, incluyendo qué actividades pudiste hacer y qué dificultades aparecieron. Practicar la respiración solo en la forma que se ensayó en consulta.",
+      "fuente": "Palermo, 2012, caps. 4 y 5",
+      "actividad": "Primera visita: evaluación, explicación y metas",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "dolor-act-pediatrico": {
+      "plan": "Aceptación y compromiso para el dolor crónico en niños y adolescentes",
+      "variable": "Dolor crónico",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registrar las actividades que deja de hacer por el dolor.",
+      "fuente": "Wicksell y Greco, 2008",
+      "actividad": "Evaluación de la conducta de dolor y validación",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-fbt": {
+      "plan": "Tratamiento basado en la familia",
+      "variable": "Anorexia en la adolescencia",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Acordar con el equipo qué comida llevar a la sesión familiar y quiénes participarán. Anotar las dificultades que aparecen en las comidas para revisarlas con apoyo del terapeuta.",
+      "fuente": "Lock y Le Grange, 2013, sesión 1 · Robin y Le Grange, 2010, «Phase 1: Refeeding the Patient»",
+      "actividad": "Primera sesión: el trastorno no es el adolescente",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "alim-bfst": {
+      "plan": "Terapia familiar conductual sistémica",
+      "variable": "Anorexia en la adolescencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Registro de comidas de una semana.",
+      "fuente": "Robin y Le Grange, 2010, «Phase 1: Assessment»",
+      "actividad": "Evaluación con el adolescente y los padres",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bul-fbt": {
+      "plan": "Tratamiento basado en la familia para la bulimia",
+      "variable": "Bulimia y atracones en la adolescencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Completar el registro de atracones y purgas acordado y preparar con el equipo la sesión de comida familiar. Anotar las dificultades para pedir o recibir apoyo del cuidador.",
+      "fuente": "Lock y Osipov, 2019, tabla 22.4, pretratamiento y sesión 1",
+      "actividad": "Comprometer a la familia y separar la bulimia del adolescente",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "bul-tcc": {
+      "plan": "Terapia cognitivo-conductual para la bulimia en adolescentes",
+      "variable": "Bulimia y atracones en la adolescencia",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Registrar lo que come en el momento.",
+      "fuente": "Lock y Osipov, 2019, tabla 22.5, sesiones 1 y 2, y caso de Amy",
+      "actividad": "Formulación del ciclo y autorregistro",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "teria-multidisciplinario": {
+      "plan": "Atención multidisciplinaria con exposición graduada a los alimentos",
+      "variable": "Evitación y restricción de la ingesta de alimentos",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Registrar durante la semana lo que come y lo que rechaza.",
+      "fuente": "Sinha et al., 2025, caps. 1 y 2",
+      "actividad": "Evaluación psicológica y del subtipo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "teria-conductual-pediatrico": {
+      "plan": "Tratamiento conductual de los problemas graves de alimentación en niños pequeños",
+      "variable": "Evitación y restricción de la ingesta de alimentos",
+      "edad": [
+        "0-5",
+        "6-11"
+      ],
+      "texto": "Registrar lo que come el niño durante una semana.",
+      "fuente": "Fisher et al., 2011, cap. 26, «Evaluation»",
+      "actividad": "Evaluación interdisciplinaria antes de intervenir",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "obe-familiar": {
+      "plan": "Tratamiento conductual familiar del peso",
+      "variable": "Obesidad infantil",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Registrar con el cuidador las comidas y las situaciones en que ocurren. Usar las categorías enseñadas por el equipo únicamente si ya se trabajaron en sesión; traer dudas para revisar hábitos familiares.",
+      "fuente": "Hayes et al., 2019, «Dietary Modification»",
+      "actividad": "Plan de alimentación del semáforo",
+      "adaptacion": true,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pant-familia": {
+      "plan": "Intervención con la familia en el uso problemático de videojuegos e internet",
+      "variable": "Uso problemático de pantallas y videojuegos",
+      "edad": [
+        "12-17"
+      ],
+      "texto": "Que el adolescente y los padres registren por separado el tiempo de pantalla de una semana.",
+      "fuente": "Young y de Abreu, 2011, cap. 10 · King y Delfabbro, 2018, cap. 8",
+      "actividad": "Evaluar al adolescente y a la familia",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    },
+    "pant-padres": {
+      "plan": "Orientación a padres para un uso saludable de pantallas y videojuegos",
+      "variable": "Uso problemático de pantallas y videojuegos",
+      "edad": [
+        "6-11",
+        "12-17"
+      ],
+      "texto": "Jugar o mirar jugar al hijo una vez en la semana y conversar sobre el juego.",
+      "fuente": "King y Delfabbro, 2018, cap. 8",
+      "actividad": "Conocer los juegos y el mundo en línea del hijo",
+      "adaptacion": false,
+      "preparacion": "Acordar la tarea y comprobar que se comprendió antes de indicarla."
+    }
+  }
+}
+;
+// Tareas iniciales: borrador por plan; el profesional decide qué incluir.
+const tareasElegidas = {};
+const claveTarea = id => pob() + ':' + id;
+
+function planesDeEdad(variable) {
+  const edad = $('#edad').value;
+  return variable.planes.filter(p => !edad || !p.edad.length || p.edad.includes(edad));
+}
+function variablesDirectas() {
+  const campo = pob() === 'adultos' ? 'a' : 'i';
+  const vinculadas = new Set(Object.values(VARIABLES).flatMap(v => v[campo] || []));
+  return DATOS[pob()].variables.filter(v => !vinculadas.has(v.t) && planesDeEdad(v).length);
+}
+function planesVigentes() {
+  const g = DATOS[pob()];
+  const variables = new Set(elegidas.filter(id => imp.estado[id] !== 'descartada')
+    .flatMap(id => (VARIABLES[id] || {})[pob() === 'adultos' ? 'a' : 'i'] || []));
+  return [...g.variables.filter(v => variables.has(v.t)), ...variablesDirectas()].flatMap(planesDeEdad);
+}
+function planesDirectosHtml() {
+  if (modo !== 'inicial') return '';
+  const variables = variablesDirectas();
+  if (!variables.length) return '';
+  return `<div class="caja"><details><summary>Planes para consulta directa</summary>
+    <p class="meta">Planes de la guía para situaciones que no aparecen entre las hipótesis.</p>
+    ${variables.map(v => `<details><summary>${esc(v.t)}</summary>${planesDeEdad(v).map(p => tarjetaPlan(p)).join('')}</details>`).join('')}
+  </details></div>`;
+}
+function depurarTareas() {
+  const vigentes = new Set(planesVigentes().map(p => claveTarea(p.id)));
+  for (const [k, tarea] of Object.entries(tareasElegidas)) {
+    if (modo !== 'inicial' || !vigentes.has(k)) tarea.incluir = false;
+  }
+}
+function tareasGuardadas() {
+  depurarTareas();
+  return Object.entries(tareasElegidas).filter(([, t]) => t.incluir && t.texto.trim())
+    .map(([clave, t]) => {
+      const [poblacion, planId] = clave.split(':');
+      const base = TAREAS_INICIALES[poblacion][planId];
+      return { poblacion, planId, plan: base.plan, texto: t.texto.trim(), fuente: base.fuente };
+    });
+}
+function textoRecomendaciones() {
+  const tareas = tareasGuardadas().map(t => t.texto);
+  const otras = $('#recomendaciones-libres').value.trim();
+  return [...tareas, ...(otras ? [otras] : [])].join('\n\n');
+}
+function tareaInicialHtml(p, descartado) {
+  if (modo !== 'inicial') return '';
+  const k = claveTarea(p.id), base = TAREAS_INICIALES[pob()]?.[p.id];
+  if (!base) return '';
+  const t = tareasElegidas[k] || { incluir: false, texto: base.texto };
+  return `<div class="tarea-inicial">
+    <label class="meta"><input type="checkbox" data-tarea-incluir="${esc(k)}"${descartado ? ' disabled' : t.incluir ? ' checked' : ''}> Incluir tarea inicial en las recomendaciones</label>
+    <details${t.incluir ? ' open' : ''}><summary>Revisar y ajustar la tarea</summary>
+      <label class="rot">Para la próxima sesión
+        <textarea rows="4" data-tarea-texto="${esc(k)}">${esc(t.texto)}</textarea>
+      </label>
+      <p class="meta">Acordar con la persona quién la realizará, en qué momento y qué se revisará en la próxima consulta.</p>
+    </details>
+  </div>`;
+}
+function pintarRecomendaciones() {
+  const lista = tareasGuardadas();
+  $('#tareas-seleccionadas').innerHTML = lista.length
+    ? lista.map(t => `<div class="plan"><strong>${esc(t.plan)}</strong><p class="texto-tarea">${esc(t.texto)}</p></div>`).join('')
+    : '<p class="meta">Las tareas que marque en los planes aparecerán aquí.</p>';
+  $('#tareas-seleccionadas').hidden = modo !== 'inicial';
+  document.querySelectorAll('[data-tarea-incluir]').forEach(i => {
+    i.checked = !i.disabled && !!tareasElegidas[i.dataset.tareaIncluir]?.incluir;
+  });
+}
+function reiniciarTareas() {
+  for (const k of Object.keys(tareasElegidas)) delete tareasElegidas[k];
+  $('#recomendaciones-libres').value = '';
+  pintarRecomendaciones();
+}
+$('#tab-hipotesis').addEventListener('change', e => {
+  const i = e.target, k = i.dataset.tareaIncluir;
+  if (!k) return;
+  const [poblacion, id] = k.split(':');
+  const base = TAREAS_INICIALES[poblacion]?.[id];
+  if (!base) return;
+  const t = tareasElegidas[k] ||= { incluir: false, texto: base.texto };
+  t.incluir = i.checked;
+  if (i.checked) i.closest('.tarea-inicial').querySelector('details').open = true;
+  pintarRecomendaciones();
+});
+$('#tab-hipotesis').addEventListener('input', e => {
+  const i = e.target, k = i.dataset.tareaTexto;
+  if (!k) return;
+  const t = tareasElegidas[k] ||= { incluir: false, texto: '' };
+  t.texto = i.value;
+  // Un mismo plan puede aparecer en varias hipótesis; todas muestran el mismo borrador.
+  document.querySelectorAll('[data-tarea-texto]').forEach(otra => {
+    if (otra !== i && otra.dataset.tareaTexto === k) otra.value = i.value;
+  });
+  pintarRecomendaciones();
+});
+
+
 // ---------- Buscador ----------
 function textoBusqueda(h) { return norm([h.t, h.dsm, h.cie10, h.cie11, CAP_DE[h.id], BUSCAR[h.id] || ""].join(" ")); }
 function buscar() {
@@ -1926,6 +5192,14 @@ function fmtReq(c) {
   const meses = pob() === "infancia" && c.durInf != null ? c.durInf : c.dur;
   return meses >= 12 ? `${meses / 12 === 1 ? "un año" : (meses / 12) + " años"} o más` : meses >= 1 ? `${meses} ${meses === 1 ? "mes" : "meses"} o más` : meses >= 0.4 ? "dos semanas o más" : "días (manía: una semana; hipomanía: cuatro días)";
 }
+function tarjetaPlan(p, descartado = false) {
+    const g = DATOS[pob()];
+    return `<div class="plan"><a class="tit" href="${g.guia}#plan-${p.id}" target="_blank" rel="noopener">${esc(p.t)}</a>
+      <p class="meta">${esc(p.enf)} · ${NIVEL_ET[p.nivel] || p.nivel} · ${esc(p.fuente)}</p>
+      <p class="cuando">${esc(p.cuando)}</p>
+      <div class="chips">${p.inst.map(i => `<span class="ins" title="${esc(i.n)}">${esc(i.k)}</span>`).join("")}${p.fichas.map(f => `<a class="ficha ${f.c !== "registro" ? "g" : ""}" href="${f.url}" target="_blank" rel="noopener">${CLASE_ET[f.c] || "Ficha"}: ${esc(f.t)}</a>`).join("")}</div>
+      ${tareaInicialHtml(p, descartado)}</div>`;
+}
 function planesHtml(id) {
   const g = DATOS[pob()], vars = (VARIABLES[id] || {})[pob() === "adultos" ? "a" : "i"] || [];
   if (!vars.length) return '<p class="meta">Las guías de planes no tienen una variable para este diagnóstico en esta población.</p>';
@@ -1934,12 +5208,10 @@ function planesHtml(id) {
     const v = g.variables.find(x => x.t === t); if (!v) return "";
     const planes = v.planes.filter(p => !edad || !p.edad.length || p.edad.includes(edad))
       .map(p => ({ p, pts: (PESO_NIV[p.nivel] || 0) + (escen && p.esc.includes(escen) ? 1.5 : 0) }))
-      .sort((a, b) => b.pts - a.pts).slice(0, 3).map(x => x.p);
-    return `<div class="var-t">${esc(t)}</div>` + (planes.length ? planes.map(p =>
-      `<div class="plan"><a class="tit" href="${g.guia}#plan-${p.id}" target="_blank" rel="noopener">${esc(p.t)}</a>
-       <p class="meta">${esc(p.enf)} · ${NIVEL_ET[p.nivel] || p.nivel} · ${esc(p.fuente)}</p>
-       <p class="cuando">${esc(p.cuando)}</p>
-       <div class="chips">${p.inst.map(i => `<span class="ins" title="${esc(i.n)}">${esc(i.k)}</span>`).join("")}${p.fichas.map(f => `<a class="ficha ${f.c !== "registro" ? "g" : ""}" href="${f.url}" target="_blank" rel="noopener">${CLASE_ET[f.c] || "Ficha"}: ${esc(f.t)}</a>`).join("")}</div></div>`).join("")
+      .sort((a, b) => b.pts - a.pts).map(x => x.p);
+    const tarjeta = p => tarjetaPlan(p, imp.estado[id] === 'descartada');
+    return `<div class="var-t">${esc(t)}</div>` + (planes.length
+      ? planes.slice(0, 3).map(tarjeta).join("") + (planes.length > 3 ? `<details data-detalle-plan="${esc(t)}"><summary>Otros planes de esta variable (${planes.length - 3})</summary>${planes.slice(3).map(tarjeta).join("")}</details>` : "")
       : '<p class="meta">Sin planes con respaldo para la edad elegida.</p>');
   }).join("");
 }
@@ -1952,6 +5224,7 @@ function notasDx(id) {
   return out.map(n => `<p class="nota">${esc(n)}</p>`).join("");
 }
 function pintar() {
+  depurarTareas();
   $("#elegidos").innerHTML = elegidas.map(id => `<span class="chip">${esc(H[id].t)}<button type="button" data-quitar="${id}" aria-label="Quitar">×</button></span>`).join("");
   $("#quitar-todo").hidden = !elegidas.length;
   $("#n-hip").textContent = elegidas.length ? `(${elegidas.length})` : "";
@@ -1966,8 +5239,21 @@ function pintar() {
       ${h.dif ? `<p class="dif"><strong>Diferenciar de:</strong> ${esc(h.dif)}</p>` : ""}
       <details><summary>Planes, instrumentos y fichas</summary>${planesHtml(id)}</details></section>`;
   }
+  const contenedores = "#tarjetas details, #planes-directos details";
+  const clave = d => {
+    const grupo = d.closest(".dx")?.id || "#planes-directos";
+    const detalle = d.dataset.detallePlan ?? d.querySelector(":scope > summary").textContent;
+    return grupo + "|" + detalle;
+  };
+  const abiertos = new Set([...document.querySelectorAll(contenedores)]
+    .filter(d => d.open && !d.closest(".tarea-inicial")).map(clave));
   $("#tarjetas").innerHTML = html;
+  $("#planes-directos").innerHTML = planesDirectosHtml();
+  document.querySelectorAll(contenedores).forEach(d => {
+    if (!d.closest(".tarea-inicial") && abiertos.has(clave(d))) d.open = true;
+  });
   if (typeof pintarImpresion === "function") pintarImpresion();
+  pintarRecomendaciones();
   pintarLaterales();
 }
 $("#elegidos").addEventListener("click", e => { const b = e.target.closest("[data-quitar]"); if (b) alternar(b.dataset.quitar); });
@@ -1977,9 +5263,7 @@ $("#tarjetas").addEventListener("change", e => {
   marcas[id] = marcas[id] || {};
   if (i.dataset.s) { marcas[id][k] = marcas[id][k] && typeof marcas[id][k] === "object" ? marcas[id][k] : {}; marcas[id][k][i.dataset.s] = i.checked; }
   else marcas[id][k] = i.checked;
-  const abiertos = [...document.querySelectorAll("#tarjetas details[open]")].map(d => d.closest("section")?.id);
   const y = window.scrollY; pintar(); window.scrollTo(0, y);
-  abiertos.forEach(sid => sid && document.querySelector(`#${sid} details`)?.setAttribute("open", ""));
 });
 $("#quitar-todo").addEventListener("click", () => { elegidas.splice(0); for (const k in marcas) delete marcas[k]; buscar(); pintar(); pintarRuta(); });
 $("#nueva").addEventListener("click", () => {
@@ -2112,7 +5396,7 @@ function pintarLaterales() {
     }
   }
   if (!$("#sugeridas-bloque").hidden) h += item("sugeridas-bloque", "Hipótesis que sugiere la ruta", "entrevista");
-  for (const id of ["s-examen", "s-granola", "s-impresion"]) if ($("#" + id)) h += item(id, tituloDe($("#" + id)), "entrevista");
+  for (const id of ["s-examen", "s-granola", "s-impresion", "s-recomendaciones"]) if ($("#" + id)) h += item(id, tituloDe($("#" + id)), "entrevista");
   h += `</ul><div class="lat-t">Hipótesis y criterios</div><ul>${item("s-buscar", "Buscar hipótesis", "hipotesis")}${elegidas.map(id => {
     const r = resumenDx(id);
     return item("dx-" + id, H[id].t, "hipotesis", true, null, H[id].z ? "" : `${r.cumplidos}/${r.total}`);
@@ -2286,6 +5570,8 @@ $("#copiar").addEventListener("click", async () => {
       lineas.push(`  ${st.cumple ? "[x]" : "[ ]"} ${c.t}${marc.length ? " (" + marc.join("; ") + ")" : ""}`);
     });
   }
+  const recomendaciones = textoRecomendaciones();
+  if (recomendaciones) lineas.push("", "Recomendaciones para la próxima sesión", recomendaciones);
   if (!lineas.length) { $("#copiado").textContent = "Aún no hay nada marcado."; setTimeout(() => { $("#copiado").textContent = ""; }, 3000); return; }
   copiarTexto(lineas.join("\n").trim());
 });
@@ -2669,7 +5955,7 @@ function pintarImpresion() {
 $("#impresion").addEventListener("input", e => { const i = e.target; if (i.dataset.impCod) imp.codigo[i.dataset.impCod] = i.value; });
 $("#impresion").addEventListener("change", e => {
   const i = e.target;
-  if (i.dataset.impEstado) imp.estado[i.dataset.impEstado] = i.value;
+  if (i.dataset.impEstado) { imp.estado[i.dataset.impEstado] = i.value; pintar(); }
   if (i.name === "imp-principal") imp.principal = i.value;
   pintarFaltantes();
 });
@@ -2692,6 +5978,8 @@ $("#guardar").addEventListener("click", async () => {
   intento = true;
   const f = faltantes();
   if (f.length) { pintarFaltantes(); mensaje(`Faltan ${f.length} ${f.length === 1 ? "campo obligatorio" : "campos obligatorios"}.`); irA(f[0][1], "entrevista"); return; }
+  const vacias = Object.values(tareasElegidas).some(t => t.incluir && !t.texto.trim());
+  if (vacias) { mensaje("Complete la tarea marcada o desmarque su casilla antes de guardar."); mostrarTab("hipotesis"); return; }
   const inc = incongruencias();
   if (inc.length && !confirm(`Hay ${inc.length} ${inc.length === 1 ? "incongruencia" : "incongruencias"} por revisar:\n\n${inc.map(x => "• " + x.t).join("\n")}\n\n¿Guardar de todos modos?`)) { irA("eem-avisos", "entrevista"); return; }
   try { await Almacen.desbloquear(); } catch { mensaje("No se guardó."); return; }
@@ -2711,7 +5999,7 @@ $("#guardar").addEventListener("click", async () => {
       id: atencionId, pacienteId: pacienteGuardado.id, tipo: modo, sesion, guardado: new Date().toISOString(),
       atencion: { ...atencion }, paciente: { ...pacienteGuardado }, pob: pob(),
       escenario: $("#esc").value ? $("#esc").selectedOptions[0].text : "", edadRango: $("#campo-edad").hidden ? "" : ($("#edad").selectedOptions[0] || {}).text || "",
-      ruta: resumenRuta(), examen: textoExamen(), granola: $("#granola").value, impresion: impresionGuardada(), observaciones: $("#imp-obs").value,
+      ruta: resumenRuta(), examen: textoExamen(), granola: $("#granola").value, recomendaciones: textoRecomendaciones(), tareasIniciales: tareasGuardadas(), impresion: impresionGuardada(), observaciones: $("#imp-obs").value,
       estado: { ruta, eem: Object.fromEntries(Object.entries(eem).map(([k, s]) => [k, [...s]])), elegidas: [...elegidas], marcas, imp,
         // Criterios tal como quedaron (tarjeta y ruta juntas): el siguiente seguimiento parte de aquí.
         efectivas: Object.fromEntries(elegidas.map(id => [id, Object.fromEntries(indices(id).map(k => {
@@ -2725,6 +6013,7 @@ $("#guardar").addEventListener("click", async () => {
   } catch (e) { console.error(e); mensaje("No se pudo guardar: " + e.message); }
 });
 function reiniciarLocal() {
+  reiniciarTareas();
   intento = false;
   paciente = { tipoDoc: "CC" }; atencion = { fecha: hoyISO(), modalidad: "Presencial" }; pacienteGuardado = null; atencionId = null; sesion = 1; sucio = false;
   for (const o of [imp.estado, imp.codigo]) for (const k in o) delete o[k];
@@ -2736,7 +6025,7 @@ function reiniciarLocal() {
 
 // Seguimiento: el registro abre esta página con #seg=<id del paciente>.
 async function cargarSeguimiento(id) {
-  modo = "seguimiento"; pintarDatos(); actualizarRuta();
+  modo = "seguimiento"; reiniciarTareas(); pintarDatos(); actualizarRuta();
   try { await Almacen.desbloquear(); } catch { modo = "inicial"; history.replaceState(null, "", location.pathname); pintarDatos(); actualizarRuta(); return; }
   const p = await Almacen.leer("pacientes", id);
   if (!p) { mensaje("No se encontró el paciente en el registro."); return; }
