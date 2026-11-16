@@ -64,7 +64,7 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 .hoja .ruta li{font-size:8.8px}
 .hoja .principal{font-weight:700}
 .hoja .firma{margin-top:18px;break-inside:avoid;width:62mm}
-.hoja .firma img{height:17mm;display:block;margin-left:4mm}
+.hoja .firma img{height:15mm;max-width:56mm;object-fit:contain;object-position:left bottom;display:block;margin:0 0 2.5mm 4mm}
 .hoja .firma .linea{border-top:0.8px solid var(--ink);padding-top:3px;font-size:9.5px;line-height:1.35}
 .hoja .salto{break-before:page}
 
@@ -124,6 +124,14 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 @media (max-width:600px){h1{font-size:1.4rem}}
 .hoja .cierre-atencion{break-inside:avoid}
 .hoja .fichas-tarea a{color:var(--acento-osc);text-decoration:underline}
+.plan-pac{margin:14px 0}
+.plan-pac .vista{margin-top:12px}
+@media print{
+  .hoja .pln{page:plan}
+  @page plan{margin:14mm 14mm 17mm;
+    @bottom-left{content:"Formulación y plan · Uso exclusivo del profesional · Juan Boya Guerra, T.P. 186609";vertical-align:top;padding-top:5px;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}
+    @bottom-right{content:counter(page);width:12mm;vertical-align:top;padding-top:5px;text-align:right;border-top:0.6pt solid #c9d6d6;font:700 7.5pt Helvetica,Arial,sans-serif;color:#7d8c91}}
+}
 </style>
 </head>
 <body>
@@ -148,6 +156,7 @@ footer{margin-top:30px;font-size:.82rem;color:var(--ink-faint)}
 <section id="vista-paciente" hidden>
   <button type="button" class="sec" id="volver">← Todos los pacientes</button>
   <div class="panel" id="ficha"></div>
+  <div id="plan-paciente" hidden></div>
   <div id="atenciones"></div>
 </section>
 
@@ -373,7 +382,7 @@ function edadDe(f, en) {
 const tipoEt = a => a.tipo === "seguimiento" ? `Seguimiento · sesión ${a.sesion}` : "Consulta inicial";
 const orden = (a, b) => ((a.atencion || {}).fecha + a.guardado).localeCompare((b.atencion || {}).fecha + b.guardado);
 
-let pacientes = [], atenciones = [], actual = null;
+let pacientes = [], atenciones = [], planes = [], actual = null;
 const PAPELERA = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
 function actualizarEstado() {
   const leibles = atenciones.filter(a => !a.ilegible).length, malas = atenciones.length - leibles;
@@ -386,8 +395,10 @@ async function abrir() {
   $("#estado").textContent = "Cargando…";
   pacientes = (await Almacen.listar("pacientes")).filter(p => !p.ilegible);
   atenciones = await Almacen.listar("atenciones");
+  planes = (await Almacen.listar("planes")).filter(x => !x.ilegible);
   actualizarEstado();
   try { FIRMA = ((await Almacen.leer("config", "firma")) || {}).dataUrl || null; } catch { FIRMA = null; }
+  if (FIRMA) FIRMA = await limpiarFirma(FIRMA);
   pintarBotonFirma();
   $("#abrir").hidden = true; $("#bloquear").hidden = false;
   const id = (location.hash.match(/^#p=([\w-]+)$/) || [])[1];
@@ -408,7 +419,8 @@ $("#firma-archivo").addEventListener("change", e => {
   if (f.size > 2e6) { alert("La imagen pesa más de 2 MB; use una más liviana."); return; }
   const lector = new FileReader();
   lector.onload = async () => {
-    try { await Almacen.guardar("config", { id: "firma", dataUrl: lector.result, guardada: new Date().toISOString() }); FIRMA = lector.result; pintarBotonFirma(); alert("Firma guardada en la carpeta del registro."); }
+    const limpia = await limpiarFirma(lector.result);
+    try { await Almacen.guardar("config", { id: "firma", dataUrl: limpia, guardada: new Date().toISOString() }); FIRMA = limpia; pintarBotonFirma(); alert("Firma guardada en la carpeta del registro."); }
     catch (err) { alert("No se pudo guardar la firma: " + err.message); }
   };
   lector.readAsDataURL(f);
@@ -440,7 +452,7 @@ function verPaciente(id) {
   actual = pacientes.find(p => p.id === id);
   history.replaceState(null, "", "#p=" + id);
   $("#vista-lista").hidden = true; $("#vista-paciente").hidden = false;
-  pintarFicha(); pintarAtenciones();
+  $("#plan-paciente").hidden = true; pintarFicha(); pintarAtenciones();
   window.scrollTo(0, 0);
 }
 $("#volver").addEventListener("click", verLista);
@@ -453,11 +465,12 @@ function pintarFicha(editar) {
     return;
   }
   $("#ficha").innerHTML = `<h2 style="margin-bottom:2px">${esc(p.nombre)}</h2><p class="meta">${esc(p.tipoDoc || "")} ${esc(p.documento || "")}${e != null ? ` · ${e} años` : ""}${p.aseguradora ? " · " + esc(p.aseguradora) : ""}${p.telefono ? " · " + esc(p.telefono) : ""}</p>
-    <div class="fila" style="margin-top:10px"><a class="boton prim" href="./#seg=${p.id}">Nuevo seguimiento</a><button type="button" class="sec" data-historia>Exportar historia completa (PDF)</button><button type="button" class="sec" data-editar>Editar datos</button><button type="button" class="basura" data-borrar-paciente title="Borrar paciente y toda su historia" aria-label="Borrar paciente y toda su historia">${PAPELERA}</button></div>`;
+    <div class="fila" style="margin-top:10px"><a class="boton prim" href="./#seg=${p.id}">Nuevo seguimiento</a><button type="button" class="sec" data-historia>Exportar historia completa (PDF)</button>${planesDe(p.id).length ? '<button type="button" class="sec" data-plan-ver>Formulación y plan</button>' : ""}<button type="button" class="sec" data-editar>Editar datos</button><button type="button" class="basura" data-borrar-paciente title="Borrar paciente y toda su historia" aria-label="Borrar paciente y toda su historia">${PAPELERA}</button></div>`;
 }
 $("#ficha").addEventListener("click", async e => {
   if (e.target.closest("[data-editar]")) return pintarFicha(true);
   if (e.target.closest("[data-cancelar]")) return pintarFicha();
+  if (e.target.closest("[data-plan-ver]")) { const c = $("#plan-paciente"); c.hidden = !c.hidden; if (!c.hidden) { pintarPlan(); c.scrollIntoView({ behavior: "smooth", block: "start" }); } return; }
   if (e.target.closest("[data-historia]")) return exportar(atenciones.filter(a => a.pacienteId === actual.id && !a.ilegible).sort(orden), `Historia clínica - ${actual.nombre}`);
   if (e.target.closest("[data-guardar-ficha]")) {
     $("#ficha").querySelectorAll("[data-c]").forEach(i => { actual[i.dataset.c] = i.value.trim(); });
@@ -469,6 +482,8 @@ $("#ficha").addEventListener("click", async e => {
     if (!confirm(`¿Borrar a ${actual.nombre} y sus ${suyas.length} ${suyas.length === 1 ? "atención" : "atenciones"}?\n\nSe eliminan de la carpeta y no se pueden recuperar.`)) return;
     try {
       for (const a of suyas) await Almacen.borrar("atenciones", a.id);
+      for (const x of planesDe(actual.id)) await Almacen.borrar("planes", x.id);
+      planes = planes.filter(x => x.pacienteId !== actual.id);
       await Almacen.borrar("pacientes", actual.id);
       atenciones = atenciones.filter(a => a.pacienteId !== actual.id);
       pacientes = pacientes.filter(p => p.id !== actual.id);
@@ -481,7 +496,7 @@ function pintarAtenciones() {
   $("#atenciones").innerHTML = ats.length ? ats.map(a => {
     const pr = (a.impresion || []).find(d => d.principal) || (a.impresion || []).find(d => d.estado !== "descartada");
     return `<div class="at${a.tipo === "seguimiento" ? " seg" : ""}"><div class="at-cab"><div><strong>${esc(tipoEt(a))}</strong> · ${esc(fechaLarga(a.atencion.fecha))}
-      <div class="meta">${pr ? esc(pr.t) + (pr.codigo ? " · " + esc(pr.codigo) : "") : "Sin impresión diagnóstica"}${a.granola.trim() ? "" : " · sin informe de Granola"}</div></div>
+      <div class="meta">${pr ? esc(pr.t) + (pr.codigo ? " · " + esc(pr.codigo) : "") : "Sin impresión diagnóstica"}${a.granola.trim() ? "" : " · sin informe de la sesión"}</div></div>
       <div class="fila"><button type="button" class="sec" data-ver="${a.id}">Ver</button><button type="button" class="prim" data-pdf="${a.id}">Exportar PDF</button><button type="button" class="basura" data-borrar="${a.id}" title="Borrar esta atención" aria-label="Borrar esta atención">${PAPELERA}</button></div></div>
       <div class="vista hoja" id="vista-${a.id}" hidden></div></div>`;
   }).join("") : '<p class="vacio">Sin atenciones.</p>';
@@ -495,6 +510,8 @@ $("#atenciones").addEventListener("click", e => {
   if (b) {
     const a = atenciones.find(x => x.id === b.dataset.borrar);
     if (!confirm(`¿Borrar ${tipoEt(a).toLowerCase()} del ${fechaLarga(a.atencion.fecha)}?\n\nSe elimina de la carpeta y no se puede recuperar.`)) return;
+    for (const x of planes.filter(x => x.atencionId === a.id)) Almacen.borrar("planes", x.id).catch(() => {});
+    planes = planes.filter(x => x.atencionId !== a.id);
     Almacen.borrar("atenciones", a.id)
       .then(() => { atenciones = atenciones.filter(x => x.id !== a.id); actualizarEstado(); pintarAtenciones(); })
       .catch(err => alert("No se pudo borrar: " + err.message));
@@ -540,6 +557,32 @@ function impresionTabla(a) {
   return `<table><tr><th>Diagnóstico o afección</th><th>Código registrado</th><th>CIE-10</th><th>CIE-11</th><th>Estado</th></tr>${d.map(x => `<tr${x.principal ? ' class="principal"' : ""}><td>${esc(x.t)}${x.principal ? " (principal)" : ""}${x.criterios ? `<br><span class="nota">Criterios verificados: ${esc(x.criterios)}</span>` : ""}</td><td>${esc(x.codigo)}</td><td>${esc(x.cie10)}</td><td>${esc(x.cie11)}</td><td>${esc(ESTADO_ET[x.estado] || x.estado)}</td></tr>`).join("")}</table>
     <p class="nota">Códigos DSM-5-TR (CIE-10-MC) según el manual; los de la CIE-10 (OMS) y la CIE-11 deben verificarse en la clasificación oficial.</p>`;
 }
+// Vuelve transparente el fondo claro de la firma y recorta lo que sobra alrededor del trazo.
+function limpiarFirma(dataUrl) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const x = c.getContext("2d"); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, c.width, c.height), px = d.data;
+      let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1;
+      for (let i = 0; i < px.length; i += 4) {
+        const claro = Math.min(px[i], px[i + 1], px[i + 2]);
+        if (claro > 225) px[i + 3] = 0;
+        else if (claro > 180) px[i + 3] = Math.min(px[i + 3], Math.round((225 - claro) / 45 * 255));
+        if (px[i + 3] > 40) { const p = i / 4, cx = p % c.width, cy = (p - cx) / c.width; if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; if (cy > y1) y1 = cy; }
+      }
+      if (x1 < 0) return res(dataUrl);
+      x.putImageData(d, 0, 0);
+      const m = 4, w = Math.min(c.width, x1 + m) - Math.max(0, x0 - m), h = Math.min(c.height, y1 + m) - Math.max(0, y0 - m);
+      const r2 = document.createElement("canvas"); r2.width = w; r2.height = h;
+      r2.getContext("2d").drawImage(c, Math.max(0, x0 - m), Math.max(0, y0 - m), w, h, 0, 0, w, h);
+      res(r2.toDataURL("image/png"));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
 function firmaHtml(a) {
   return `<div class="firma">${FIRMA ? `<img src="${FIRMA}" alt="Firma">` : '<div style="height:17mm"></div>'}<div class="linea"><strong>${esc(PROFESIONAL.nombre)}</strong><br>${esc(PROFESIONAL.titulo)}<br>T.P. ${esc(PROFESIONAL.tp)}</div></div>`;
 }
@@ -582,6 +625,77 @@ function hojaAtencion(a, p, salto) {
   }
   h += "</div>";
   return h;
+}
+// ---------- Plan de intervención (solo para el profesional) ----------
+const planesDe = id => planes.filter(x => x.pacienteId === id).sort((a, b) => (b.guardado || "").localeCompare(a.guardado || ""));
+const TIPO_FICHA = { registro: "Ficha de registro", guia: "Guía de procedimiento", guion: "Guion" };
+// Enlace a la ficha en línea (la herramienta que se usa con los pacientes); el PDF va al lado.
+const fichaWeb = (f, pl) => `https://juanboya7.github.io/seminario-clinico/ficha.html?g=${pl.pob === "infancia" ? "infancia" : "adultos"}&f=${encodeURIComponent(f.k || "")}`;
+// Panel «Formulación y plan»: misma versión (una por atención), dos pestañas y tres exportaciones.
+let pestanaPlan = "formulacion";
+function pintarPlan(sel) {
+  const lista = planesDe(actual.id), pl = lista.find(x => x.id === sel) || lista[0];
+  if (!pl) { $("#plan-paciente").innerHTML = ""; return; }
+  const et = x => `${fechaLarga(x.fecha)} · ${x.tipo === "seguimiento" ? "seguimiento, sesión " + x.sesion : "consulta inicial"}`;
+  const tab = (k, t) => `<button type="button" class="${pestanaPlan === k ? "prim" : "sec"}" data-plan-tab="${k}" aria-pressed="${pestanaPlan === k}">${t}</button>`;
+  $("#plan-paciente").innerHTML = `<div class="panel plan-pac"><h2 style="margin:0 0 6px">Formulación y plan</h2>
+    <div class="fila">${lista.length > 1 ? `<select id="plan-version">${lista.map(x => `<option value="${x.id}"${x.id === pl.id ? " selected" : ""}>${esc(et(x))}${x === lista[0] ? " (vigente)" : ""}</option>`).join("")}</select>` : `<span class="meta">${esc(et(pl))}</span>`}</div>
+    <div class="fila" style="margin-top:10px">${tab("formulacion", "Formulación del caso")}${tab("plan", "Plan de intervención")}</div>
+    <div class="vista hoja t-${temaPlan(pl)}">${hojaPlan(pl, actual, pestanaPlan)}</div>
+    <div class="fila" style="margin-top:10px"><button type="button" class="prim" data-plan-pdf="ambos" data-id="${pl.id}">Exportar formulación y plan (PDF)</button>
+      <button type="button" class="sec" data-plan-pdf="formulacion" data-id="${pl.id}">Solo formulación</button><button type="button" class="sec" data-plan-pdf="plan" data-id="${pl.id}">Solo plan</button></div></div>`;
+}
+$("#plan-paciente").addEventListener("change", e => { if (e.target.id === "plan-version") pintarPlan(e.target.value); });
+$("#plan-paciente").addEventListener("click", e => {
+  const t = e.target.closest("[data-plan-tab]");
+  if (t) { pestanaPlan = t.dataset.planTab; pintarPlan($("#plan-version")?.value); return; }
+  const b = e.target.closest("[data-plan-pdf]");
+  if (b) exportarPlan(planes.find(x => x.id === b.dataset.id), b.dataset.planPdf);
+});
+const temaPlan = pl => temaDe({ atencion: { fecha: pl.fecha }, pob: pl.pob, edadRango: pl.edadRango || "" }, actual);
+const PARTES_ET = { ambos: "Formulación del caso y plan de intervención", formulacion: "Formulación del caso", plan: "Plan de intervención" };
+// Formulación: texto con «Rótulo: contenido» por párrafo (o pares rótulo–texto en registros anteriores).
+function formulacionHtml(f) {
+  if (Array.isArray(f)) return f.map(([et, t]) => `<p><strong>${esc(et)}.</strong> ${esc(t)}</p>`).join("");
+  return String(f || "").split(/\n\s*\n/).map(par => {
+    const m = par.trim().match(/^([^:\n]{3,40}):\s*([\s\S]+)$/);
+    return m ? `<p><strong>${esc(m[1])}.</strong> ${esc(m[2].trim())}</p>` : md(par);
+  }).join("");
+}
+function hojaPlan(pl, p, partes = "ambos") {
+  const tema = temaPlan(pl), conF = partes !== "plan", conP = partes !== "formulacion";
+  // Los rótulos del texto («Objetivos:», «Fases:») pasan a subtítulos.
+  const texto = String(pl.texto || "").replace(/^(Formulación del caso|Objetivos:|Fases:)\s*$/gm, m => "### " + m.replace(/:\s*$/, ""));
+  let h = `<div class="atn pln"><div class="fondo-p1"><img class="fondo arriba" src="arte/fondo-${tema}-arriba.webp" alt=""></div><div class="h-cab"><div class="txt"><div class="h-var">${PARTES_ET[partes]}</div>
+    <h1>${esc(p.nombre)}</h1><div class="h-sub">${conP && pl.enfoque ? esc(pl.enfoque) + " · " : ""}${esc(fechaLarga(pl.fecha))}</div>
+    <div class="h-prof"><b>${esc(PROFESIONAL.nombre)}</b> · ${esc(PROFESIONAL.titulo)} · T.P. ${esc(PROFESIONAL.tp)}</div></div></div>`;
+  const hayF = Array.isArray(pl.formulacion) ? pl.formulacion.length : String(pl.formulacion || "").trim();
+  if (conF) h += (partes === "ambos" ? "<h2>Formulación del caso</h2>" : "") + (hayF ? formulacionHtml(pl.formulacion) : '<p class="nota">No se registró formulación en esta versión.</p>');
+  if (!conP) return h + "</div>";
+  if (partes === "ambos") h += "<h2>Plan de intervención</h2>";
+  h += String(pl.texto || "").trim() ? md(texto) : '<p class="nota">No se registró plan en esta versión.</p>';
+  const fichas = pl.fichas || [];
+  if (fichas.length) {
+    const fases = [...new Set(fichas.map(f => f.fase || "Durante el plan"))];
+    h += `<h2>Fichas y materiales</h2>` + fases.map(fa => `<h3>${esc(fa)}</h3><ul>${fichas.filter(f => (f.fase || "Durante el plan") === fa).map(f => `<li><a href="${esc(fichaWeb(f, pl))}" target="_blank" rel="noopener">${esc(f.t)}</a> <a href="${esc(f.url)}" target="_blank" rel="noopener">(PDF)</a> · ${esc(TIPO_FICHA[f.c] || f.c)}${f.uso ? " — " + esc(f.uso) : ""}</li>`).join("")}</ul>`).join("");
+  }
+  if ((pl.guias || []).length || (pl.lecturas || []).length) {
+    h += `<h2>Lecturas</h2><ul>${(pl.guias || []).map(x => `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.t)}</a> (guía de planes de intervención)</li>`).join("")}${(pl.lecturas || []).map(x => `<li>${esc(x.libro)}, «${esc(x.seccion)}» (biblioteca)</li>`).join("")}</ul>`;
+  }
+  return h + "</div>";
+}
+function exportarPlan(pl, partes = "ambos") {
+  if (!pl) return;
+  const tema = temaPlan(pl);
+  $("#hoja").className = "hoja t-" + tema + ($("#con-fondo").checked ? "" : " sin-fondo");
+  $("#hoja").innerHTML = `<img class="fondo abajo" src="arte/fondo-${tema}-abajo.webp" alt="">` + hojaPlan(pl, actual, partes);
+  const t = document.title;
+  document.title = `${PARTES_ET[partes]} - ${actual.nombre} - ${pl.fecha}`.replace(/[\\/:*?"<>|]/g, "-");
+  document.body.dataset.hoja = "1";
+  const fin = () => { delete document.body.dataset.hoja; document.title = t; window.removeEventListener("afterprint", fin); };
+  window.addEventListener("afterprint", fin);
+  const imgs = [...$("#hoja").querySelectorAll("img")].filter(i => !i.complete);
+  Promise.all(imgs.map(i => new Promise(r => { i.onload = i.onerror = r; }))).then(() => window.print());
 }
 function exportar(lista, titulo) {
   if (!lista.length) return;

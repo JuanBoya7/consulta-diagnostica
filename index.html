@@ -182,6 +182,16 @@ button.globo:hover{border-color:var(--accent)}
 .tarea-ficha label{display:flex;gap:8px;align-items:flex-start}
 .tarea-ficha .ficha{display:inline-block;margin:4px 0}
 .texto-tarea{white-space:pre-wrap;font-size:.92rem}
+#s-ia h4{margin:16px 0 4px}
+#s-ia .ia-botones{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+#ia-anon{min-height:220px}
+#s-ia .ia-consent{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+#s-ia .ia-reloj{align-self:center;font-variant-numeric:tabular-nums;font-weight:600;color:var(--rojo)}
+#ia-grabar.grabando{background:var(--rojo)}
+#s-ia .ia-modelo{width:auto;padding:7px 8px}
+.aviso-emergente{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-12px);z-index:50;max-width:min(92vw,520px);padding:12px 18px;border-radius:10px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;color:#fff}
+.aviso-emergente.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+.aviso-emergente.ok{background:#1f7a52}.aviso-emergente.alerta{background:#a8670a}.aviso-emergente.error{background:#b3261e}
 </style>
 </head>
 <body>
@@ -211,10 +221,6 @@ button.globo:hover{border-color:var(--accent)}
   </div>
 </div>
 
-<div class="tabs" role="tablist">
-  <button type="button" role="tab" id="t-entrevista" aria-selected="true" data-tab="entrevista">Entrevista</button>
-  <button type="button" role="tab" id="t-hipotesis" aria-selected="false" data-tab="hipotesis">Hipótesis y criterios <span id="n-hip"></span></button>
-</div>
 
 <div id="tab-entrevista" role="tabpanel" aria-labelledby="t-entrevista">
   
@@ -235,17 +241,57 @@ button.globo:hover{border-color:var(--accent)}
     <div class="avisos-inc" id="eem-avisos" hidden></div>
     <div class="texto" id="eem-texto"></div>
   </div>
+  <div class="bloque" id="tab-hipotesis">
+    <h3>Hipótesis diagnósticas <span class="cuenta" id="n-hip"></span></h3>
+    <div class="panel" id="s-buscar">
+      <button type="button" class="sec" id="buscar-abrir">Buscar diagnóstico</button>
+      <div id="buscar-caja" hidden>
+        <div class="campo">
+          <label for="buscar">Diagnóstico, código o palabra clave</label>
+          <input type="search" id="buscar" autocomplete="off" placeholder="Por ejemplo: límite, F41.0, pánico, duelo, Z63.0…">
+        </div>
+        <div class="resultados" id="resultados"></div>
+      </div>
+      <div class="elegidos" id="elegidos"></div>
+    </div>
+    <div id="tarjetas"></div>
+    <div id="planes-directos"></div>
+  </div>
   
+  <div class="bloque" id="s-ia">
+    <h3>Transcripción y propuesta de Claude</h3>
+    <div class="caja">
+      <div id="ia-servidor" hidden>
+        <label class="meta ia-consent"><input type="checkbox" id="ia-consent"> Consentimiento informado para grabar la sesión y procesar el texto anonimizado</label>
+        <div class="ia-botones"><button type="button" class="prim" id="ia-grabar" disabled>● Grabar</button><button type="button" class="sec" id="ia-pausar" hidden>Pausar</button><button type="button" class="sec" id="ia-subir" disabled>Subir audio</button><span class="ia-reloj" id="ia-reloj"></span></div>
+        <p class="meta" id="ia-estado"></p>
+      </div>
+      <div class="ia-botones"><button type="button" class="sec" id="ia-cargar">Cargar transcripción</button><button type="button" class="sec" id="ia-respuesta">Cargar respuesta</button></div>
+      <details id="ia-det-trans"><summary>Transcripción original</summary><textarea id="ia-trans" rows="8"></textarea></details>
+      <div class="campo"><label for="ia-ocultar">Otros nombres o lugares a ocultar (uno por línea; opcional «Patricia = hermana»)</label><textarea id="ia-ocultar" rows="3" style="min-height:70px"></textarea></div>
+      <div id="ia-candidatos"></div>
+      <div class="campo"><label for="ia-anon">Texto que se enviará</label><textarea id="ia-anon"></textarea></div>
+      <div class="ia-botones"><button type="button" class="sec" id="ia-anonimizar">Volver a anonimizar</button><select id="ia-modelo" class="ia-modelo" hidden title="Modelo y nivel de exigencia"><optgroup label="Sonnet (más rápido)"><option value="sonnet|low">Sonnet · bajo</option><option value="sonnet|medium">Sonnet · medio</option><option value="sonnet|high" selected>Sonnet · alto</option><option value="sonnet|xhigh">Sonnet · muy alto</option><option value="sonnet|max">Sonnet · máximo</option></optgroup><optgroup label="Opus (más profundo, más lento)"><option value="opus|low">Opus · bajo</option><option value="opus|medium">Opus · medio</option><option value="opus|high">Opus · alto</option><option value="opus|xhigh">Opus · muy alto</option><option value="opus|max">Opus · máximo</option></optgroup></select><button type="button" class="prim" id="ia-enviar" hidden>Enviar a Claude</button><button type="button" class="prim" id="ia-guardar">Guardar solicitud</button></div>
+      <div id="ia-propuesta"></div>
+    </div>
+  </div>
   <div class="bloque" id="s-granola">
     <h3 class="oblig"><span>Informe de la sesión</span></h3>
-    <p class="meta">Receta de Granola: <strong id="receta-nombre"></strong>.</p>
-    <details><summary>Ver la receta para Granola</summary><div class="texto" id="receta"></div><button type="button" class="sec" id="receta-copiar">Copiar receta</button></details>
     <textarea id="granola" rows="14" placeholder="## Historia del problema actual&#10;…"></textarea>
   </div>
   <div class="bloque" id="s-impresion">
     <h3 class="oblig"><span>Impresión diagnóstica</span></h3>
     <div id="impresion"></div>
-    <div class="campo" style="margin-top:10px"><label for="imp-obs">Observaciones o análisis (opcional)</label><textarea id="imp-obs" rows="3"></textarea></div>
+    <textarea id="imp-obs" hidden></textarea>
+  </div>
+  <div class="bloque" id="s-formulacion">
+    <h3>Formulación del caso</h3>
+    <textarea id="formulacion-texto" rows="8" placeholder="Problemas actuales, factores predisponentes, precipitantes, mantenedores y protectores, pronóstico."></textarea>
+  </div>
+  <div class="bloque" id="s-plan">
+    <h3>Plan de intervención</h3>
+    <textarea id="plan-texto" rows="10" placeholder="Enfoque, objetivos, fases y seguimiento acordados."></textarea>
+    <div id="plan-extra"></div>
   </div>
   <div class="bloque" id="s-recomendaciones">
     <h3>Recomendaciones para la próxima sesión</h3>
@@ -255,19 +301,6 @@ button.globo:hover{border-color:var(--accent)}
   
 </div>
 
-<div id="tab-hipotesis" role="tabpanel" aria-labelledby="t-hipotesis" hidden>
-<div class="panel" id="s-buscar">
-  <div class="campo">
-    <label for="buscar">Buscar diagnóstico, código o palabra clave</label>
-    <input type="search" id="buscar" autocomplete="off" placeholder="Por ejemplo: límite, F41.0, pánico, duelo, Z63.0…">
-  </div>
-  <div class="resultados" id="resultados"></div>
-  <div class="elegidos" id="elegidos"></div>
-</div>
-
-<div id="tarjetas"></div>
-<div id="planes-directos"></div>
-</div>
 
 <div class="barra" id="barra">
   <button type="button" class="prim" id="guardar">Guardar</button>
@@ -2118,7 +2151,7 @@ function pintar() {
       <ul class="crit">${indices(id).map(k => criterioHtml(id, null, k)).join("")}</ul>
       ${notasDx(id)}
       ${h.dif ? `<p class="dif"><strong>Diferenciar de:</strong> ${esc(h.dif)}</p>` : ""}
-      <details><summary>Planes, instrumentos y fichas</summary>${planesHtml(id)}</details></section>`;
+      <details class="planes-det"><summary>Planes, instrumentos y fichas</summary>${planesHtml(id)}</details></section>`;
   }
   const contenedores = "#tarjetas details, #planes-directos details";
   const clave = d => {
@@ -2156,10 +2189,12 @@ $("#nueva").addEventListener("click", () => {
 });
 
 // ---------- Pestañas ----------
-function mostrarTab(t) {
-  for (const n of ["entrevista", "hipotesis"]) { $("#tab-" + n).hidden = n !== t; $("#t-" + n).setAttribute("aria-selected", n === t); }
-}
-document.querySelector(".tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) mostrarTab(b.dataset.tab); });
+function mostrarTab(t) {} // ya no hay pestañas: todo vive en la entrevista
+$("#buscar-abrir").addEventListener("click", () => {
+  const caja = $("#buscar-caja"); caja.hidden = !caja.hidden;
+  $("#buscar-abrir").textContent = caja.hidden ? "Buscar diagnóstico" : "Cerrar el buscador";
+  if (!caja.hidden) $("#buscar").focus();
+});
 
 // ---------- Ruta de primera entrevista ----------
 const visible = x => !x.pob || x.pob === pob();
@@ -2277,7 +2312,7 @@ function pintarLaterales() {
     }
   }
   if (!$("#sugeridas-bloque").hidden) h += item("sugeridas-bloque", "Hipótesis que sugiere la ruta", "entrevista");
-  for (const id of ["s-examen", "s-granola", "s-impresion", "s-recomendaciones"]) if ($("#" + id)) h += item(id, tituloDe($("#" + id)), "entrevista");
+  for (const id of ["s-examen", "tab-hipotesis", "s-ia", "s-granola", "s-impresion", "s-formulacion", "s-plan", "s-recomendaciones"]) if ($("#" + id)) h += item(id, tituloDe($("#" + id)), "entrevista");
   h += `</ul><div class="lat-t">Hipótesis y criterios</div><ul>${item("s-buscar", "Buscar hipótesis", "hipotesis")}${elegidas.map(id => {
     const r = resumenDx(id);
     return item("dx-" + id, H[id].t, "hipotesis", true, null, H[id].z ? "" : `${r.cumplidos}/${r.total}`);
@@ -2723,6 +2758,539 @@ Si se exploró riesgo suicida, violencia o autolesiones y qué se encontró. Si 
 };
 
 
+// ---------- Transcripción y propuesta de Claude (solo local) ----------
+// La transcripción la hace Whisper en el equipo («Transcribir sesión.cmd»). Aquí se anonimiza
+// con los datos del registro, se arma la solicitud que «Formular con Claude.cmd» envía y se
+// carga la respuesta. La tabla de reemplazos vive solo en memoria: nunca se guarda ni se envía.
+const ia = { mapa: new Map(), editado: false, carpeta: null, sid: "", resp: null, catalogo: [] };
+
+const IA_DIGITOS = "cero|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve";
+const IA_COMUNES = new Set(("Dios Señor Señora Doctor Doctora Don Doña Usted Ustedes Navidad Semana Santa " +
+  "Lunes Martes Miércoles Jueves Viernes Sábado Domingo Enero Febrero Marzo Abril Mayo Junio Julio Agosto " +
+  "Septiembre Octubre Noviembre Diciembre WhatsApp Facebook Instagram TikTok YouTube Netflix Google " +
+  "Colombia Bogotá Medellín Cali EPS ICBF Sisbén Bienestar Familiar Comisaría Fiscalía Policía").split(" "));
+const IA_PARTICULAS = new Set(["de", "del", "la", "las", "los", "y", "e", "da", "van", "von"]);
+
+// Patrón sin distinguir tildes ni mayúsculas, que no corta palabras.
+function iaPatron(t) {
+  const clase = { a: "[aáà]", e: "[eéè]", i: "[iíì]", o: "[oóò]", u: "[uúüù]", n: "[nñ]" };
+  const cuerpo = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/[aeioun]/g, c => clase[c]).replace(/\s+/g, "\\s+");
+  return new RegExp(`(?<![\\p{L}\\p{N}])${cuerpo}(?![\\p{L}\\p{N}])`, "giu");
+}
+function iaPalabras(s) {
+  return String(s || "").replace(/\(.*?\)/g, " ").split(/[\s,;/]+/).map(w => w.trim())
+    .filter(w => w.length >= 3 && !IA_PARTICULAS.has(w.toLowerCase()) && /\p{L}/u.test(w));
+}
+// Parentescos y roles: se conservan como etiqueta ([HERMANA], [TÍA]…) porque no identifican a nadie.
+const IA_PARENTESCOS = ("madre mamá mamita papá padre papito hermana hermano hermanita hermanito tía tío abuela abuelo " +
+  "prima primo esposa esposo pareja novia novio hija hijo sobrina sobrino cuñada cuñado suegra suegro madrastra padrastro " +
+  "nieta nieto madrina padrino amiga amigo profesora profesor docente compañera compañero jefa jefe vecina vecino").split(" ");
+const IA_NORMAL = { "mamá": "MADRE", "mamita": "MADRE", "papá": "PADRE", "papito": "PADRE", "hermanita": "HERMANA", "hermanito": "HERMANO" };
+const iaSinTildes = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+// Busca en lo dicho «mi hermana Patricia», «su tía Rosa»… y devuelve el parentesco.
+function iaParentescoDe(nombre) {
+  const texto = iaSinTildes($("#ia-trans").value), n = iaSinTildes(nombre.split(/\s+/)[0]);
+  for (const p of IA_PARENTESCOS) {
+    if (new RegExp(`\\b(?:mi|su|tu|el|la|del|al|con)\\s+${iaSinTildes(p)}\\s+${n}\\b`).test(texto)) return p;
+  }
+  return "";
+}
+function iaEtiqueta(parentesco) {
+  const p = String(parentesco || "").trim().toLowerCase();
+  return (IA_NORMAL[p] || p.toUpperCase()).replace(/\s+/g, " ");
+}
+// Términos a ocultar: [texto, etiqueta], del más largo al más corto. Si dos personas comparten
+// parentesco, la segunda lleva número ([HERMANA], [HERMANA 2]).
+function iaTerminos() {
+  const out = [], usadas = new Map();
+  const etiquetaUnica = (base, persona) => {
+    const lista = usadas.get(base) || []; let i = lista.indexOf(persona);
+    if (i < 0) { lista.push(persona); usadas.set(base, lista); i = lista.length - 1; }
+    return `[${base}${i ? " " + (i + 1) : ""}]`;
+  };
+  const agregar = (texto, et) => { texto = String(texto || "").trim(); if (texto.length >= 3) out.push([texto, et]); };
+  const persona = (nombre, base) => { const et = etiquetaUnica(base, nombre); agregar(nombre, et); for (const w of iaPalabras(nombre)) agregar(w, et); };
+  persona(paciente.nombre, "PACIENTE");
+  const acudBruto = String(paciente.acudiente || "");
+  const acud = acudBruto.replace(/\(.*?\)/g, "").split(/[,–—-]/)[0].trim();
+  const parAcud = (acudBruto.match(/\(([^)]+)\)/) || acudBruto.match(/[,–—-]\s*([^,]+)$/) || [])[1] || (acud ? iaParentescoDe(acud) : "");
+  if (acud) persona(acud, parAcud ? iaEtiqueta(parAcud) : "ACUDIENTE");
+  if (paciente.remite) persona(paciente.remite, "REMITENTE");
+  agregar(paciente.aseguradora, "[EPS]");
+  agregar(paciente.documento, "[NÚMERO]");
+  agregar(paciente.telefono, "[NÚMERO]");
+  let n = 0;
+  for (const linea of $("#ia-ocultar").value.split("\n")) {
+    const [t, et] = linea.split("=").map(s => s.trim());
+    if (!t) continue;
+    const par = et ? et.replace(/^\[|\]$/g, "") : iaParentescoDe(t);
+    if (par) persona(t, iaEtiqueta(par)); else agregar(t, `[NOMBRE ${++n}]`);
+  }
+  return out.sort((a, b) => b[0].length - a[0].length);
+}
+function iaAnonimizar(texto) {
+  let s = String(texto || "").replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "[CORREO]");
+  for (const [t, et] of iaTerminos()) {
+    s = s.replace(iaPatron(t), m => {
+      if (!ia.mapa.has(et) && !/^\[(NÚMERO|EPS)\]$/.test(et)) ia.mapa.set(et, et === "[PACIENTE]" ? iaPalabras(paciente.nombre)[0] || m : iaPalabras(t)[0] || m);
+      return et;
+    });
+  }
+  return s
+    .replace(/(?<![\p{L}\d:])\+?\d[\d .-]{5,}\d(?![\p{L}\d])/gu, m => /^\d{1,2}:\d{2}$/.test(m) ? m : "[NÚMERO]")
+    .replace(new RegExp(`(?<!\\p{L})(?:(?:${IA_DIGITOS})[\\s,.-]+){5,}(?:${IA_DIGITOS})(?!\\p{L})`, "giu"), "[NÚMERO]")
+    .replace(/(?<!\p{L})(calle|carrera|cra\.?|cll\.?|avenida|av\.|diagonal|transversal|manzana)\s+\d+[\p{L}]?(\s*(#|n[uú]mero|no\.?)\s*[\w-]+)*/giu, "[DIRECCIÓN]")
+    .replace(/(?<!\p{L})(barrio|vereda|conjunto)\s+(\p{Lu}[\p{L}]+)(\s+\p{Lu}[\p{L}]+)*/gu, "$1 [SECTOR]");
+}
+// Palabras con mayúscula a mitad de frase que siguen en el texto: posibles nombres por revisar.
+function iaCandidatos(s) {
+  const cuenta = new Map();
+  for (const m of s.matchAll(/(?<=[\p{Ll},;]\s+)(\p{Lu}[\p{Ll}]{2,}(?:\s+\p{Lu}[\p{Ll}]{2,})*)/gu)) {
+    const w = m[1];
+    if (w.split(/\s+/).every(x => IA_COMUNES.has(x))) continue;
+    cuenta.set(w, (cuenta.get(w) || 0) + 1);
+  }
+  return [...cuenta].sort((a, b) => b[1] - a[1]).slice(0, 30);
+}
+function iaPintarCandidatos() {
+  const c = iaCandidatos($("#ia-anon").value);
+  $("#ia-candidatos").innerHTML = c.length
+    ? `<p class="meta">Posibles nombres o lugares por revisar (clic para ocultarlos):</p><div class="sug-fila">${c.map(([w, n]) => `<button type="button" class="sug" data-ia-ocultar="${esc(w)}">${esc(w)}${n > 1 ? ` · ${n}` : ""}</button>`).join("")}</div>`
+    : "";
+}
+function iaRehacer() {
+  if (ia.editado && !confirm("Ya editó el texto que se enviará. ¿Rehacer la anonimización desde la transcripción?")) return;
+  ia.mapa.clear();
+  $("#ia-anon").value = iaAnonimizar($("#ia-trans").value);
+  ia.editado = false;
+  iaPintarCandidatos();
+}
+
+// ---------- Solicitud ----------
+function iaPlanesCatalogo() {
+  const vistos = new Set(), out = [];
+  for (const p of planesVigentes()) if (!vistos.has(p.id)) { vistos.add(p.id); out.push(p); }
+  return out;
+}
+function iaSolicitud() {
+  const seg = modo === "seguimiento", edad = edadDe(paciente.nacimiento, atencion.fecha);
+  ia.sid = "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  ia.catalogo = iaPlanesCatalogo();
+  const l = [`<!-- solicitud: ${ia.sid} · ${hoyISO()} -->`, "# Solicitud: informe, formulación y plan", "", "## Datos de la atención",
+    `- Tipo: ${seg ? `seguimiento (sesión ${sesion})` : "consulta inicial"}`,
+    `- Población: ${pob() === "infancia" ? "niños y adolescentes" : "adultos"}${edad != null ? `; edad: ${edad} años` : ""}${paciente.sexo ? `; sexo: ${paciente.sexo}` : ""}`,
+    `- Escenario: ${$("#esc").value ? $("#esc").selectedOptions[0].text : "sin especificar"}; modalidad: ${atencion.modalidad || "sin especificar"}`,
+    `- ${seg ? "Foco de la sesión" : "Motivo de consulta"}: ${iaAnonimizar(atencion.motivo || "sin registrar")}`,
+    "", "## Receta del informe", "~~~text", RECETAS[seg ? "seguimiento" : "inicial"], "~~~"];
+  const rr = resumenRuta();
+  l.push("", "## Ruta de entrevista registrada", rr.length ? iaAnonimizar(rr.join("\n")) : "Sin registrar.");
+  const ex = textoExamen();
+  l.push("", "## Examen mental registrado", ex === "Aún no hay nada marcado." ? "Sin registrar." : iaAnonimizar(ex));
+  l.push("", "## Hipótesis elegidas por el psicólogo (en verificación)");
+  if (!elegidas.length) l.push("Ninguna todavía.");
+  for (const id of elegidas) {
+    const h = H[id], r = resumenDx(id);
+    l.push(`- ${h.t} (DSM-5-TR ${h.dsm || "sin código"}) · estado: ${imp.estado[id] || "presuntiva"}${h.z ? "" : ` · criterios con apoyo: ${r.cumplidos} de ${r.total}`}`);
+    if (!h.z) indices(id).forEach(k => l.push(`  - ${estadoCriterio(id, k).cumple ? "[x]" : "[ ]"} ${crit(id, k).t}`));
+  }
+  l.push("", "## Texto de la sesión (anonimizado; las marcas de tiempo son solo para ubicarse y nunca se citan)", $("#ia-anon").value.trim());
+  const vigente = $("#plan-texto").value.trim();
+  if (seg && vigente) l.push("", "## Plan de intervención vigente", "Ajústelo según la evolución; si sigue sirviendo, consérvelo con los cambios necesarios.", iaAnonimizar(vigente));
+  l.push("", "## Catálogo de planes de las guías (punto de partida del plan a medida)", "");
+  for (const p of ia.catalogo) {
+    const base = (TAREAS_INICIALES[pob()] || {})[p.id];
+    l.push(`### ${p.id} · ${p.t}`, `- Enfoque: ${p.enf} · nivel de evidencia: ${NIVEL_ET[p.nivel] || p.nivel} · ${p.fuente || ""}`, `- Cuándo: ${p.cuando}`);
+    if (p.inst?.length) l.push(`- Instrumentos: ${p.inst.map(i => i.n || i.k).join("; ")}`);
+    if (base) l.push(`- Tarea inicial de la guía: ${base.texto.replace(/\s*\n\s*/g, " ")}`);
+    l.push("");
+  }
+  if (!ia.catalogo.length) l.push("Sin planes vinculados todavía: elija hipótesis para acotar el catálogo, o diseñe el plan desde la biblioteca.");
+  // Todas las fichas de las guías de esta población, para que el plan elija por clave.
+  l.push("", "## Fichas disponibles (clave · tipo · título)");
+  for (const f of iaFichasPoblacion()) l.push(`- ${f.k} · ${IA_TIPO_FICHA[f.c] || f.c} · ${f.t}`);
+  return l.join("\n");
+}
+const IA_TIPO_FICHA = { registro: "ficha de registro", guia: "guía de procedimiento", guion: "guion" };
+// Las fichas se abren en su versión en línea (ficha.html, la herramienta que se usa con los pacientes);
+// el PDF queda como enlace secundario. Siempre en pestaña nueva para no salir de la consulta.
+const IA_FICHA_WEB = "https://juanboya7.github.io/seminario-clinico/ficha.html";
+const iaUrlFichaWeb = (k, poblacion) => `${IA_FICHA_WEB}?g=${poblacion === "infancia" ? "infancia" : "adultos"}&f=${encodeURIComponent(k)}`;
+const iaEnlacesFicha = f => `<a href="${esc(iaUrlFichaWeb(f.k, pob()))}" target="_blank" rel="noopener">${esc(f.t)}</a> <a class="meta" href="${esc(f.url)}" target="_blank" rel="noopener">(PDF)</a>`;
+// En el plan guardado, la guía se enlaza a la versión publicada (los enlaces locales no sirven en el PDF).
+const IA_GUIA_WEB = { adultos: "https://juanboya7.github.io/seminario-clinico/planes-intervencion.html", infancia: "https://juanboya7.github.io/seminario-clinico/planes-infancia.html" };
+function iaFichasPoblacion() {
+  const m = new Map();
+  for (const v of DATOS[pob()].variables) for (const p of v.planes) for (const f of p.fichas || []) if (!m.has(f.k)) m.set(f.k, f);
+  return [...m.values()];
+}
+async function iaGuardarArchivo(nombre, texto) {
+  if (window.showSaveFilePicker) {
+    try {
+      const h = await showSaveFilePicker({ suggestedName: nombre, id: "ia-sesiones", startIn: ia.carpeta || "downloads",
+        types: [{ description: "Solicitud", accept: { "text/markdown": [".md"] } }] });
+      const w = await h.createWritable(); await w.write(texto); await w.close();
+      return h.name;
+    } catch (e) { if (e.name === "AbortError") return null; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([texto], { type: "text/markdown" })); a.download = nombre; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  return nombre;
+}
+async function iaAbrir(tipos, conCarpeta) {
+  if (window.showOpenFilePicker) {
+    try {
+      const [h] = await showOpenFilePicker({ id: "ia-sesiones", startIn: ia.carpeta || "documents", types: tipos });
+      if (conCarpeta) ia.carpeta = h;
+      return await (await h.getFile()).text();
+    } catch (e) { if (e.name === "AbortError") return null; }
+  }
+  return new Promise(res => {
+    const i = document.createElement("input"); i.type = "file"; i.accept = Object.values(tipos[0].accept).flat().join(",");
+    i.onchange = async () => res(i.files[0] ? await i.files[0].text() : null); i.click();
+  });
+}
+
+// ---------- Respuesta ----------
+const IA_FORM = [["problemas", "Problemas actuales"], ["predisponentes", "Factores predisponentes"], ["precipitantes", "Factores precipitantes"],
+  ["mantenedores", "Factores mantenedores"], ["protectores", "Factores protectores"], ["pronostico", "Pronóstico y posibles barreras"]];
+// Las marcas de tiempo nunca van a la historia (también se quitan en formular.py).
+const IA_MINUTOS = /\s*[\[(]\d{1,2}:\d{2}(?::\d{2})?(?:\s*[–—-]\s*\d{1,2}:\d{2}(?::\d{2})?)?[\])]/g;
+function iaReidentificar(s) {
+  let t = String(s || "").replace(IA_MINUTOS, "");
+  for (const [et, orig] of ia.mapa) t = t.split(et).join(orig);
+  return t;
+}
+function iaPlan(id) { return DATOS[pob()].variables.flatMap(v => v.planes).find(p => p.id === id); }
+function iaFormulacionTexto() {
+  const f = ia.resp.formulacion || {};
+  return IA_FORM.map(([k, et]) => [et, iaReidentificar(f[k] || "").trim()]).filter(([, t]) => t).map(([et, t]) => `${et}: ${t}`).join("\n\n");
+}
+function iaPintarPropuesta() {
+  const r = ia.resp;
+  if (!r) { $("#ia-propuesta").innerHTML = ""; return; }
+  const lista = xs => xs?.length ? `<ul>${xs.map(x => `<li>${esc(iaReidentificar(x))}</li>`).join("")}</ul>` : '<p class="meta">Nada.</p>';
+  let h = `<p class="meta">${esc(iaNombreModelo(r))} · ${esc((r.generado || "").replace("T", " "))}</p>`;
+  if (r.solicitud && ia.sid && r.solicitud !== ia.sid) h += `<p class="meta" style="color:var(--rojo)">Esta respuesta no corresponde a la última solicitud guardada en esta página.</p>`;
+  if (!ia.mapa.size) h += `<p class="meta">Las etiquetas ([PACIENTE]…) quedan tal cual: la tabla de reemplazos se pierde al recargar la página.</p>`;
+  h += `<h4>Riesgo</h4><div class="texto">${esc(iaReidentificar(r.riesgo))}</div>`;
+  h += `<h4>Informe de la sesión</h4><div class="texto">${esc(iaReidentificar(r.informe))}</div><button type="button" class="sec" data-ia-usar="informe">Usar en el informe de la sesión</button>`;
+  h += `<h4>Formulación del caso</h4><div class="texto">${IA_FORM.map(([k, et]) => `<strong>${et}.</strong> ${esc(iaReidentificar((r.formulacion || {})[k]))}`).join("\n\n")}</div><button type="button" class="sec" data-ia-usar="formulacion">Usar en la formulación del caso</button>`;
+  const planes = (r.planes || []).filter(p => p && p.objetivos);
+  h += `<h4>Plan de intervención</h4>`;
+  if (!planes.length) h += '<p class="meta">Sin plan en esta respuesta.</p>';
+  planes.forEach((p, i) => {
+    const cuerpo = `<p class="meta">${esc(p.enfoque)}${(p.base || []).length ? " · a partir de: " + p.base.map(id => esc(iaPlan(id)?.t || id)).join("; ") : ""}</p>
+      <p>${esc(iaReidentificar(p.justificacion))}</p>
+      <div class="texto">${esc(iaPlanTexto(p))}</div>
+      ${(p.recomendaciones || []).length ? `<p class="rot">Recomendaciones de este plan</p><ul>${p.recomendaciones.map(x => `<li>${esc(iaReidentificar(x))}</li>`).join("")}</ul>` : ""}
+      ${(p.fichas || []).length ? `<p class="rot">Fichas</p><ul>${p.fichas.map(f => { const x = iaFichasPoblacion().find(y => y.k === f.k); return x ? `<li>${iaEnlacesFicha(x)} <span class="meta">· ${esc(IA_TIPO_FICHA[x.c] || x.c)} · ${esc(f.fase)}</span></li>` : ""; }).join("")}</ul>` : ""}
+      ${(p.referencias || []).length ? `<p class="meta">Biblioteca:${p.referencias.map(x => `${esc(x.libro)} («${esc(x.seccion)}»)`).join("; ")}</p>` : ""}
+      <button type="button" class="${i ? "sec" : "prim"}" data-ia-plan="${i}">Usar este plan</button>`;
+    h += i ? `<details class="plan"><summary>Otro enfoque: ${esc(p.enfoque)}</summary>${cuerpo}</details>` : `<div class="plan">${cuerpo}</div>`;
+  });
+  h += `<h4>Por explorar</h4>${lista(r.vacios)}<h4>Advertencias</h4>${lista(r.advertencias)}`;
+  $("#ia-propuesta").innerHTML = `<div class="caja">${h}</div>`;
+}
+// Texto del plan tal como queda en la historia (sin justificación ni referencias).
+function iaPlanTexto(p) {
+  const l = [`Enfoque: ${p.enfoque}`, "", "Objetivos:", ...(p.objetivos || []).map(o => `- ${o}`), "", "Fases:"];
+  for (const f of p.fases || []) l.push(`- ${f.nombre} (sesiones ${f.sesiones}): ${f.contenido}`);
+  if (p.seguimiento) l.push("", `Seguimiento: ${p.seguimiento}`);
+  return iaReidentificar(l.join("\n"));
+}
+function iaGuardada() {
+  if (!ia.resp) return null;
+  return { modelo: ia.resp.modelo || "", generado: ia.resp.generado || "", base: (ia.resp.planes || []).flatMap(p => p.base || p.id || []), plan: ia.planUsado ?? null,
+    recomendaciones: iaRecs.filter(r => r.incluir).map(r => r.texto) };
+}
+// Sin la lista de planes del catálogo en las tarjetas: el plan sale a medida de la propuesta.
+document.head.insertAdjacentHTML("beforeend", "<style>.planes-det,#planes-directos{display:none}</style>");
+function reiniciarIA() {
+  ia.mapa.clear(); ia.editado = false; ia.sid = ""; ia.resp = null; ia.catalogo = []; ia.planUsado = null; iaRecs = []; iaPlanDoc = null; iaPintarPlanDoc();
+  if ($("#tareas-seleccionadas")) pintarRecomendaciones();
+  if (!ia.rec) { ia.sesion = ""; if ($("#ia-estado")) $("#ia-estado").textContent = ""; }
+  if ($("#ia-consent") && !ia.rec) { $("#ia-consent").checked = false; if (typeof iaBotones === "function" && ia.servidor) iaBotones(); }
+  $("#ia-trans").value = ""; $("#ia-anon").value = ""; $("#ia-ocultar").value = "";
+  $("#ia-candidatos").innerHTML = ""; $("#ia-propuesta").innerHTML = "";
+}
+
+// ---------- Eventos ----------
+$("#ia-cargar").addEventListener("click", async () => {
+  const t = await iaAbrir([{ description: "Transcripción", accept: { "text/plain": [".txt", ".md"] } }], true);
+  if (t == null) return;
+  $("#ia-trans").value = t; $("#ia-det-trans").open = false;
+  ia.editado = false; iaRehacer();
+  mensaje("Transcripción cargada y anonimizada. Revise el texto antes de guardar la solicitud.");
+});
+$("#ia-anonimizar").addEventListener("click", iaRehacer);
+$("#ia-anon").addEventListener("input", () => { ia.editado = true; });
+$("#ia-candidatos").addEventListener("click", e => {
+  const w = e.target.closest("[data-ia-ocultar]")?.dataset.iaOcultar;
+  if (!w) return;
+  const o = $("#ia-ocultar");
+  o.value = (o.value.trim() ? o.value.trim() + "\n" : "") + w;
+  // Si el texto ya se editó a mano, se reemplaza solo esa palabra para no perder los cambios.
+  if (ia.editado) { const et = iaTerminos().find(([t]) => t === w)[1]; $("#ia-anon").value = $("#ia-anon").value.replace(iaPatron(w), m => { if (!ia.mapa.has(et)) ia.mapa.set(et, m); return et; }); iaPintarCandidatos(); }
+  else iaRehacer();
+});
+$("#ia-guardar").addEventListener("click", async () => {
+  if (!$("#ia-anon").value.trim()) { mensaje("Cargue o pegue primero la transcripción."); return; }
+  const nombre = await iaGuardarArchivo("solicitud.md", iaSolicitud());
+  if (nombre) mensaje(`Solicitud guardada (${nombre}). Ábrala con «Formular con Claude.cmd» y luego cargue la respuesta.`);
+});
+$("#ia-respuesta").addEventListener("click", async () => {
+  const t = await iaAbrir([{ description: "Respuesta de Claude", accept: { "application/json": [".json"] } }], false);
+  if (t == null) return;
+  try {
+    const r = JSON.parse(t);
+    if (r.tipo !== "respuesta-claude") throw new Error("no es una respuesta de «Formular con Claude»");
+    ia.resp = r; iaPintarPropuesta(); iaVolcar();
+  } catch (e) { mensaje("No se pudo leer la respuesta: " + e.message); }
+});
+$("#ia-propuesta").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.iaUsar === "informe") {
+    const g = $("#granola");
+    if (g.value.trim() && !confirm("El informe de la sesión ya tiene texto. ¿Reemplazarlo?")) return;
+    g.value = iaReidentificar(ia.resp.informe); g.dispatchEvent(new Event("input", { bubbles: true }));
+    mensaje("Informe copiado. Revíselo en «Informe de la sesión».");
+  } else if (b.dataset.iaUsar === "formulacion") {
+    const d = $("#formulacion-texto");
+    if (d.value.trim() && !confirm("La formulación del caso ya tiene texto. ¿Reemplazarla?")) return;
+    d.value = iaFormulacionTexto(); d.dispatchEvent(new Event("input", { bubbles: true }));
+    mensaje("Formulación copiada a «Formulación del caso».");
+    $("#s-formulacion").scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (b.dataset.iaPlan != null) {
+    // El bloque «Plan de intervención» lleva solo el plan; la formulación viaja aparte en el
+    // documento del plan (iaPlanDoc.formulacion) y sale en su propia sección en el registro.
+    const p = ia.resp.planes[+b.dataset.iaPlan], destino = $("#plan-texto");
+    if (destino.value.trim() && !confirm("El plan de intervención ya tiene texto. ¿Reemplazarlo por este?")) return;
+    destino.value = iaPlanTexto(p); destino.dispatchEvent(new Event("input", { bubbles: true }));
+    // Si la formulación aún está vacía, se llena con la de la propuesta.
+    if (!$("#formulacion-texto").value.trim()) { $("#formulacion-texto").value = iaFormulacionTexto(); }
+    // Las recomendaciones son las de este plan; cada una se incluye con su casilla.
+    iaRecs = (p.recomendaciones || []).map(t => ({ texto: iaReidentificar(t).trim(), incluir: false })).filter(r => r.texto);
+    ia.planUsado = { enfoque: p.enfoque, base: p.base || [], referencias: p.referencias || [] };
+    iaPlanDoc = iaDocDePlan(p); iaPintarPlanDoc();
+    pintarRecomendaciones();
+    mensaje("Plan copiado a «Plan de intervención»; marque las recomendaciones que va a dar.");
+    $("#s-plan").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+});
+
+// ---------- Recomendaciones del plan a medida ----------
+// En la versión local reemplazan a las tareas de los planes del catálogo: cada recomendación del
+// plan elegido tiene su casilla y su texto editable; «Otras recomendaciones» sigue libre.
+var iaRecs = [];
+
+// ---------- Documento del plan (solo para el psicólogo) ----------
+// Lo que acompaña al texto del plan en el registro: enfoque, fichas elegidas del catálogo (solo las
+// que existen en las guías) y lecturas (planes de la guía en que se basa y pasajes de la biblioteca).
+var iaPlanDoc = null;
+function iaDocDePlan(p) {
+  const todas = iaFichasPoblacion(), g = DATOS[pob()];
+  const fichas = (p.fichas || []).map(f => { const x = todas.find(y => y.k === f.k); return x && { k: x.k, t: x.t, c: x.c, url: x.url, fase: iaReidentificar(f.fase), uso: iaReidentificar(f.uso), incluir: true }; }).filter(Boolean);
+  const guias = (p.base || []).map(id => { const x = iaPlan(id); return x && { id, t: x.t, url: `${IA_GUIA_WEB[pob()]}#plan-${id}` }; }).filter(Boolean);
+  return { enfoque: p.enfoque, fichas, guias, lecturas: (p.referencias || []).map(r => ({ libro: r.libro, seccion: r.seccion })) };
+}
+function iaPintarPlanDoc() {
+  const caja = $("#plan-extra"); if (!caja) return;
+  const d = iaPlanDoc;
+  if (!d) { caja.innerHTML = ""; return; }
+  caja.innerHTML = `${d.fichas.length ? `<p class="rot" style="margin-top:10px">Fichas del plan</p>${d.fichas.map((f, i) => `<div class="meta ia-consent"><input type="checkbox" id="plan-ficha-${i}" data-plan-ficha="${i}"${f.incluir ? " checked" : ""} aria-label="Incluir ${esc(f.t)}"> <span>${iaEnlacesFicha(f)} · ${esc(IA_TIPO_FICHA[f.c] || f.c)} · ${esc(f.fase)}${f.uso ? ` — ${esc(f.uso)}` : ""}</span></div>`).join("")}` : ""}
+    ${d.guias.length || d.lecturas.length ? `<p class="rot" style="margin-top:10px">Lecturas</p><ul class="meta">${d.guias.map(x => `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.t)}</a> (guía de planes)</li>`).join("")}${d.lecturas.map(x => `<li>${esc(x.libro)} · ${esc(x.seccion)}</li>`).join("")}</ul>` : ""}`;
+}
+$("#plan-extra")?.addEventListener("change", e => {
+  const i = e.target.dataset.planFicha; if (i == null || !iaPlanDoc) return;
+  iaPlanDoc.fichas[+i].incluir = e.target.checked;
+});
+// Lo que se guarda junto al texto del plan (lo llama el guardado de la consulta).
+function iaPlanDocGuardar() {
+  if (!iaPlanDoc) return {};
+  return { enfoque: iaPlanDoc.enfoque, fichas: iaPlanDoc.fichas.filter(f => f.incluir).map(({ incluir, ...f }) => f), guias: iaPlanDoc.guias, lecturas: iaPlanDoc.lecturas };
+}
+// En un seguimiento, el plan vigente vuelve con sus fichas y lecturas.
+function iaCargarPlanDoc(pl) {
+  iaPlanDoc = pl && (pl.fichas || pl.guias || pl.lecturas) ? { enfoque: pl.enfoque || "", fichas: (pl.fichas || []).map(f => ({ ...f, incluir: true })), guias: pl.guias || [], lecturas: pl.lecturas || [] } : null;
+  iaPintarPlanDoc();
+}
+function textoRecomendaciones() {
+  iaRecs = iaRecs || [];
+  const marcadas = iaRecs.filter(r => r.incluir && r.texto.trim()).map(r => r.texto.trim());
+  const otras = $("#recomendaciones-libres").value.trim();
+  return [...marcadas, ...(otras ? [otras] : [])].join("\n\n");
+}
+function pintarRecomendaciones() {
+  iaRecs = iaRecs || [];
+  const caja = $("#tareas-seleccionadas");
+  caja.hidden = false;
+  caja.innerHTML = iaRecs.length
+    ? iaRecs.map((r, i) => `<div class="plan"><label class="meta ia-consent"><input type="checkbox" data-ia-rec="${i}"${r.incluir ? " checked" : ""}> Incluir</label>
+        <textarea rows="2" data-ia-rec-texto="${i}" style="min-height:56px">${esc(r.texto)}</textarea></div>`).join("")
+    : '<p class="meta">Las recomendaciones del plan que elija en la propuesta aparecerán aquí.</p>';
+}
+$("#tareas-seleccionadas").addEventListener("change", e => {
+  const i = e.target.dataset.iaRec; if (i == null) return;
+  iaRecs[+i].incluir = e.target.checked;
+});
+$("#tareas-seleccionadas").addEventListener("input", e => {
+  const i = e.target.dataset.iaRecTexto; if (i == null) return;
+  iaRecs[+i].texto = e.target.value;
+});
+
+// ---------- Grabación y envío con el servidor local («Abrir consulta.cmd») ----------
+// Si la página se abrió desde el servidor de este equipo, se graba aquí mismo: el audio llega
+// al servidor en fragmentos de 5 s (no se pierde si se cierra la pestaña), Whisper y pyannote
+// transcriben en la GPU y Claude recibe solo el texto anonimizado.
+// Publicada en GitHub Pages, la página usa el servidor local por su dirección completa.
+const IA_PUBLICADA = /\.github\.io$/.test(location.hostname);
+const IA_API = IA_PUBLICADA ? "http://127.0.0.1:8770" : "";
+Object.assign(ia, { servidor: false, sesion: "", rec: null, flujo: null, cola: Promise.resolve(), inicio: 0, acumulado: 0, reloj: null, despierto: null });
+const iaEsperar = ms => new Promise(r => setTimeout(r, ms));
+async function iaApi(ruta, cuerpo) {
+  const r = await fetch(IA_API + ruta, { method: "POST", body: cuerpo ?? "" });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+  return j;
+}
+function iaEstado(t) { $("#ia-estado").textContent = t; }
+async function iaSeguir(tid) {
+  for (;;) {
+    const t = await fetch(IA_API + "/api/trabajo?id=" + encodeURIComponent(tid)).then(r => r.json());
+    iaEstado(t.mensaje + (t.avance != null ? ` ${Math.round(t.avance)} %` : ""));
+    if (t.estado === "listo") return t.resultado;
+    if (t.estado === "error") throw new Error(t.mensaje);
+    await iaEsperar(1500);
+  }
+}
+function iaBotones() {
+  const ok = $("#ia-consent").checked, grabando = !!ia.rec;
+  $("#ia-grabar").disabled = !ok && !grabando;
+  $("#ia-subir").disabled = !ok || grabando;
+  $("#ia-grabar").textContent = grabando ? "■ Detener y transcribir" : "● Grabar";
+  $("#ia-grabar").classList.toggle("grabando", grabando);
+  $("#ia-pausar").hidden = !grabando;
+  $("#ia-pausar").textContent = ia.rec?.state === "paused" ? "Reanudar" : "Pausar";
+}
+function iaPintarReloj() {
+  const s = Math.floor((ia.acumulado + (ia.rec?.state === "recording" ? Date.now() - ia.inicio : 0)) / 1000);
+  $("#ia-reloj").textContent = ia.rec ? `${ia.rec.state === "paused" ? "En pausa · " : "● "}${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}` : "";
+}
+async function iaTranscribir() {
+  try {
+    const { trabajo } = await iaApi(`/api/transcribir?sesion=${encodeURIComponent(ia.sesion)}`);
+    const r = await iaSeguir(trabajo);
+    if (!r.texto.trim()) { iaEstado("No se reconoció habla en la grabación. Revise el micrófono elegido en el navegador."); return; }
+    $("#ia-trans").value = r.texto; ia.editado = false; iaRehacer();
+    iaEstado("Transcripción lista y anonimizada. Revise el texto y envíelo a Claude.");
+    $("#ia-anon").scrollIntoView({ behavior: "smooth", block: "center" });
+  } catch (e) { iaEstado("No se pudo transcribir: " + e.message); }
+}
+async function iaIniciarGrabacion() {
+  try {
+    ia.flujo = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: true } });
+  } catch (e) { iaEstado("No hay acceso al micrófono: " + e.message); return; }
+  try { ia.sesion = (await iaApi("/api/sesion")).sesion; } catch (e) { iaEstado("El servidor no respondió: " + e.message); ia.flujo.getTracks().forEach(t => t.stop()); return; }
+  const tipo = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "";
+  ia.rec = new MediaRecorder(ia.flujo, { ...(tipo ? { mimeType: tipo } : {}), audioBitsPerSecond: 64000 });
+  ia.cola = Promise.resolve(); ia.acumulado = 0; ia.inicio = Date.now();
+  ia.rec.ondataavailable = e => {
+    if (!e.data.size) return;
+    const s = ia.sesion;
+    ia.cola = ia.cola.then(() => iaApi(`/api/fragmento?sesion=${encodeURIComponent(s)}&ext=webm`, e.data))
+      .catch(err => iaEstado("Problema al guardar la grabación: " + err.message));
+  };
+  ia.rec.onstop = async () => {
+    ia.flujo.getTracks().forEach(t => t.stop());
+    clearInterval(ia.reloj); ia.despierto?.release?.(); ia.despierto = null;
+    ia.rec = null; iaBotones(); iaPintarReloj();
+    iaEstado("Guardando la grabación…");
+    await ia.cola;
+    iaTranscribir();
+  };
+  ia.rec.start(5000);
+  try { ia.despierto = await navigator.wakeLock?.request("screen"); } catch {}
+  ia.reloj = setInterval(iaPintarReloj, 500);
+  sucio = true; iaBotones(); iaPintarReloj();
+  iaEstado("Grabando. La grabación queda en C:\IA\sesiones\\" + ia.sesion + ".");
+}
+
+$("#ia-consent").addEventListener("change", iaBotones);
+$("#ia-grabar").addEventListener("click", () => {
+  if (!ia.rec) return iaIniciarGrabacion();
+  if (ia.rec.state === "recording") ia.acumulado += Date.now() - ia.inicio;
+  ia.rec.stop();
+});
+$("#ia-pausar").addEventListener("click", () => {
+  if (!ia.rec) return;
+  if (ia.rec.state === "recording") { ia.acumulado += Date.now() - ia.inicio; ia.rec.pause(); iaEstado("En pausa."); }
+  else { ia.inicio = Date.now(); ia.rec.resume(); iaEstado("Grabando."); }
+  iaBotones(); iaPintarReloj();
+});
+$("#ia-subir").addEventListener("click", () => {
+  const i = document.createElement("input");
+  i.type = "file"; i.accept = "audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.opus,.aac,.flac,.webm";
+  i.onchange = async () => {
+    const f = i.files[0]; if (!f) return;
+    iaEstado("Subiendo el audio…");
+    try { ia.sesion = (await iaApi(`/api/audio?nombre=${encodeURIComponent(f.name)}`, f)).sesion; iaTranscribir(); }
+    catch (e) { iaEstado("No se pudo subir el audio: " + e.message); }
+  };
+  i.click();
+});
+$("#ia-enviar").addEventListener("click", async () => {
+  if (!$("#ia-anon").value.trim()) { mensaje("Primero grabe, suba o cargue la transcripción."); return; }
+  const b = $("#ia-enviar"); b.disabled = true;
+  try {
+    const [modelo, esfuerzo] = $("#ia-modelo").value.split("|");
+    const qs = new URLSearchParams({ ...(ia.sesion ? { sesion: ia.sesion } : {}), modelo, esfuerzo });
+    const { trabajo, sesion } = await iaApi(`/api/formular?${qs}`, iaSolicitud());
+    ia.sesion = sesion;
+    const r = await iaSeguir(trabajo);
+    ia.resp = r; iaPintarPropuesta(); iaVolcar();
+    iaEstado("La propuesta quedó en el informe, la formulación, el plan y las recomendaciones: revise y edite antes de guardar.");
+    $("#ia-propuesta").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) { iaEstado(e.message); }
+  finally { b.disabled = false; }
+});
+window.addEventListener("beforeunload", e => { if (ia.rec) { e.preventDefault(); e.returnValue = ""; } });
+
+// Con el servidor de este equipo aparecen la grabación y el envío directo. En la página publicada
+// el bloque solo aparece si el servidor de este equipo responde (la página habla con él, no con GitHub).
+if (IA_PUBLICADA) $("#s-ia").hidden = true;
+if (IA_PUBLICADA || /^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
+  fetch(IA_API + "/api/ping").then(r => r.ok && r.json()).then(j => {
+    if (!j?.ok) return;
+    ia.servidor = true; $("#s-ia").hidden = false;
+    $("#ia-servidor").hidden = false; $("#ia-enviar").hidden = false; $("#ia-guardar").hidden = true; $("#ia-modelo").hidden = false;
+    // El modelo elegido se recuerda en este navegador (preferencia de uso; si falla, queda Sonnet · alto).
+    try { const v = localStorage.getItem("ia-modelo"); if (v && [...$("#ia-modelo").options].some(o => o.value === v)) $("#ia-modelo").value = v; } catch {}
+    $("#ia-guardar").classList.replace("prim", "sec"); $("#ia-respuesta").hidden = true;
+    iaBotones();
+  }).catch(() => {});
+}
+
+$("#ia-modelo").addEventListener("change", e => { try { localStorage.setItem("ia-modelo", e.target.value); } catch {} });
+function iaNombreModelo(r) {
+  const m = String(r.modelo || ""), nivel = { low: "bajo", medium: "medio", high: "alto", xhigh: "muy alto", max: "máximo" }[r.esfuerzo];
+  return (/opus/i.test(m) ? "Opus" : /sonnet/i.test(m) ? "Sonnet" : m || "Claude") + (nivel ? " · " + nivel : "");
+}
+
+// Al llegar la propuesta, cada parte pasa a su campo editable (solo si está vacío), para revisar y
+// corregir todo antes de Guardar. La propuesta queda como referencia (y para elegir la alternativa).
+function iaVolcar() {
+  const r = ia.resp; if (!r) return;
+  const g = $("#granola");
+  if (!g.value.trim() && r.informe) { g.value = iaReidentificar(r.informe); g.dispatchEvent(new Event("input", { bubbles: true })); }
+  const f = $("#formulacion-texto");
+  if (f && !f.value.trim()) { f.value = iaFormulacionTexto(); f.dispatchEvent(new Event("input", { bubbles: true })); }
+  if (!$("#plan-texto").value.trim()) document.querySelector('[data-ia-plan="0"]')?.click();
+  mensaje("La propuesta quedó en los campos: revise y edite antes de guardar.");
+  $("#s-granola").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 const CAMPOS_PAC = [
   ["nombre", "Nombre completo"], ["tipoDoc", "Tipo de documento", ["CC", "TI", "RC", "CE", "PPT", "Pasaporte"]], ["documento", "Número de documento"],
   ["nacimiento", "Fecha de nacimiento", "date"], ["sexo", "Sexo", ["", "Femenino", "Masculino", "Intersexual", "No informa"]], ["genero", "Identidad de género (si la indica)"],
@@ -2757,8 +3325,6 @@ function pintarDatos() {
   html += `<div class="datos-grid" style="margin-top:10px">${CAMPOS_AT.map(c => campoHtml(c, atencion, "at")).join("")}</div>
     <div class="campo oblig" style="margin-top:10px"><label for="at-motivo">${seg ? "Foco de la sesión" : "Motivo de consulta (en sus palabras)"}</label><textarea id="at-motivo" data-at="motivo" rows="3">${esc(atencion.motivo || "")}</textarea></div>`;
   $("#datos").innerHTML = html;
-  $("#receta-nombre").textContent = seg ? "«Seguimiento»" : "«Consulta inicial»";
-  $("#receta").textContent = RECETAS[seg ? "seguimiento" : "inicial"];
 }
 $("#datos").addEventListener("input", e => {
   const i = e.target;
@@ -2819,12 +3385,11 @@ function pintarFaltantes() {
   if ($("#lat-pend")) $("#lat-pend").innerHTML = f.length ? `<div class="pendiente">Para guardar falta: ${lista}</div>` : "";
 }
 $("#faltan").addEventListener("click", e => { const b = e.target.closest("[data-ir]"); if (b) irA(b.dataset.ir, b.dataset.irTab); });
-$("#receta-copiar").addEventListener("click", () => copiarTexto($("#receta").textContent));
 
 // Impresión diagnóstica: las hipótesis elegidas, con su estado y el código que se registra.
 const ESTADOS_IMP = [["presuntiva", "Presuntiva (en verificación)"], ["confirmada", "Confirmada"], ["descartada", "Descartada"]];
 function pintarImpresion() {
-  if (!elegidas.length) { $("#impresion").innerHTML = '<p class="meta">Elija hipótesis en la pestaña «Hipótesis y criterios» (o con los botones «+» de la ruta); aquí indica su estado y el código que registra.</p>'; return; }
+  if (!elegidas.length) { $("#impresion").innerHTML = '<p class="meta">Elija hipótesis en «Hipótesis diagnósticas» (o con los botones «+» de la ruta); aquí indica su estado y el código que registra.</p>'; return; }
   if (!elegidas.includes(imp.principal)) imp.principal = elegidas.find(id => !H[id].z && imp.estado[id] !== "descartada") || null;
   $("#impresion").innerHTML = '<div class="caja" style="margin:0">' + elegidas.map(id => {
     const h = H[id], r = resumenDx(id);
@@ -2857,21 +3422,32 @@ document.addEventListener("click", e => { if (e.target.closest("[data-r], [data-
 document.addEventListener("change", () => { sucio = true; });
 window.addEventListener("beforeunload", e => { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
 function mensaje(t) { $("#copiado").textContent = t; }
+function avisoEmergente(t, tipo) {
+  let el = document.getElementById("aviso-emergente");
+  if (!el) { el = document.createElement("div"); el.id = "aviso-emergente"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
+  el.className = "aviso-emergente " + tipo; el.textContent = t;
+  void el.offsetWidth; el.classList.add("ver");
+  clearTimeout(avisoEmergente.t); avisoEmergente.t = setTimeout(() => el.classList.remove("ver"), tipo === "ok" ? 3500 : 6000);
+}
+function avisoGuardar(t) {
+  mensaje(t);
+  avisoEmergente(t, /^Guardado/.test(t) ? "ok" : /^(Faltan|Complete)/.test(t) ? "alerta" : "error");
+}
 $("#guardar").addEventListener("click", async () => {
   intento = true;
   const f = faltantes();
-  if (f.length) { pintarFaltantes(); mensaje(`Faltan ${f.length} ${f.length === 1 ? "campo obligatorio" : "campos obligatorios"}.`); irA(f[0][1], "entrevista"); return; }
+  if (f.length) { pintarFaltantes(); avisoGuardar(`Faltan ${f.length} ${f.length === 1 ? "campo obligatorio" : "campos obligatorios"}.`); irA(f[0][1], "entrevista"); return; }
   const vacias = Object.values(tareasElegidas).some(t => t.incluir && !t.texto.trim());
-  if (vacias) { mensaje("Complete la tarea marcada o desmarque su casilla antes de guardar."); mostrarTab("hipotesis"); return; }
+  if (vacias) { avisoGuardar("Complete la tarea marcada o desmarque su casilla antes de guardar."); mostrarTab("hipotesis"); return; }
   const inc = incongruencias();
   if (inc.length && !confirm(`Hay ${inc.length} ${inc.length === 1 ? "incongruencia" : "incongruencias"} por revisar:\n\n${inc.map(x => "• " + x.t).join("\n")}\n\n¿Guardar de todos modos?`)) { irA("eem-avisos", "entrevista"); return; }
-  try { await Almacen.desbloquear(); } catch { mensaje("No se guardó."); return; }
+  try { await Almacen.desbloquear(); } catch { avisoGuardar("No se guardó."); return; }
   try {
     if (!pacienteGuardado) {
       // Si ya hay un paciente con el mismo documento, la atención se suma a su registro.
       const doc = (paciente.documento || "").replace(/\D/g, "");
       const previo = doc ? (await Almacen.listar("pacientes")).find(p => !p.ilegible && (p.documento || "").replace(/\D/g, "") === doc && p.tipoDoc === paciente.tipoDoc) : null;
-      if (previo && !confirm(`Ya hay un registro de ${previo.nombre} con ese documento. ¿Agregar esta atención a su registro?\n(Cancelar para no guardar todavía.)`)) { mensaje("No se guardó."); return; }
+      if (previo && !confirm(`Ya hay un registro de ${previo.nombre} con ese documento. ¿Agregar esta atención a su registro?\n(Cancelar para no guardar todavía.)`)) { avisoGuardar("No se guardó."); return; }
       pacienteGuardado = previo ? { ...previo, ...Object.fromEntries(Object.entries(paciente).filter(([, v]) => v)) } : { id: Almacen.nuevoId("p"), creado: new Date().toISOString(), ...paciente };
       if (previo) sesion = (await Almacen.listar("atenciones")).filter(a => a.pacienteId === previo.id).length + 1;
     } else if (modo === "inicial") Object.assign(pacienteGuardado, paciente);
@@ -2882,7 +3458,7 @@ $("#guardar").addEventListener("click", async () => {
       id: atencionId, pacienteId: pacienteGuardado.id, tipo: modo, sesion, guardado: new Date().toISOString(),
       atencion: { ...atencion }, paciente: { ...pacienteGuardado }, pob: pob(),
       escenario: $("#esc").value ? $("#esc").selectedOptions[0].text : "", edadRango: $("#campo-edad").hidden ? "" : ($("#edad").selectedOptions[0] || {}).text || "",
-      ruta: resumenRuta(), examen: textoExamen(), granola: $("#granola").value, recomendaciones: textoRecomendaciones(), tareasIniciales: tareasGuardadas(), impresion: impresionGuardada(), observaciones: $("#imp-obs").value,
+      ruta: resumenRuta(), examen: textoExamen(), granola: $("#granola").value, recomendaciones: textoRecomendaciones(), tareasIniciales: tareasGuardadas(), impresion: impresionGuardada(), observaciones: $("#imp-obs").value, ia: iaGuardada(), planId: ($("#plan-texto").value.trim() || $("#formulacion-texto").value.trim()) ? "pl-" + atencionId : null,
       estado: { ruta, eem: Object.fromEntries(Object.entries(eem).map(([k, s]) => [k, [...s]])), elegidas: [...elegidas], marcas, imp,
         // Criterios tal como quedaron (tarjeta y ruta juntas): el siguiente seguimiento parte de aquí.
         efectivas: Object.fromEntries(elegidas.map(id => [id, Object.fromEntries(indices(id).map(k => {
@@ -2891,24 +3467,29 @@ $("#guardar").addEventListener("click", async () => {
         }))])) }
     };
     await Almacen.guardar("atenciones", reg);
+    if ($("#plan-texto").value.trim() || $("#formulacion-texto").value.trim()) await Almacen.guardar("planes", { id: "pl-" + atencionId, pacienteId: pacienteGuardado.id, atencionId, tipo: modo, sesion,
+      fecha: atencion.fecha, guardado: new Date().toISOString(), pob: pob(), edadRango: reg.edadRango,
+      ...(typeof iaPlanDocGuardar === "function" ? iaPlanDocGuardar() : {}),
+      texto: $("#plan-texto").value.trim(), formulacion: $("#formulacion-texto").value.trim() });
     sucio = false;
-    mensaje(`Guardado en el registro (${Almacen.nombreCarpeta()}).`);
-  } catch (e) { console.error(e); mensaje("No se pudo guardar: " + e.message); }
+    avisoGuardar(`Guardado en el registro (${Almacen.nombreCarpeta()}).`);
+  } catch (e) { console.error(e); avisoGuardar("No se pudo guardar: " + e.message); }
 });
 function reiniciarLocal() {
   reiniciarTareas();
+  reiniciarIA();
   intento = false;
   paciente = { tipoDoc: "CC" }; atencion = { fecha: hoyISO(), modalidad: "Presencial" }; pacienteGuardado = null; atencionId = null; sesion = 1; sucio = false;
   for (const o of [imp.estado, imp.codigo]) for (const k in o) delete o[k];
   imp.principal = null; modo = "inicial";
   if (location.hash) history.replaceState(null, "", location.pathname);
-  $("#granola").value = ""; $("#imp-obs").value = "";
+  $("#granola").value = ""; $("#imp-obs").value = ""; $("#plan-texto").value = ""; $("#formulacion-texto").value = ""; if (typeof iaCargarPlanDoc === "function") iaCargarPlanDoc(null);
   pintarDatos();
 }
 
 // Seguimiento: el registro abre esta página con #seg=<id del paciente>.
 async function cargarSeguimiento(id) {
-  modo = "seguimiento"; reiniciarTareas(); pintarDatos(); actualizarRuta();
+  modo = "seguimiento"; reiniciarTareas(); reiniciarIA(); pintarDatos(); actualizarRuta();
   try { await Almacen.desbloquear(); } catch { modo = "inicial"; history.replaceState(null, "", location.pathname); pintarDatos(); actualizarRuta(); return; }
   const p = await Almacen.leer("pacientes", id);
   if (!p) { mensaje("No se encontró el paciente en el registro."); return; }
@@ -2919,6 +3500,14 @@ async function cargarSeguimiento(id) {
   // La impresión vigente es la de la última atención (sin las descartadas).
   const ult = previas[previas.length - 1];
   if (ult) for (const d of ult.impresion || []) if (d.estado !== "descartada" && H[d.id]) { elegidas.push(d.id); if (((ult.estado || {}).efectivas || {})[d.id]) marcas[d.id] = JSON.parse(JSON.stringify(ult.estado.efectivas[d.id])); imp.estado[d.id] = d.estado; imp.codigo[d.id] = d.codigo; if (d.principal) imp.principal = d.id; }
+  // La formulación y el plan vigentes son los últimos guardados para este paciente.
+  const sus = (await Almacen.listar("planes")).filter(x => x.pacienteId === id && !x.ilegible).sort((a, b) => (a.guardado || "").localeCompare(b.guardado || ""));
+  const pl = sus.at(-1);
+  if (pl) {
+    $("#plan-texto").value = pl.texto || "";
+    $("#formulacion-texto").value = Array.isArray(pl.formulacion) ? pl.formulacion.map(([et, t]) => et + ": " + t).join("\n\n") : (pl.formulacion || "");
+    if (typeof iaCargarPlanDoc === "function") iaCargarPlanDoc(pl);
+  } else if (ult?.plan) $("#plan-texto").value = ult.plan;
   prepararFiltros(); pintarDatos();
 }
 pintarDatos();
