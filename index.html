@@ -10288,6 +10288,9 @@ function moverSesion(d) {
   vs.cur = T[Math.max(0, Math.min(T.length - 1, i + d))].k; pintarSesion(); window.scrollTo(0, 0);
 }
 function cambioSesion() { if (typeof sucio !== "undefined") sucio = true; actualizarRuta(); pintarSesion(); }
+// Las ventanas modales van fuera de .marco: en el modo sesión .marco se oculta y una ventana abierta
+// dentro de él quedaría invisible bloqueando los clics de toda la página.
+for (const id of ["dlg-consent", "dlg-eem"]) { const d = document.getElementById(id); if (d) document.body.appendChild(d); }
 $("#sesion-entrar").addEventListener("click", entrarSesion);
 $("#vista-sesion").addEventListener("input", e => {
   const t = e.target;
@@ -10358,19 +10361,8 @@ $("#vista-sesion").addEventListener("click", e => {
   else if (t.id === "vs-grabar") {
     // Sin el consentimiento marcado, una ventana lo confirma y arranca en el mismo clic (pedido del
     // docente, 2026-11-22: en vez de dejar la casilla marcada por defecto).
-    if (!grabando() && !$("#ia-consent").checked) {
-      const dlg = $("#dlg-consent");
-      dlg.onclick = ev => {
-        const b = ev.target.closest("button[value]"); if (!b) return;
-        dlg.close();
-        if (b.value !== "si") return;
-        $("#ia-consent").checked = true; $("#ia-consent").dispatchEvent(new Event("change", { bubbles: true }));
-        $("#ia-grabar").click(); setTimeout(pintarSesion, 400);
-      };
-      dlg.showModal(); dlg.querySelector('[value="si"]').focus();
-      return;
-    }
     $("#ia-grabar").click(); setTimeout(pintarSesion, 400);
+    $("#dlg-consent").addEventListener("close", () => setTimeout(pintarSesion, 400), { once: true });
   }
 });
 document.addEventListener("keydown", e => {
@@ -11430,8 +11422,8 @@ async function iaSeguir(tid) {
 }
 function iaBotones() {
   const ok = $("#ia-consent").checked, grabando = !!ia.rec;
-  $("#ia-grabar").disabled = !ok && !grabando;
-  $("#ia-subir").disabled = !ok || grabando;
+  $("#ia-grabar").disabled = false;
+  $("#ia-subir").disabled = grabando;
   $("#ia-grabar").textContent = grabando ? "■ Terminar transcripción" : "● Transcribir";
   $("#ia-grabar").classList.toggle("grabando", grabando);
   $("#ia-pausar").hidden = !grabando;
@@ -11491,8 +11483,21 @@ async function iaIniciarGrabacion() {
 }
 
 $("#ia-consent").addEventListener("change", iaBotones);
+// Sin el consentimiento marcado, una ventana lo confirma antes de transcribir o subir un audio.
+function iaConConsentimiento(seguir) {
+  if ($("#ia-consent").checked) return seguir();
+  const dlg = $("#dlg-consent");
+  dlg.onclick = ev => {
+    const b = ev.target.closest("button[value]"); if (!b) return;
+    dlg.close();
+    if (b.value !== "si") return;
+    $("#ia-consent").checked = true; iaBotones();
+    seguir();
+  };
+  dlg.showModal(); dlg.querySelector('[value="si"]').focus();
+}
 $("#ia-grabar").addEventListener("click", () => {
-  if (!ia.rec) return iaIniciarGrabacion();
+  if (!ia.rec) return iaConConsentimiento(iaIniciarGrabacion);
   if (ia.rec.state === "recording") ia.acumulado += Date.now() - ia.inicio;
   ia.rec.stop();
 });
@@ -11502,7 +11507,7 @@ $("#ia-pausar").addEventListener("click", () => {
   else { ia.inicio = Date.now(); ia.rec.resume(); iaEstado("Transcribiendo en vivo."); }
   iaBotones(); iaPintarReloj();
 });
-$("#ia-subir").addEventListener("click", () => {
+$("#ia-subir").addEventListener("click", () => iaConConsentimiento(() => {
   const i = document.createElement("input");
   i.type = "file"; i.accept = "audio/*,video/mp4,.m4a,.mp3,.wav,.ogg,.opus,.aac,.flac,.webm";
   i.onchange = async () => {
@@ -11512,7 +11517,7 @@ $("#ia-subir").addEventListener("click", () => {
     catch (e) { iaEstado("No se pudo subir el audio: " + e.message); }
   };
   i.click();
-});
+}));
 $("#ia-enviar").addEventListener("click", async () => {
   if (!$("#ia-anon").value.trim()) { mensaje("Primero transcriba, suba un audio o cargue la transcripción."); return; }
   const b = $("#ia-enviar"); b.disabled = true;
