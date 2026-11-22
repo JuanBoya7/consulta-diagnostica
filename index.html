@@ -445,6 +445,11 @@ body.en-sesion .marco{display:none}
   <span class="meta" id="copiado"></span>
   <div class="faltan" id="faltan" hidden></div>
 </div>
+<dialog class="dlg" id="dlg-consent" aria-labelledby="dlg-consent-t">
+  <h3 id="dlg-consent-t" style="color:var(--accent-dark)">Consentimiento informado</h3>
+  <p>¿La persona dio su consentimiento informado para transcribir la sesión? El audio se procesa en este equipo y se borra al terminar; a Claude solo llega el texto anonimizado.</p>
+  <div class="fila dlg-bot"><button type="button" class="sec" value="no">Cancelar</button><button type="button" class="prim" value="si">Sí, empezar</button></div>
+</dialog>
 <dialog class="dlg" id="dlg-eem" aria-labelledby="dlg-eem-t">
   <h3 id="dlg-eem-t">Verifique el examen mental</h3>
   <p>No ha cambiado nada en el examen mental, así que todo figura sin alteraciones. Revíselo antes de guardar y marque lo que requiera atención.</p>
@@ -10351,8 +10356,20 @@ $("#vista-sesion").addEventListener("click", e => {
   else if (t.id === "vs-area") { vs.hoja = "area"; pintarSesion(); }
   else if (t.id === "vs-salir") salirSesion();
   else if (t.id === "vs-grabar") {
-    // La transcripción necesita el consentimiento marcado en su bloque; sin él, se va a marcarlo.
-    if ($("#ia-grabar").disabled) { salirSesion(); irA("ia-consent", "entrevista"); return; }
+    // Sin el consentimiento marcado, una ventana lo confirma y arranca en el mismo clic (pedido del
+    // docente, 2026-11-22: en vez de dejar la casilla marcada por defecto).
+    if (!grabando() && !$("#ia-consent").checked) {
+      const dlg = $("#dlg-consent");
+      dlg.onclick = ev => {
+        const b = ev.target.closest("button[value]"); if (!b) return;
+        dlg.close();
+        if (b.value !== "si") return;
+        $("#ia-consent").checked = true; $("#ia-consent").dispatchEvent(new Event("change", { bubbles: true }));
+        $("#ia-grabar").click(); setTimeout(pintarSesion, 400);
+      };
+      dlg.showModal(); dlg.querySelector('[value="si"]').focus();
+      return;
+    }
     $("#ia-grabar").click(); setTimeout(pintarSesion, 400);
   }
 });
