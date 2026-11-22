@@ -249,6 +249,40 @@ body.en-sesion .marco{display:none}
 .vs-hoja h3{display:flex;justify-content:space-between;align-items:center;color:var(--accent-dark)}
 .vs-hoja .eem-fila .rot{font-weight:600}
 .vs-hoja h3{position:sticky;top:-18px;z-index:1;background:#fff;margin:-18px 0 6px;padding:14px 0 8px}
+
+/* Instrumentos, devolución y acuerdos (modo sesión y vista completa). */
+.vs-sec{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.vs-sec h4{margin:0 0 4px;font-size:.95rem;color:var(--accent-dark)}
+.vs-inst{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px dashed var(--border)}
+.vs-inst:first-child{border-top:0}
+.vs-inst .meta{margin:2px 0 0}
+.vs-inst-bot{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:0 0 auto}
+.vs-inst-bot button{font-size:.82rem;padding:5px 10px}
+.vs-buscar{width:100%;font:inherit;border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin:8px 0}
+.vs-cats{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.vs-cats button{font-size:.8rem;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+.vs-cats button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.vs-ap-cab{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.vs-ap-q{font-size:1.3rem;line-height:1.35;margin:10px 0 14px}
+.vs-ap-ops{display:flex;flex-direction:column;gap:8px}
+.vs-ap-ops button{text-align:left;border:2px solid var(--border);background:var(--surface);border-radius:12px;padding:11px 14px;font-size:1rem;color:var(--ink)}
+.vs-ap-ops button kbd{font:.75rem system-ui;color:var(--ink-faint);margin-right:8px}
+.vs-ap-ops button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark)}
+.vs-ap-res{margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--surface);font-size:.9rem}
+.vs-ap-res b{color:var(--accent-dark)}
+.vs-ap-img{max-width:100%;max-height:160px;display:block;margin:6px 0}
+.vs-alerta{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--rojo-soft);color:var(--rojo);font-size:.92rem}
+.vs-int{width:100%;min-height:90px;margin-top:8px}
+.vs-tarea{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:8px 12px;margin:6px 0;color:var(--ink);font-size:.9rem}
+.vs-tarea b{display:block;font-size:.78rem;color:var(--ink-faint);font-weight:600}
+.vs-tarea[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.inst-reg{border-top:1px dashed var(--border);padding:10px 0}
+.vs-hecho{font-size:.75rem;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-left:4px}
+.vs-hoja input[type=number],.vs-hoja input[type=time]{font:inherit;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:#fff;color:var(--ink);text-align:left}
+.vs-main{padding-bottom:160px}
+.inst-reg:first-child{border-top:0}
+.inst-reg textarea{min-height:70px;margin-top:6px}
+
 @media (max-width:600px){.vs-bar .t{flex-basis:100%} .vs-fab{padding:10px 14px;bottom:12px} #vs-hip{left:12px} #vs-obs{right:12px} .vs-fab .larga{display:none}}
 .tarea-inicial{margin:10px 0 6px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
 .tarea-inicial>label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
@@ -318,6 +352,18 @@ body.en-sesion .marco{display:none}
     <div class="fila" style="gap:8px"><button type="button" class="sec" id="eem-revisado" aria-pressed="false">Examen revisado</button><button type="button" class="sec" id="eem-copiar">Copiar examen mental</button></div>
     <div class="avisos-inc" id="eem-avisos" hidden></div>
     <div class="texto" id="eem-texto"></div>
+  </div>
+  <div class="bloque" id="s-instrumentos">
+    <h3><span>Instrumentos aplicados</span></h3>
+    <div class="caja" id="instrumentos"></div>
+    <div class="fila" style="gap:8px"><button type="button" class="sec" id="inst-abrir">Aplicar o registrar un instrumento</button></div>
+  </div>
+  <div class="bloque" id="s-devolucion">
+    <h3><span>Apuntes del cierre</span></h3>
+    <p class="meta">Lo devuelto y acordado en vivo. No va a la historia: es la base para que Claude construya las recomendaciones, tareas y acuerdos.</p>
+    <label class="rot" for="devolucion-texto">Devolución</label>
+    <textarea id="devolucion-texto" rows="4"></textarea>
+    <div id="acuerdos-sesion"></div>
   </div>
   <div class="bloque" id="tab-hipotesis">
     <h3>Hipótesis diagnósticas <span class="cuenta" id="n-hip"></span></h3>
@@ -1920,6 +1966,129 @@ const INCONGRUENCIAS = [
     t: "Afecto triste con ánimo referido estable o elevado: discordancia entre afecto y ánimo. Regístrela si es un hallazgo." }
 ];
 
+/* DEVOLUCION: frases breves para el cierre de la entrevista, por área de la ruta (las de las áreas
+   con Presente o Dudoso salen primero; riesgo antes que todo; «general» al final). Son apuntes para
+   el psicólogo en el modo sesión y van a la solicitud a Claude; no pasan a la historia.
+   «inf»: variante para cuidadores en infancia. Redacción propia, parafraseando:
+   - Cierre en general: Sommers-Flanagan, Clinical Interviewing (5.ª ed.), cap. 6 «Closing stage»
+     (validar, resumir, formulación tentativa con permiso, esperanza creíble, preguntas finales);
+     Belloch, Manual de psicopatología I, cap. 4 (resumen que el paciente corrige); Arkowitz y
+     Miller, Motivational Interviewing… (información con permiso y en porciones pequeñas).
+   - Riesgo suicida: Sommers-Flanagan, cap. 9 «Safety Planning»; Jobes, Managing Suicidal Risk
+     (CAMS), plan de estabilización colaborativo; infancia: Prinstein, Treatment of Disorders in
+     Childhood and Adolescence (plan con el menor y los padres, restricción de medios).
+   - Violencia: OMS 2013, Responding to intimate partner violence…; PCIT (2.ª ed.), cap. 18.
+   - Ánimo: The Guide to Interpersonal Psychotherapy (la desesperanza es síntoma; es tratable);
+     Beck, Cognitive Therapy of Depression, «The Initial Session».
+   - Ansiedad: Robichaud, Koerner y Dugas, CBT for GAD, módulo 1; pánico: Barlow, Clinical
+     Handbook, «Panic Disorder», sesión 1 (el ciclo; los síntomas no son peligrosos).
+   - Sueño: Caballo, Manual TCC vol. 2, IV.1.1 (higiene del sueño, que sola no basta en insomnio
+     crónico); GPC de sueño en infancia y adolescencia (MinSanidad 2011), 7.1.1.
+   - Trauma: Foa, Prolonged Exposure, «Common Reactions to Trauma»; niños: Cohen, TF-CBT.
+     Duelo: Guía de duelo en cuidados paliativos (Carso 2018), secs. 2 y 6.2.
+   - Psicosis: Morrison, Cognitive Therapy for Psychosis, cap. 7 (normalizar con vulnerabilidad-estrés).
+   - Consumo: Arkowitz y Miller; Barlow, «Drug Use Disorders» (salir con un plan concreto).
+   - Alimentación: Grilo y Mitchell, «Engaging the Patient»; Lock y Le Grange (FBT).
+   - Conducta infantil: PCIT, «Sharing Test Results with Parents»; Shapiro, Child and Adolescent
+     Therapy (ciclo coercitivo sin culpar). Atención: Gallagher, Organizational Skills Training.
+   - Pareja: Barlow, «Couple Distress», feedback; Baucom, Helping Couples Get Past the Affair.
+   Sin respaldo específico en la biblioteca para la devolución en obsesiones, consumo y problemas
+   escolares: esas frases se limitan a lo que describen las fuentes (ciclo del ritual, autonomía). */
+const DEVOLUCION = {
+  suicidio: [
+    { t: "Gracias por contarme lo de las ideas de morir; hablar de esto es un paso importante y no lo vamos a dejar solo.",
+      inf: "Gracias por contarnos lo de las ideas de morir de su hijo o hija; hablarlo es un paso importante y lo vamos a atender desde hoy." },
+    { t: "Antes de irse vamos a hacer juntos un plan de seguridad: señales de alerta, qué puede hacer usted, a quién llamar y cómo dejar lejos lo que pueda hacerle daño.",
+      inf: "Antes de irse haremos juntos un plan de seguridad con usted y con su hijo o hija, y les pido retirar o guardar bajo llave medicamentos, armas y tóxicos de la casa." },
+    "Si las ideas se vuelven más fuertes antes de la próxima cita, acuda a urgencias o a la línea de atención en crisis; no espere a la sesión."
+  ],
+  violencia: [
+    "Lo que me cuenta no es su culpa, y nadie merece vivir con miedo en su casa.",
+    "Vamos a pensar juntos cómo protegerse: a quién acudir, qué tener a mano (documentos, teléfonos, medicamentos) y a dónde ir si hay peligro.",
+    { t: "Hay instituciones que pueden protegerle, como la comisaría de familia; podemos revisar hoy cómo acceder a ellas.",
+      inf: "Cuando un niño o niña corre peligro, tenemos la obligación de activar la ruta de protección (comisaría de familia e ICBF); lo haremos acompañándolos." }
+  ],
+  animo: [
+    "Lo que describe (el ánimo bajo, el cansancio, haber perdido el gusto por las cosas) es una depresión que tiene tratamiento; es frecuente y se puede trabajar.",
+    "La sensación de que nada va a mejorar hace parte del mismo cuadro; no es una predicción de lo que va a pasar.",
+    { t: "Para empezar, le propongo anotar cada día su ánimo y lo que hizo, para ver juntos qué lo empeora y qué lo alivia.",
+      inf: "Para empezar, les propongo anotar cada día cómo vieron el ánimo de su hijo o hija y qué hizo, para ver juntos qué lo empeora y qué lo alivia." }
+  ],
+  ansiedad: [
+    "La preocupación que describe es muy común y tiene tratamiento: no es que usted sea así, es un patrón que se puede aprender a manejar.",
+    "Entre más se intenta controlar la preocupación, más espacio ocupa; vamos a trabajar en cómo relacionarse con ella de otra manera.",
+    { t: "Le propongo anotar esta semana cuándo aparece la preocupación, sobre qué es y qué hace usted con ella.",
+      inf: "Les propongo anotar esta semana cuándo aparece la preocupación de su hijo o hija, sobre qué es y qué hacen ustedes en ese momento." }
+  ],
+  panico: [
+    "Lo que siente en una crisis (el corazón acelerado, el ahogo, el mareo) es muy desagradable, pero no es peligroso: es la alarma del cuerpo encendida en un mal momento.",
+    "Las crisis siguen un ciclo: una sensación, el pensamiento de que algo grave va a pasar y más miedo; entender ese ciclo ya ayuda a romperlo.",
+    "No hace falta saber por qué empezó para mejorar; vamos a trabajar con lo que pasa ahora."
+  ],
+  miedos: [
+    "Evitar lo que da miedo alivia en el momento, pero con el tiempo hace que el miedo crezca; vamos a acercarnos a él poco a poco y a su ritmo.",
+    "Usted decide el paso; nada se hará de golpe ni sin su acuerdo."
+  ],
+  sueno: [
+    "Dormir mal afecta el ánimo, la concentración y la paciencia; mejorar el sueño suele ayudar a todo lo demás.",
+    { t: "Le propongo llevar un diario de sueño estas semanas: a qué hora se acuesta, cuánto tarda en dormirse, cuántas veces despierta y cómo amanece.",
+      inf: "Les propongo llevar un diario de sueño de su hijo o hija y mantener horarios regulares para acostarse y levantarse, también el fin de semana." },
+    "Las recomendaciones de higiene del sueño ayudan, pero si el problema lleva tiempo, solas no bastan: lo trabajaremos con un tratamiento específico."
+  ],
+  trauma: [
+    "Lo que siente después de lo que vivió (los recuerdos que vuelven, estar en alerta, evitar ciertos lugares) son reacciones esperables ante algo muy duro; no significa que esté perdiendo el control.",
+    "Estas reacciones tienen tratamiento y pueden disminuir; vamos a trabajarlas a un ritmo que usted pueda sostener.",
+    "Si lo que me contó fue una pérdida, sentir dolor, rabia o tristeza hace parte del duelo; la mayoría de las personas lo va elaborando, y estaremos atentos a si se estanca."
+  ],
+  toc: [
+    "Tener pensamientos que no se quieren es más común de lo que parece; lo que lo vuelve un problema es el tiempo y el malestar que le quitan.",
+    "Los rituales alivian por un momento y por eso se repiten; vamos a trabajar en romper ese ciclo, paso a paso y con su acuerdo."
+  ],
+  psicosis: [
+    "Cualquier persona, con suficiente estrés y falta de sueño, puede tener experiencias como las que describe; no significa que esté «loco».",
+    { t: "Vamos a entender juntos qué las desencadena y qué le ayuda; contar con alguien de confianza de su familia sería muy valioso.",
+      inf: "La familia es muy importante para la recuperación; los vamos a incluir y a orientar para acompañar sin agotarse." }
+  ],
+  consumo: [
+    "Gracias por hablar con sinceridad del consumo; usted decide qué quiere cambiar y yo le acompaño en lo que elija.",
+    "Me gustaría que saliera hoy con un plan concreto hasta la próxima cita, aunque sea pequeño."
+  ],
+  alimentacion: [
+    "Es esperable tener sentimientos encontrados sobre cambiar la forma de comer; podemos hablar de eso sin juzgarle.",
+    { t: "Le explicaré en qué consiste el tratamiento y lo iremos construyendo con usted.",
+      inf: "En este tratamiento ustedes, como padres, tienen un papel central en la alimentación; les explicaré cómo y les acompañaremos." }
+  ],
+  atencion: [
+    { t: "Las dificultades de atención que describe se pueden trabajar con estrategias concretas de organización.",
+      inf: "Las dificultades de atención de su hijo o hija se pueden trabajar; ustedes tienen un papel clave: recordar, supervisar, reconocer los logros y premiar el esfuerzo." },
+    { t: "No perdamos de vista sus fortalezas: no todo es la dificultad.",
+      inf: "No perdamos de vista sus fortalezas: su hijo o hija es mucho más que estas dificultades." }
+  ],
+  conducta: [
+    { t: "Las dificultades de conducta suelen tener varias causas y se mantienen en círculos que se pueden cambiar.",
+      inf: "Los problemas de conducta tienen varias causas y no se deben a que ustedes sean malos padres; sí pueden ser parte importante de la solución." },
+    { t: "Vamos a buscar formas de manejar el enojo que le funcionen mejor.",
+      inf: "A veces se arma un círculo de órdenes, desobediencia y gritos que se alimenta solo; vamos a aprender a romperlo con más atención a lo positivo." }
+  ],
+  relaciones: [
+    "Lo que describe en sus relaciones se puede trabajar; usted es quien mejor conoce su historia, y la iremos entendiendo juntos.",
+    "Si hay pareja de por medio: ustedes son los expertos en su relación; mi papel es ayudarles a ver el patrón, sus fortalezas y lo que quieren cambiar."
+  ],
+  somatico: [
+    "Su malestar físico es real; vamos a trabajar en cómo el estrés y las preocupaciones lo intensifican, sin descuidar el control médico."
+  ],
+  situacion: [
+    "Con todo lo que está pasando en su vida, es comprensible que se sienta así; vamos a ver también qué apoyos tiene y cuáles podemos sumar."
+  ],
+  general: [
+    "Gracias por la confianza; tomó una buena decisión al consultar.",
+    "¿Le parece si le cuento brevemente cómo entiendo lo que me ha contado? Usted me corrige si algo no encaja.",
+    "Creo que esto se puede trabajar y que le puede ayudar; lo iremos viendo juntos.",
+    "¿Tiene alguna pregunta? ¿La consulta fue como esperaba? ¿Qué le gustaría llevarse de hoy?",
+    "En la próxima sesión seguiremos con lo que acordamos hoy y revisaremos cómo le fue."
+  ]
+};
+
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -2276,6 +2445,7 @@ $("#nueva").addEventListener("click", () => {
   elegidas.splice(0);
   for (const o of [marcas, ruta.resp, ruta.det, ruta.chk, ruta.manual, eem]) for (const k in o) delete o[k];
   eemTocado.clear(); eemRevisado = false; vs.t0 = null; vs.cur = null;
+  instAplicados = []; $("#devolucion-texto").value = ""; acuerdosSesion.clear(); pintarAcuerdos(); pintarInstrumentos();
   if (typeof reiniciarLocal === "function") reiniciarLocal();
   actualizarRuta(); mostrarTab("entrevista"); window.scrollTo(0, 0);
 });
@@ -2621,6 +2791,8 @@ function pintarSesion() {
   const g = grabacionLista() ? `<button type="button" class="sec${grabando() ? " grabando" : ""}" id="vs-grabar">${esc($("#ia-grabar").textContent)}</button>` : "";
   const cuerpo = c.k[0] === "c" ? sesionCheck(c) : c.k[0] === "e" ? sesionElegir(c) : sesionArea(c);
   const nHip = hipSugeridas().length, nObs = eemTocado.size;
+  const hojaPrevia = document.querySelector("#vista-sesion .vs-hoja"), scrollHoja = hojaPrevia && vs.hojaPrevia === vs.hoja ? hojaPrevia.scrollTop : 0;
+  vs.hojaPrevia = vs.hoja;
   $("#vista-sesion").innerHTML = `<div class="vs-top"><div class="vs-bar"><span class="t">Modo sesión</span>
       <span class="vs-reloj${grabando() ? " grabando" : ""}" id="vs-reloj"><i></i><span>${esc(relojSesion())}</span></span>${g}
       ${bd ? '<button type="button" class="sec" id="vs-area" title="Tecla +">+ Área</button>' : ""}
@@ -2632,6 +2804,9 @@ function pintarSesion() {
     <button type="button" class="vs-fab" id="vs-hip">Hipótesis<span class="larga"> sugeridas</span><span class="n">${nHip}</span></button>
     <button type="button" class="vs-fab" id="vs-obs" title="Tecla O">Examen<span class="larga"> mental</span><span class="n">${nObs}</span></button>
     ${vs.hoja ? `<div class="vs-velo" data-vs-cerrar></div><div class="vs-hoja" role="dialog" aria-modal="true"><div class="in">${sesionHoja()}</div></div>` : ""}`;
+  const hoja = document.querySelector("#vista-sesion .vs-hoja"); if (hoja && scrollHoja) hoja.scrollTop = scrollHoja;
+  const fasesC = document.querySelector("#vista-sesion .vs-fases"), act = fasesC && fasesC.querySelector(".actual");
+  if (act) fasesC.scrollLeft = act.offsetLeft - (fasesC.clientWidth - act.offsetWidth) / 2;
 }
 function sesionCheck(c) {
   let falta = "";
@@ -2639,8 +2814,9 @@ function sesionCheck(c) {
     const f = rutaActual().filter(b => b.fijo || b.obligatorio).flatMap(b => areasDe(b)).filter(a => !ruta.resp[a.id]).map(a => a.t.toLowerCase());
     if (f.length) falta = `<div class="vs-falta">Antes de cerrar, falta explorar: ${esc(f.join(", "))}.</div>`;
   }
-  return `<div class="vs-card"><div class="vs-eti">${esc(c.b.t)}</div><ul class="vs-lista">${c.b.items.filter(visible).map(it =>
-    `<li><button type="button" data-vs-chk="${it.id}" aria-pressed="${!!ruta.chk[it.id]}"><span class="box"></span><span>${esc((pob() === "infancia" && it.tInf) || it.t)}</span></button></li>`).join("")}</ul>${falta}</div>`;
+  const extra = ["recursos", "s-cierre"].includes(c.b.id) ? sesionCierreExtra(c) : "";
+  return `<div class="vs-card"><div class="vs-eti">${esc(c.b.t)}</div><ul class="vs-lista">${c.b.items.filter(visible).filter(it => it.id !== POOL_ITEM[c.b.id]).map(it =>
+    `<li><button type="button" data-vs-chk="${it.id}" aria-pressed="${!!ruta.chk[it.id]}"><span class="box"></span><span>${esc((pob() === "infancia" && it.tInf) || it.t)}</span></button></li>`).join("")}</ul>${extra}${falta}</div>`;
 }
 function chipsAreasSesion(b, conSugeridas) {
   const H0 = new Set(hipSugeridas()), ab = desplegadas(), todas = ordenadas(b).filter(visible);
@@ -2671,6 +2847,9 @@ function sesionHoja() {
     return `<div class="eem-fila${defecto ? " defecto" : ""}"><span class="rot">${esc(d.t)}${defecto ? '<small class="por-def">por defecto</small>' : ""}</span><div class="ops">${d.ops.map((o, i) => `<button type="button" data-vs-dom="${d.id}" data-vs-op="${i}" aria-pressed="${sel.has(i)}">${esc(o)}</button>`).join("")}</div></div>`;
   }).join("")}`;
   if (vs.hoja === "hip") { const hs = hipSugeridas(); return `<h3>Hipótesis sugeridas ${cerrar}</h3><p class="meta">Sugerencias a partir de lo marcado. Los criterios se verifican en la vista completa.</p>${hs.length ? `<div class="vs-det">${hs.map(id => `<button type="button" class="vs-chip" data-vs-hip="${id}" aria-pressed="${elegidas.includes(id)}">${elegidas.includes(id) ? "✓" : "+"} ${esc(H[id].t)}</button>`).join("")}</div>` : '<p class="meta">Ninguna por ahora.</p>'}`; }
+  if (vs.hoja === "inst") return hojaInstrumentos(cerrar);
+  if (vs.hoja === "inst-ap") return hojaAplicar(cerrar);
+  if (vs.hoja === "inst-reg") return hojaRegistrar(cerrar);
   const bd = rutaActual().find(b => b.aDemanda);
   return `<h3>Profundizar un área ${cerrar}</h3>${bd ? chipsAreasSesion(bd, false) : ""}`;
 }
@@ -2691,6 +2870,25 @@ function moverSesion(d) {
 }
 function cambioSesion() { if (typeof sucio !== "undefined") sucio = true; actualizarRuta(); pintarSesion(); }
 $("#sesion-entrar").addEventListener("click", entrarSesion);
+$("#vista-sesion").addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "vs-inst-busca") { inst.busca = t.value; $("#vs-inst-res").innerHTML = instResultados(); }
+  else if (t.id === "vs-devolucion") { $("#devolucion-texto").value = t.value; marcarCierre(); }
+  else if (t.id === "vs-inst-int") { inst.texto = t.value; inst.textoEditado = true; }
+  else if (t.dataset.vsInstEsc != null) {
+    inst.manual[+t.dataset.vsInstEsc] = t.value;
+    const res = instRegistro();
+    t.parentElement.querySelector(".meta").textContent = res.escalas[+t.dataset.vsInstEsc].r || "";
+    if (!inst.textoEditado) $("#vs-inst-int").value = inst.texto = instTextoBase(inst.d, res, 0, true);
+  }
+});
+$("#vista-sesion").addEventListener("submit", async e => {
+  if (e.target.id !== "vs-inst-clave") return;
+  e.preventDefault();
+  try { await instConClave($("#vs-inst-pass").value, $("#vs-inst-recordar").checked); inst.error = ""; }
+  catch { inst.error = "Contraseña incorrecta o sin conexión."; }
+  pintarSesion();
+});
 $("#vista-sesion").addEventListener("click", e => {
   const t = e.target.closest("button, [data-vs-cerrar]"); if (!t) return;
   const D = t.dataset, c = tarjetasSesion()[idxSesion(tarjetasSesion())];
@@ -2699,7 +2897,7 @@ $("#vista-sesion").addEventListener("click", e => {
     cambioSesion();
     // Sin detalles ni alerta que mirar (o con la respuesta que no los abre), pasa sola a la siguiente.
     const r = ruta.resp[a.id];
-    if (r && (!["P", "D"].includes(r) || (!detVisibles(a).length && !a.alerta))) setTimeout(() => { if (vs.cur === c.k) moverSesion(1); }, 260);
+    if (r && (!["P", "D"].includes(r) || (!detVisibles(a).length && !a.alerta))) moverSesion(1);
   }
   else if (D.vsDet != null && c.a) { const m = ruta.det[c.a.id] = ruta.det[c.a.id] || {}; m[D.vsDet] = !m[D.vsDet]; cambioSesion(); }
   else if (D.vsChk) { ruta.chk[D.vsChk] = !ruta.chk[D.vsChk]; cambioSesion(); }
@@ -2710,9 +2908,27 @@ $("#vista-sesion").addEventListener("click", e => {
     cambioSesion();
   }
   else if (D.vsHip) { alternar(D.vsHip, true); pintarSesion(); }
+  else if (t.id === "vs-inst") { vs.hoja = "inst"; pintarSesion(); }
+  else if (D.vsInstReintentar != null) { inst.estado = ""; pintarSesion(); }
+  else if (D.vsInstCat != null) { inst.cat = inst.cat === D.vsInstCat ? "" : D.vsInstCat; pintarSesion(); }
+  else if (D.vsInstAp) { instAbrir(D.vsInstAp); pintarSesion(); }
+  else if (D.vsInstReg) { Object.assign(inst, { k: D.vsInstReg, d: instDe(D.vsInstReg), manual: [], texto: "", textoEditado: false }); vs.hoja = "inst-reg"; pintarSesion(); }
+  else if (D.vsInstOp != null) { const q = inst.qs[inst.i]; inst.r[inst.i + 1] = inst.r[inst.i + 1] === q.vals[+D.vsInstOp] ? null : q.vals[+D.vsInstOp]; if (inst.r[inst.i + 1] != null) instMover(1); pintarSesion(); }
+  else if (D.vsInstDato != null) { const i = $("#vs-inst-dato"), t = i.value.trim(); inst.r[inst.i + 1] = !t ? null : inst.qs[inst.i].tipo === "hora" ? (([h, m]) => h + m / 60)(t.split(":").map(Number)) : Number(t); instMover(1); pintarSesion(); }
+  else if (D.vsInstSig != null) { instMover(1); pintarSesion(); }
+  else if (D.vsInstAnt != null) { instMover(-1); pintarSesion(); }
+  else if (D.vsInstFin != null) { inst.i = "fin"; inst.texto = instTextoBase(inst.d, instCalc(inst.d, inst.r), instFaltan()); pintarSesion(); }
+  else if (D.vsInstVolver != null) { inst.i = Math.max(0, inst.qs.length - 1); pintarSesion(); }
+  else if (D.vsInstGuardar) { instGuardar(D.vsInstGuardar); pintarSesion(); }
+  else if (D.vsDev) { alternarDevolucion(D.vsDev); marcarCierre(); if (typeof sucio !== "undefined") sucio = true; pintarSesion(); }
+  else if (D.vsTarea) {
+    const k = pob() + ":" + D.vsTarea;
+    if (acuerdosSesion.has(k)) acuerdosSesion.delete(k); else acuerdosSesion.add(k);
+    pintarAcuerdos(); marcarCierre(); if (typeof sucio !== "undefined") sucio = true; pintarSesion();
+  }
   else if (D.vsDom) { if (typeof sucio !== "undefined") sucio = true; tocarEem(D.vsDom, Number(D.vsOp)); }
   else if (D.vsFase != null) { const b = rutaActual()[+D.vsFase]; vs.cur = (tarjetasSesion().find(x => x.b === b) || {}).k; pintarSesion(); }
-  else if (D.vsIr) { vs.cur = D.vsIr; pintarSesion(); }
+  else if (D.vsIr) { vs.cur = D.vsIr; vs.hoja = null; pintarSesion(); }
   else if (D.vsCerrar != null) { vs.hoja = null; pintarSesion(); }
   else if (t.id === "vs-sig") moverSesion(1);
   else if (t.id === "vs-ant") moverSesion(-1);
@@ -2729,6 +2945,13 @@ $("#vista-sesion").addEventListener("click", e => {
 document.addEventListener("keydown", e => {
   if (!vs.activa || e.ctrlKey || e.metaKey || e.altKey || e.target.matches("input, textarea, select") || document.querySelector("dialog[open]")) return;
   if (e.key === "Escape") { if (vs.hoja) { vs.hoja = null; pintarSesion(); } return; }
+  if (vs.hoja === "inst-ap" && inst.i !== "fin") {
+    const q = inst.qs[inst.i];
+    if (q && q.ops && /^[1-9]$/.test(e.key) && +e.key <= q.ops.length) { e.preventDefault(); $(`#vista-sesion [data-vs-inst-op="${+e.key - 1}"]`).click(); }
+    else if (e.key === "ArrowRight") { instMover(1); pintarSesion(); }
+    else if (e.key === "ArrowLeft") { instMover(-1); pintarSesion(); }
+    return;
+  }
   if (vs.hoja) return;
   const c = tarjetasSesion()[idxSesion(tarjetasSesion())];
   if (/^[1-3]$/.test(e.key) && c.a) { const o = opsDe(c.a)[+e.key - 1]; if (o) $(`#vista-sesion [data-vs-r="${o[0]}"]`).click(); }
@@ -2742,6 +2965,307 @@ setInterval(() => {
   const r = $("#vs-reloj"); if (r) { r.lastElementChild.textContent = relojSesion(); r.classList.toggle("grabando", grabando()); }
   const g = $("#vs-grabar"); if (g && g.textContent !== $("#ia-grabar").textContent) pintarSesion();
 }, 1000);
+
+
+// ---------- Instrumentos, devolución y acuerdos ----------
+// Pedido del docente (2026-11-22). Los instrumentos son los de «Calificación en línea» del
+// Seminario (seminario-clinico/calificar.html): mismas preguntas, reglas, rangos y alertas, leídos
+// de su calificar-datos.js; con la contraseña del docente, la versión completa cifrada. Se sugieren
+// por lo marcado en la entrevista (áreas con Presente o Dudoso e instrumentos de los planes de las
+// hipótesis sugeridas). El resultado queda como interpretación final y pasa a la historia salvo que se
+// desmarque «Incluir en la historia» (marcada por defecto, pedido del docente).
+const INST_URL = "https://juanboya7.github.io/seminario-clinico/instrumentos/";
+const INST_AREA = { suicidio: ["Riesgo suicida"], animo: ["Ánimo y depresión"], euforia: ["Ánimo y depresión"], ansiedad: ["Ansiedad"], panico: ["Ansiedad"], miedos: ["Ansiedad"],
+  toc: ["TOC y conductas repetitivas"], trauma: ["Trauma y duelo"], psicosis: ["Síntomas psicóticos"], consumo: ["Consumo, juego y pantallas"], alimentacion: ["Alimentación"],
+  sueno: ["Salud, sueño y síntomas físicos"], somatico: ["Salud, sueño y síntomas físicos"], atencion: ["Neurodesarrollo y cognición"], memoria: ["Neurodesarrollo y cognición"],
+  desarrollo: ["Neurodesarrollo y cognición"], conducta: ["Familia, pareja y violencia"], violencia: ["Familia, pareja y violencia"], situacion: ["Familia, pareja y violencia", "Bienestar y apoyo social"],
+  relaciones: ["Autoestima, autocrítica y habilidades sociales"], funcionamiento: ["Malestar general"], "s-sintomas": ["Malestar general"] };
+const QUIEN_ET = { persona: "autoinforme", padres: "cuidadores", profesional: "lo aplica el profesional" };
+let instAplicados = [];
+const inst = { estado: "", promesa: null, completa: false, busca: "", cat: "", k: null, d: null, qs: [], r: [null], i: 0, texto: "", manual: [], error: "" };
+const normI = s => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const claveI = s => normI(s).replace(/[^a-z0-9]/g, "");
+const fmtI = v => typeof v === "number" ? String(Math.round(v * 100) / 100).replace(".", ",") : String(v);
+function cargarInstrumentos() {
+  if (inst.promesa) return inst.promesa;
+  inst.estado = "cargando";
+  inst.promesa = new Promise((ok, mal) => {
+    if (typeof CALIFICAR !== "undefined") return ok();
+    const s = document.createElement("script");
+    s.src = INST_URL + "calificar-datos.js";
+    s.onload = ok; s.onerror = () => mal(new Error("sin conexión"));
+    document.head.appendChild(s);
+  }).then(async () => {
+    inst.estado = "listo";
+    // La llave que dejó «Calificación en línea» en este navegador (mismo sitio) abre la versión completa.
+    let g = null;
+    try { g = sessionStorage.getItem("calificar-llave") || localStorage.getItem("calificar-llave"); } catch {}
+    if (g) try { await instCompleta(Uint8Array.from(atob(g), c => c.charCodeAt(0))); } catch {}
+  }).catch(() => { inst.estado = "error"; inst.promesa = null; });
+  return inst.promesa;
+}
+async function instCompleta(raw) {
+  const llave = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+  const buf = new Uint8Array(await fetch(INST_URL + "privado/calificar-datos.js.bin", { cache: "no-cache" }).then(r => { if (!r.ok) throw new Error("sin datos"); return r.arrayBuffer(); }));
+  const txt = new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: buf.slice(0, 12) }, llave, buf.slice(12)));
+  new Function("CALIFICAR", txt)(CALIFICAR);
+  inst.completa = true;
+}
+async function instConClave(contrasena, recordar) {
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const meta = await fetch(INST_URL + "privado/clave.json", { cache: "no-cache" }).then(r => r.json());
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(contrasena), "PBKDF2", false, ["deriveBits"]);
+  const raw = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: b64(meta.sal), iterations: meta.iter }, base, 256));
+  const llave = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+  const p = b64(meta.prueba);
+  await crypto.subtle.decrypt({ name: "AES-GCM", iv: p.slice(0, 12) }, llave, p.slice(12)); // falla si no es la contraseña
+  await instCompleta(raw);
+  const t = btoa(String.fromCharCode(...raw));
+  try { sessionStorage.setItem("calificar-llave", t); if (recordar) localStorage.setItem("calificar-llave", t); } catch {}
+}
+const instDe = k => (typeof CALIFICAR !== "undefined" && CALIFICAR[k]) || null;
+const instPob = d => (d.pob || []).includes(pob());
+const instSinItems = d => d.sinitems || (d.hoja && !inst.completa);
+function instSugeridos() {
+  if (typeof CALIFICAR === "undefined") return [];
+  const P = pob(), puntos = {};
+  const add = (k, v) => { if (CALIFICAR[k] && instPob(CALIFICAR[k])) puntos[k] = (puntos[k] || 0) + v; };
+  const marcadas = new Set(areasVisibles().filter(a => ["P", "D"].includes(ruta.resp[a.id])).flatMap(a => INST_AREA[a.id] || []));
+  for (const [k, d] of Object.entries(CALIFICAR)) for (const ar of d.areas || []) if (marcadas.has(ar)) add(k, 3);
+  const porSigla = {};
+  for (const [k, d] of Object.entries(CALIFICAR)) { porSigla[claveI(d.sigla)] = k; porSigla[claveI(k)] = k; }
+  const campo = P === "adultos" ? "a" : "i";
+  const vars = new Set([...new Set([...hipSugeridas(), ...elegidas])].flatMap(id => (VARIABLES[id] || {})[campo] || []));
+  for (const v of DATOS[P].variables) if (vars.has(v.t)) for (const p of v.planes) for (const i of p.inst) { const k = porSigla[claveI(i.k)]; if (k) add(k, 2); }
+  return Object.entries(puntos).sort((a, b) => b[1] - a[1]).map(([k]) => k);
+}
+function instFila(k) {
+  const d = instDe(k);
+  const quien = (d.quien || []).map(q => QUIEN_ET[q] || q).join(" o ");
+  const para = (d.para || "").split(/(?<=\.)\s/)[0];
+  const hecho = instAplicados.some(x => x.clave === k);
+  return `<div class="vs-inst"><div><b>${esc(d.sigla)}</b> ${esc(d.titulo)}${hecho ? ' <span class="vs-hecho">✓ aplicado</span>' : ""}
+    <div class="meta">${esc(para)}${quien ? " · " + esc(quien) : ""}${instSinItems(d) ? " · hoja de respuestas (protocolo en papel)" : ""}</div></div>
+    <div class="vs-inst-bot"><button type="button" class="prim" data-vs-inst-ap="${k}">Aplicar</button><button type="button" class="sec" data-vs-inst-reg="${k}">Registrar puntaje</button></div></div>`;
+}
+function instResultados() {
+  const q = normI(inst.busca).trim();
+  if (!q && !inst.cat) return "";
+  let ks = Object.keys(CALIFICAR).filter(k => instPob(CALIFICAR[k]));
+  if (inst.cat) ks = ks.filter(k => (CALIFICAR[k].areas || []).includes(inst.cat));
+  if (q) ks = ks.filter(k => { const d = CALIFICAR[k]; return normI([d.sigla, d.titulo, d.para, (d.areas || []).join(" ")].join(" ")).includes(q); });
+  if (!ks.length) return '<p class="meta">Sin resultados.</p>';
+  const peso = k => { const s = claveI(CALIFICAR[k].sigla), c = claveI(q); return !c ? 1 : s === c ? 0 : s.startsWith(c) ? 0.5 : 1; };
+  return ks.sort((a, b) => peso(a) - peso(b) || CALIFICAR[a].sigla.localeCompare(CALIFICAR[b].sigla, "es")).map(instFila).join("");
+}
+function hojaInstrumentos(cerrar) {
+  if (inst.estado !== "listo") {
+    if (inst.estado !== "error") cargarInstrumentos().then(() => { if (vs.hoja === "inst") pintarSesion(); });
+    return `<h3>Instrumentos ${cerrar}</h3><p class="meta">${inst.estado === "error" ? 'No se pudieron cargar los instrumentos: hace falta conexión a internet. <button type="button" class="sec" data-vs-inst-reintentar>Reintentar</button>' : "Cargando los instrumentos…"}</p>`;
+  }
+  const sug = instSugeridos().slice(0, 6);
+  const cats = AREAS.filter(a => Object.values(CALIFICAR).some(d => instPob(d) && (d.areas || []).includes(a)));
+  return `<h3>Instrumentos ${cerrar}</h3>
+    ${inst.completa ? "" : `<details class="meta"><summary>Versión completa (con contraseña)</summary><form id="vs-inst-clave" class="fila" style="gap:8px;align-items:center;margin-top:6px"><input type="password" id="vs-inst-pass" autocomplete="current-password" aria-label="Contraseña" style="flex:1;min-width:160px"><label class="meta"><input type="checkbox" id="vs-inst-recordar"> Recordar en este dispositivo</label><button type="submit" class="sec">Abrir</button></form>${inst.error ? `<p class="meta" style="color:var(--rojo)">${esc(inst.error)}</p>` : ""}</details>`}
+    <div class="vs-grupo"><h4>Sugeridos por lo marcado en la entrevista</h4>${sug.length ? sug.map(instFila).join("") : '<p class="meta">Marque áreas en la entrevista (Presente o Dudoso) para ver sugerencias, o busque abajo.</p>'}</div>
+    <div class="vs-grupo"><h4>Buscar por nombre o por categoría</h4>
+      <input type="search" class="vs-buscar" id="vs-inst-busca" placeholder="Nombre, sigla o lo que mide" value="${esc(inst.busca)}">
+      <div class="vs-cats">${cats.map(a => `<button type="button" data-vs-inst-cat="${esc(a)}" aria-pressed="${inst.cat === a}">${esc(a)}</button>`).join("")}</div>
+      <div id="vs-inst-res">${instResultados()}</div></div>`;
+}
+// ---- Aplicador: una pregunta a la vez, con la misma calificación de calificar.html ----
+function instPreguntas(d) {
+  const qs = []; let consigna = "";
+  for (const b of d.bloques) {
+    if (b.t === "consigna") { consigna = b.x; continue; }
+    if (b.t === "dato") { qs.push({ texto: b.x, tipo: b.tipo === "hora" ? "hora" : "numero", unidad: b.unidad, puntua: true, consigna }); consigna = ""; continue; }
+    for (const it of b.items) {
+      const o = typeof it === "string" ? { x: it } : it;
+      qs.push({ texto: o.x, ej: o.ej, img: o.img, si: o.si, ops: b.ops, vals: b.vals, puntua: !!b.puntua, titulo: b.titulo, consigna });
+      consigna = "";
+    }
+  }
+  return qs;
+}
+function instCalc(d, r) {
+  const v = i => r[i] == null ? 0 : r[i];
+  const S = (x, y) => { let s = 0; for (let i = x; i <= y; i++) s += v(i); return s; };
+  const L = l => l.reduce((s, i) => s + v(i), 0);
+  const C = (l, val) => l.filter(i => r[i] === val).length;
+  const G = l => l.filter(i => r[i] != null && r[i] >= 2).length;
+  const R = (i, max) => r[i] == null ? 0 : max - r[i];
+  const RANGO = (x, y) => Array.from({ length: y - x + 1 }, (_, k) => x + k);
+  const PHI = z => { const t = 1 / (1 + 0.2316419 * Math.abs(z)), dd = 0.3989423 * Math.exp(-z * z / 2);
+    const p = dd * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; };
+  const ev = js => { try { return Function("r", "S", "L", "C", "G", "R", "RANGO", "PHI", "return (" + js + ");")(r, S, L, C, G, R, RANGO, PHI); } catch { return 0; } };
+  const escalas = d.calif.escalas.map(e => {
+    const val = ev(e.js);
+    const rangos = e.rangos_por ? ((e.rangos_por.find(x => ev(x.si)) || {}).rangos || []) : (e.rangos || []);
+    let rot = ""; rangos.forEach(([x, y, t]) => { if (val >= x && (y === null || val <= y)) rot = t; });
+    return { n: e.n, v: val, r: rot, sn: rangos.length > 0 && rangos.every(([x, y]) => x === y), texto: e.texto || "" };
+  });
+  return { ev, escalas, alertas: (d.calif.alertas || []).filter(al => ev(al.js)).map(al => al.texto) };
+}
+const instOmitida = (q, ev) => q.si && !ev(q.si);
+function instFaltan() {
+  const { ev } = instCalc(inst.d, inst.r);
+  return inst.qs.filter((q, j) => q.puntua && !instOmitida(q, ev) && inst.r[j + 1] == null).length;
+}
+function instTextoBase(d, res, faltan, manual) {
+  const partes = res.escalas.filter(e => manual ? e.v !== "" && e.v != null : true).map(e => e.sn ? `${e.n}: ${e.r || "sin resultado"}` : `${e.n} ${fmtI(e.v)}${e.r ? " (" + e.r + ")" : ""}`);
+  return `${d.sigla}${manual ? " (registro del puntaje)" : ""}: ${partes.join("; ") || "sin puntaje"}.` + (faltan && !d.calif.blancos ? ` Resultado parcial: faltan ${faltan} respuestas.` : "") +
+    // De la alerta va a la historia solo el hallazgo (su primera oración), no la indicación al clínico.
+    (res.alertas.length ? " Alerta del instrumento: " + res.alertas.map(t => t.split(/(?<=\.)\s/)[0].replace(/^Hay /, "hay ")).join(" ") : "");
+}
+function instAbrir(k) {
+  const d = instDe(k); if (!d) return;
+  Object.assign(inst, { k, d, qs: instPreguntas(d), r: [null], i: 0, texto: "" });
+  vs.hoja = "inst-ap";
+}
+function instMover(paso) {
+  const { ev } = instCalc(inst.d, inst.r);
+  let j = inst.i;
+  do { j += paso; } while (j >= 0 && j < inst.qs.length && instOmitida(inst.qs[j], ev));
+  if (j >= inst.qs.length) { inst.i = "fin"; inst.texto = instTextoBase(inst.d, instCalc(inst.d, inst.r), instFaltan()); }
+  else if (j >= 0) inst.i = j;
+}
+function hojaAplicar(cerrar) {
+  const d = inst.d, res = instCalc(d, inst.r), faltan = instFaltan();
+  const resumen = `<div class="vs-ap-res">${res.escalas.filter(e => !e.sn).slice(0, 4).map(e => `${esc(e.n)}: <b>${fmtI(e.v)}</b>${e.r ? " · " + esc(e.r) : ""}`).join("<br>")}</div>` +
+    res.alertas.map(a => `<div class="vs-alerta">${esc(a)}</div>`).join("");
+  if (inst.i === "fin") {
+    const riesgo = res.alertas.some(a => /suicid/i.test(a)) && ruta.resp.suicidio !== "P";
+    return `<h3>${esc(d.sigla)} · resultado ${cerrar}</h3>
+      ${res.escalas.map(e => `<div class="vs-ap-res"><b>${esc(e.n)}</b>${e.sn ? "" : ": " + fmtI(e.v)}${e.r ? " · " + esc(e.r) : ""}${e.texto ? `<div class="meta">${esc(e.texto)}</div>` : ""}</div>`).join("")}
+      ${res.alertas.map(a => `<div class="vs-alerta">${esc(a)}</div>`).join("")}
+      ${riesgo ? '<p><button type="button" class="sec" data-vs-ir="a:suicidio" data-vs-cerrar>Ir a la pregunta de riesgo</button></p>' : ""}
+      ${faltan && !d.calif.blancos ? `<p class="meta">Faltan ${faltan} respuestas: el resultado es parcial.</p>` : ""}
+      <label class="rot" for="vs-inst-int">Interpretación final (la que pasaría a la historia)</label>
+      <textarea class="vs-int" id="vs-inst-int">${esc(inst.texto)}</textarea>
+      <p class="meta">${esc(d.cita || "")}</p>
+      <div class="vs-nav"><button type="button" class="sec" data-vs-inst-volver>← Volver a las preguntas</button><button type="button" class="prim" data-vs-inst-guardar="aplicado">Guardar resultado</button></div>`;
+  }
+  const q = inst.qs[inst.i], sel = inst.r[inst.i + 1];
+  const opciones = q.tipo
+    ? `<div class="fila" style="gap:8px;align-items:center"><input id="vs-inst-dato" type="${q.tipo === "hora" ? "time" : "number"}" ${q.tipo === "hora" ? "" : 'step="any" inputmode="decimal"'} value="${q.tipo === "hora" && sel != null ? String(Math.floor(sel)).padStart(2, "0") + ":" + String(Math.round(sel % 1 * 60)).padStart(2, "0") : sel ?? ""}" style="max-width:180px">${q.unidad ? `<span class="meta">${esc(q.unidad)}</span>` : ""}<button type="button" class="prim" data-vs-inst-dato>Siguiente</button></div>`
+    : `<div class="vs-ap-ops">${q.ops.map((o, j) => `<button type="button" data-vs-inst-op="${j}" aria-pressed="${sel === q.vals[j]}"><kbd>${j + 1}</kbd>${esc(o)}${q.puntua && !/^\d+$/.test(o) ? ` <small class="meta">(${q.vals[j]})</small>` : ""}</button>`).join("")}</div>`;
+  return `<h3><span>${esc(d.sigla)}</span> ${cerrar}</h3>
+    <div class="vs-ap-cab"><span class="meta">Pregunta ${inst.i + 1} de ${inst.qs.length}${faltan ? ` · faltan ${faltan}` : ""}</span><button type="button" class="sec" data-vs-inst-fin>Ver resultado</button></div>
+    ${q.consigna ? `<p class="meta">${esc(q.consigna)}</p>` : ""}${q.titulo ? `<p class="meta"><b>${esc(q.titulo)}</b></p>` : ""}
+    ${q.img ? `<img class="vs-ap-img" src="${INST_URL + esc(q.img)}" alt="">` : ""}
+    <p class="vs-ap-q">${esc(q.texto)}</p>${q.ej ? `<p class="meta">${esc(q.ej)}</p>` : ""}
+    ${opciones}${resumen}
+    <div class="vs-nav"><button type="button" class="sec" data-vs-inst-ant${inst.i ? "" : " disabled"}>← Anterior</button><button type="button" class="sec" data-vs-inst-sig>Siguiente →</button></div>`;
+}
+// ---- Registrar el puntaje de una prueba aplicada en papel ----
+function hojaRegistrar(cerrar) {
+  const d = inst.d, res = instRegistro();
+  return `<h3>${esc(d.sigla)} · registrar puntaje ${cerrar}</h3><p class="meta">Escriba los puntajes que obtuvo con el protocolo. La banda sale de los mismos puntos de corte de la calificación en línea.</p>
+    ${d.calif.escalas.map((e, j) => `<div class="fila" style="gap:8px;align-items:center;margin:6px 0"><label class="rot" style="flex:1" for="vs-inst-esc-${j}">${esc(e.n)}</label><input type="number" step="any" id="vs-inst-esc-${j}" data-vs-inst-esc="${j}" value="${esc(inst.manual[j] ?? "")}" style="max-width:120px"><span class="meta" style="min-width:140px">${esc(res.escalas[j].r || "")}</span></div>`).join("")}
+    <label class="rot" for="vs-inst-int">Interpretación final (la que pasaría a la historia)</label>
+    <textarea class="vs-int" id="vs-inst-int">${esc(inst.texto || instTextoBase(d, res, 0, true))}</textarea>
+    <div class="vs-nav"><span></span><button type="button" class="prim" data-vs-inst-guardar="registrado">Guardar resultado</button></div>`;
+}
+function instRegistro() {
+  const d = inst.d;
+  return { alertas: [], escalas: d.calif.escalas.map((e, j) => {
+    const raw = inst.manual[j], val = raw === "" || raw == null ? "" : Number(raw);
+    const rangos = e.rangos_por ? [] : (e.rangos || []);
+    let rot = ""; if (val !== "") rangos.forEach(([x, y, t]) => { if (val >= x && (y === null || val <= y)) rot = t; });
+    return { n: e.n, v: val, r: rot, sn: false };
+  }) };
+}
+function instGuardar(modoR) {
+  const texto = ($("#vs-inst-int")?.value || "").trim();
+  const res = modoR === "aplicado" ? instCalc(inst.d, inst.r) : instRegistro();
+  const cortes = (e, j) => { const c = inst.d.calif.escalas[j]; return c && !c.rangos_por && (c.rangos || []).length >= 2 && !e.sn ? c.rangos : null; };
+  const base = { clave: inst.k, sigla: inst.d.sigla, titulo: inst.d.titulo, escalas: res.escalas.map((e, j) => ({ n: e.n, v: e.v, r: e.r, rangos: cortes(e, j) })).filter(e => e.v !== ""), alertas: res.alertas };
+  instAplicados.push({ id: Date.now(), ...base, fecha: new Date().toISOString().slice(0, 10), modo: modoR, interpretacion: texto, incluir: true });
+  Object.assign(inst, { k: null, d: null, texto: "", manual: [], textoEditado: false });
+  vs.hoja = null; pintarInstrumentos();
+  if (typeof sucio !== "undefined") sucio = true;
+}
+function pintarInstrumentos() {
+  const c = $("#instrumentos"); if (!c) return;
+  c.innerHTML = instAplicados.length ? instAplicados.map((x, j) => `<div class="inst-reg"><strong>${esc(x.sigla)}</strong> <span class="meta">${esc(x.titulo || "")} · ${esc(x.fecha)} · ${x.modo === "aplicado" ? "aplicado en la consulta" : "puntaje registrado"}</span>
+      ${x.alertas.map(a => `<div class="alerta">${esc(a)}</div>`).join("")}
+      <textarea data-inst-int="${j}" aria-label="Interpretación final de ${esc(x.sigla)}">${esc(x.interpretacion)}</textarea>
+      <div class="fila" style="gap:12px;align-items:center"><label class="meta"><input type="checkbox" data-inst-inc="${j}"${x.incluir ? " checked" : ""}> Incluir en la historia</label><button type="button" class="sec" data-inst-quitar="${j}">Quitar</button></div></div>`).join("")
+    : '<p class="meta">Los instrumentos se aplican o registran desde «Recursos y cierre» en el modo sesión, o con el botón de abajo.</p>';
+}
+const instIncluidos = () => instAplicados.filter(x => x.incluir && x.interpretacion.trim()).map(({ sigla, titulo, fecha, modo, escalas, alertas, interpretacion }) => ({ sigla, titulo, fecha, modo, escalas, alerta: alertas.length > 0, interpretacion: interpretacion.trim() }));
+$("#instrumentos").addEventListener("input", e => { const j = e.target.dataset.instInt; if (j != null) instAplicados[+j].interpretacion = e.target.value; });
+$("#instrumentos").addEventListener("change", e => { const j = e.target.dataset.instInc; if (j != null) instAplicados[+j].incluir = e.target.checked; });
+$("#instrumentos").addEventListener("click", e => { const b = e.target.closest("[data-inst-quitar]"); if (b && confirm("¿Quitar este resultado?")) { instAplicados.splice(+b.dataset.instQuitar, 1); pintarInstrumentos(); } });
+$("#inst-abrir").addEventListener("click", () => { entrarSesion(); vs.hoja = "inst"; pintarSesion(); });
+pintarInstrumentos();
+
+// ---- Devolución y acuerdos: sugerencias según lo marcado ----
+const POOL_ITEM = { recursos: "devolucion" };
+function devolucionSugerida() {
+  const inf = pob() === "infancia", out = [];
+  const marcadas = areasVisibles().filter(a => ["P", "D"].includes(ruta.resp[a.id])).map(a => a.id);
+  // Riesgo primero; luego las áreas en el orden de la ruta; al final, lo general.
+  const orden = [...marcadas.filter(id => ["suicidio", "violencia"].includes(id)), ...marcadas.filter(id => !["suicidio", "violencia"].includes(id)), "general"];
+  for (const id of orden) for (const f of DEVOLUCION[id] || []) {
+    const t = typeof f === "string" ? f : (inf && f.inf) || f.t;
+    if (!out.some(x => x.t === t)) out.push({ area: id, t });
+  }
+  return out;
+}
+function acuerdosSugeridos() {
+  if (typeof TAREAS_INICIALES === "undefined" || modo !== "inicial") return [];
+  const P = pob(), campo = P === "adultos" ? "a" : "i";
+  const hs = [...new Set([...elegidas.filter(id => imp.estado[id] !== "descartada"), ...hipSugeridas()])];
+  // Una variable de cada hipótesis por turno, para que las primeras cubran todas las áreas marcadas.
+  const listas = hs.map(id => (VARIABLES[id] || {})[campo] || []), vars = [];
+  for (let i = 0; listas.some(l => i < l.length); i++) for (const l of listas) if (l[i] && !vars.includes(l[i])) vars.push(l[i]);
+  return vars.map(t => DATOS[P].variables.find(v => v.t === t)).filter(Boolean)
+    .map(v => ({ v: v.t, planes: planesDeEdad(v).filter(p => TAREAS_INICIALES[P][p.id]) })).filter(x => x.planes.length);
+}
+const devolucionTexto = () => ($("#devolucion-texto")?.value || "").trim();
+// Acuerdos marcados en vivo («población:plan»): apuntes para Claude, no las recomendaciones oficiales.
+const acuerdosSesion = new Set();
+function cierreApuntes() {
+  const acuerdos = typeof TAREAS_INICIALES === "undefined" ? [] : [...acuerdosSesion].map(k => { const [P, id] = k.split(":"), t = TAREAS_INICIALES[P]?.[id]; return t && { plan: t.plan, texto: t.texto }; }).filter(Boolean);
+  return { devolucion: devolucionTexto(), acuerdos };
+}
+function pintarAcuerdos() {
+  const c = $("#acuerdos-sesion"); if (!c) return;
+  const ac = cierreApuntes().acuerdos;
+  c.innerHTML = ac.length ? `<p class="rot" style="margin-top:10px">Acuerdos</p><ul class="meta">${ac.map(x => `<li><b>${esc(x.plan)}:</b> ${esc(x.texto)}</li>`).join("")}</ul>` : "";
+}
+function alternarDevolucion(t) {
+  const caja = $("#devolucion-texto"), partes = caja.value.split(/\n{2,}/).map(x => x.trim()).filter(Boolean);
+  const i = partes.indexOf(t);
+  if (i >= 0) partes.splice(i, 1); else partes.push(t);
+  caja.value = partes.join("\n\n");
+}
+function marcarCierre() {
+  const hay = !!devolucionTexto() || acuerdosSesion.size > 0;
+  if (hay) ruta.chk.devolucion = true;
+}
+function sesionCierreExtra(c) {
+  const inicial = c.b.id === "recursos";
+  const etiq = AREAS_ET();
+  const devs = devolucionSugerida(), partes = devolucionTexto().split(/\n{2,}/).map(x => x.trim());
+  const ac = inicial ? acuerdosSugeridos() : [];
+  let h = `<div class="vs-sec"><h4>Instrumentos</h4><p class="meta">Para complementar la evaluación: sugeridos por lo marcado, buscador y aplicador.</p>
+    <button type="button" class="sec" id="vs-inst">Buscar o aplicar un instrumento${instAplicados.length ? ` (${instAplicados.length} aplicado${instAplicados.length > 1 ? "s" : ""})` : ""}</button></div>`;
+  h += `<div class="vs-sec"><h4>Devolución</h4><p class="meta">Toque una frase para usarla; puede editar el texto.</p>
+    <div class="vs-det">${devs.map(x => `<button type="button" class="vs-chip" data-vs-dev="${esc(x.t)}" aria-pressed="${partes.includes(x.t)}" title="${esc(etiq[x.area] || "")}">${esc(x.t)}</button>`).join("")}</div>
+    <textarea class="vs-int" id="vs-devolucion" placeholder="La devolución que dio a la persona.">${esc(devolucionTexto())}</textarea></div>`;
+  if (ac.length) {
+    const P = pob();
+    h += `<div class="vs-sec"><h4>Acuerdos para la próxima sesión</h4><p class="meta">Ideas de las tareas iniciales de las guías para lo marcado. Lo que elija queda en los apuntes del cierre para Claude.</p>
+      ${ac.map(g => { const bot = p => { const t = TAREAS_INICIALES[P][p.id];
+          return `<button type="button" class="vs-tarea" data-vs-tarea="${p.id}" aria-pressed="${acuerdosSesion.has(P + ":" + p.id)}"><b>${esc(p.t)}</b>${esc(t.texto)}</button>`; };
+        return `<div class="vs-grupo"><h4>${esc(g.v)}</h4>${g.planes.slice(0, 2).map(bot).join("")}${g.planes.length > 2 ? `<details><summary>Otras (${g.planes.length - 2})</summary>${g.planes.slice(2).map(bot).join("")}</details>` : ""}</div>`; })
+        .map((html, j, todos) => j === 3 ? `<details><summary>Más acuerdos para otras áreas (${todos.length - 3})</summary>${html}` : j === todos.length - 1 && j > 3 ? html + "</details>" : html).join("")}${ac.length === 4 ? "</details>" : ""}</div>`;
+  }
+  return h;
+}
+const AREAS_ET = () => Object.fromEntries([...rutaActual().flatMap(b => b.areas || []).map(a => [a.id, a.t]), ["general", "General"]]);
 
 // ---------- Resumen para la historia clínica ----------
 function resumenRuta() {
@@ -2767,6 +3291,7 @@ $("#copiar").addEventListener("click", async () => {
   const rr = resumenRuta();
   if (rr.length) lineas.push("Primera entrevista", ...rr, "");
   if (textoExamen() !== "Aún no hay nada marcado.") lineas.push("Examen mental", textoExamen(), "");
+  if (instIncluidos().length) lineas.push("Instrumentos aplicados", ...instIncluidos().map(x => x.interpretacion), "");
   if (elegidas.length) lineas.push("Impresión diagnóstica (hipótesis en verificación)");
   for (const id of elegidas) {
     const h = H[id], r = resumenDx(id);
@@ -3184,6 +3709,21 @@ function iaSolicitud() {
     const h = H[id], r = resumenDx(id);
     l.push(`- ${h.t} (DSM-5-TR ${h.dsm || "sin código"}) · estado: ${imp.estado[id] || "presuntiva"}${h.z ? "" : ` · criterios con apoyo: ${r.cumplidos} de ${r.total}`}`);
     if (!h.z) indices(id).forEach(k => l.push(`  - ${estadoCriterio(id, k).cumple ? "[x]" : "[ ]"} ${crit(id, k).t}`));
+  }
+  // Apuntes del cierre en el modo sesión (2026-11-22): lo que el psicólogo devolvió y acordó en vivo.
+  // Son la base de las recomendaciones, tareas y acuerdos oficiales, que Claude desarrolla mejor.
+  if (typeof cierreApuntes === "function") {
+    const c = cierreApuntes();
+    if (c.devolucion || c.acuerdos.length) {
+      l.push("", "## Cierre en la sesión (apuntes del psicólogo; base de las recomendaciones, tareas y acuerdos)",
+        "Lo que se dijo y acordó en vivo. Desarróllelo y diríjalo mejor en las recomendaciones del plan; no lo contradiga sin explicar por qué.");
+      if (c.devolucion) l.push("", "Devolución dada:", iaAnonimizar(c.devolucion));
+      if (c.acuerdos.length) l.push("", "Acuerdos tomados (tareas iniciales de las guías):", ...c.acuerdos.map(x => `- ${x.plan}: ${x.texto.replace(/\s*\n\s*/g, " ")}`));
+    }
+  }
+  if (typeof instAplicados !== "undefined" && instAplicados.length) {
+    l.push("", "## Instrumentos aplicados en la sesión (interpretación final del psicólogo)");
+    for (const x of instAplicados) l.push(`- ${x.sigla}${x.incluir ? "" : " (no se incluye en la historia)"}: ${iaAnonimizar(x.interpretacion || "")}`);
   }
   l.push("", "## Texto de la sesión (anonimizado; las marcas de tiempo son solo para ubicarse y nunca se citan)", $("#ia-anon").value.trim());
   const vigente = $("#plan-texto").value.trim();
@@ -3764,8 +4304,8 @@ $("#guardar").addEventListener("click", async () => {
       id: atencionId, pacienteId: pacienteGuardado.id, tipo: modo, sesion, guardado: new Date().toISOString(),
       atencion: { ...atencion }, paciente: { ...pacienteGuardado }, pob: pob(),
       escenario: $("#esc").value ? $("#esc").selectedOptions[0].text : "", edadRango: $("#campo-edad").hidden ? "" : ($("#edad").selectedOptions[0] || {}).text || "",
-      ruta: resumenRuta(), examen: textoExamen(), granola: $("#granola").value, recomendaciones: textoRecomendaciones(), tareasIniciales: tareasGuardadas(), impresion: impresionGuardada(), observaciones: $("#imp-obs").value, ia: iaGuardada(), planId: ($("#plan-texto").value.trim() || $("#formulacion-texto").value.trim()) ? "pl-" + atencionId : null,
-      estado: { ruta, eem: Object.fromEntries(Object.entries(eem).map(([k, s]) => [k, [...s]])), eemTocados: [...eemTocado], eemRevisado, elegidas: [...elegidas], marcas, imp,
+      ruta: resumenRuta(), examen: textoExamen(), instrumentos: instIncluidos(), granola: $("#granola").value, recomendaciones: textoRecomendaciones(), tareasIniciales: tareasGuardadas(), impresion: impresionGuardada(), observaciones: $("#imp-obs").value, ia: iaGuardada(), planId: ($("#plan-texto").value.trim() || $("#formulacion-texto").value.trim()) ? "pl-" + atencionId : null,
+      estado: { ruta, eem: Object.fromEntries(Object.entries(eem).map(([k, s]) => [k, [...s]])), eemTocados: [...eemTocado], eemRevisado, instAplicados, cierreSesion: cierreApuntes(), elegidas: [...elegidas], marcas, imp,
         // Criterios tal como quedaron (tarjeta y ruta juntas): el siguiente seguimiento parte de aquí.
         efectivas: Object.fromEntries(elegidas.map(id => [id, Object.fromEntries(indices(id).map(k => {
           const c = crit(id, k);
