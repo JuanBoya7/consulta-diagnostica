@@ -340,8 +340,8 @@ body.en-sesion .marco{display:none}
     <h3>Transcripción y propuesta de Claude</h3>
     <div class="caja">
       <div id="ia-servidor" hidden>
-        <label class="meta ia-consent"><input type="checkbox" id="ia-consent"> Consentimiento informado para grabar la sesión y procesar el texto anonimizado</label>
-        <div class="ia-botones"><button type="button" class="prim" id="ia-grabar" disabled>● Grabar</button><button type="button" class="sec" id="ia-pausar" hidden>Pausar</button><button type="button" class="sec" id="ia-subir" disabled>Subir audio</button><span class="ia-reloj" id="ia-reloj"></span></div>
+        <label class="meta ia-consent"><input type="checkbox" id="ia-consent"> Consentimiento informado para transcribir la sesión (el audio se procesa en este equipo y se borra al terminar) y procesar el texto anonimizado</label>
+        <div class="ia-botones"><button type="button" class="prim" id="ia-grabar" disabled>● Transcribir</button><button type="button" class="sec" id="ia-pausar" hidden>Pausar</button><button type="button" class="sec" id="ia-subir" disabled>Subir audio</button><span class="ia-reloj" id="ia-reloj"></span></div>
         <p class="meta" id="ia-estado"></p>
       </div>
       <div class="ia-botones"><button type="button" class="sec" id="ia-cargar">Cargar transcripción</button><button type="button" class="sec" id="ia-respuesta">Cargar respuesta</button></div>
@@ -2595,7 +2595,7 @@ const hipSugeridas = () => [...new Set(areasVisibles().flatMap(sugeridasDe))];
 const grabacionLista = () => { try { return !!ia.servidor && !!$("#ia-grabar"); } catch { return false; } };
 const grabando = () => { try { return !!ia.rec; } catch { return false; } };
 function relojSesion() {
-  if (grabando() && $("#ia-reloj")) return $("#ia-reloj").textContent.replace(/^● /, "Grabando · ");
+  if (grabando() && $("#ia-reloj")) return $("#ia-reloj").textContent.replace(/^● /, "En vivo · ");
   if (!vs.t0) return "00:00";
   const s = Math.floor((Date.now() - vs.t0) / 1000);
   return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
@@ -2721,7 +2721,7 @@ $("#vista-sesion").addEventListener("click", e => {
   else if (t.id === "vs-area") { vs.hoja = "area"; pintarSesion(); }
   else if (t.id === "vs-salir") salirSesion();
   else if (t.id === "vs-grabar") {
-    // La grabación necesita el consentimiento marcado en su bloque; sin él, se va a marcarlo.
+    // La transcripción necesita el consentimiento marcado en su bloque; sin él, se va a marcarlo.
     if ($("#ia-grabar").disabled) { salirSesion(); irA("ia-consent", "entrevista"); return; }
     $("#ia-grabar").click(); setTimeout(pintarSesion, 400);
   }
@@ -3431,10 +3431,11 @@ $("#tareas-seleccionadas").addEventListener("input", e => {
   iaRecs[+i].texto = e.target.value;
 });
 
-// ---------- Grabación y envío con el servidor local («Abrir consulta.cmd») ----------
-// Si la página se abrió desde el servidor de este equipo, se graba aquí mismo: el audio llega
-// al servidor en fragmentos de 5 s (no se pierde si se cierra la pestaña), Whisper y pyannote
-// transcriben en la GPU y Claude recibe solo el texto anonimizado.
+// ---------- Transcripción en vivo y envío con el servidor local («Abrir consulta.cmd») ----------
+// Si la página se abrió desde el servidor de este equipo, se transcribe aquí mismo: el audio llega
+// al servidor en fragmentos de 5 s y Whisper lo transcribe en vivo en la GPU; al terminar, pyannote
+// separa hablantes y el audio temporal se borra (decisión del docente, 2026-11-22). Claude recibe
+// solo el texto anonimizado.
 // Publicada en GitHub Pages, la página usa el servidor local por su dirección completa.
 const IA_PUBLICADA = /\.github\.io$/.test(location.hostname);
 const IA_API = IA_PUBLICADA ? "http://127.0.0.1:8770" : "";
@@ -3460,7 +3461,7 @@ function iaBotones() {
   const ok = $("#ia-consent").checked, grabando = !!ia.rec;
   $("#ia-grabar").disabled = !ok && !grabando;
   $("#ia-subir").disabled = !ok || grabando;
-  $("#ia-grabar").textContent = grabando ? "■ Detener y transcribir" : "● Grabar";
+  $("#ia-grabar").textContent = grabando ? "■ Terminar transcripción" : "● Transcribir";
   $("#ia-grabar").classList.toggle("grabando", grabando);
   $("#ia-pausar").hidden = !grabando;
   $("#ia-pausar").textContent = ia.rec?.state === "paused" ? "Reanudar" : "Pausar";
@@ -3473,11 +3474,20 @@ async function iaTranscribir() {
   try {
     const { trabajo } = await iaApi(`/api/transcribir?sesion=${encodeURIComponent(ia.sesion)}`);
     const r = await iaSeguir(trabajo);
-    if (!r.texto.trim()) { iaEstado("No se reconoció habla en la grabación. Revise el micrófono elegido en el navegador."); return; }
+    if (!r.texto.trim()) { iaEstado("No se reconoció habla en el audio. Revise el micrófono elegido en el navegador."); return; }
     $("#ia-trans").value = r.texto; ia.editado = false; iaRehacer();
     iaEstado("Transcripción lista y anonimizada. Revise el texto y envíelo a Claude.");
     $("#ia-anon").scrollIntoView({ behavior: "smooth", block: "center" });
-  } catch (e) { iaEstado("No se pudo transcribir: " + e.message); }
+  } catch (e) { iaEstado("No se pudo transcribir (el audio se conserva hasta que la transcripción termine bien): " + e.message); }
+}
+// Mientras se transcribe en vivo: hasta qué minuto va el texto.
+async function iaParcial() {
+  if (!ia.rec || ia.rec.state !== "recording") return;
+  try {
+    const r = await fetch(IA_API + "/api/parcial?sesion=" + encodeURIComponent(ia.sesion)).then(x => x.json());
+    const s = Math.floor(r.hasta || 0);
+    iaEstado(s ? `Transcribiendo en vivo · texto hasta ${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}. El audio es temporal y se borra al terminar.` : "Transcribiendo en vivo. El audio es temporal y se borra al terminar.");
+  } catch {}
 }
 async function iaIniciarGrabacion() {
   try {
@@ -3491,21 +3501,22 @@ async function iaIniciarGrabacion() {
     if (!e.data.size) return;
     const s = ia.sesion;
     ia.cola = ia.cola.then(() => iaApi(`/api/fragmento?sesion=${encodeURIComponent(s)}&ext=webm`, e.data))
-      .catch(err => iaEstado("Problema al guardar la grabación: " + err.message));
+      .catch(err => iaEstado("Problema al enviar el audio: " + err.message));
   };
   ia.rec.onstop = async () => {
     ia.flujo.getTracks().forEach(t => t.stop());
-    clearInterval(ia.reloj); ia.despierto?.release?.(); ia.despierto = null;
+    clearInterval(ia.reloj); clearInterval(ia.parcial); ia.despierto?.release?.(); ia.despierto = null;
     ia.rec = null; iaBotones(); iaPintarReloj();
-    iaEstado("Guardando la grabación…");
+    iaEstado("Terminando la transcripción…");
     await ia.cola;
     iaTranscribir();
   };
   ia.rec.start(5000);
   try { ia.despierto = await navigator.wakeLock?.request("screen"); } catch {}
   ia.reloj = setInterval(iaPintarReloj, 500);
+  ia.parcial = setInterval(iaParcial, 10000);
   sucio = true; iaBotones(); iaPintarReloj();
-  iaEstado("Grabando. La grabación queda en C:\IA\sesiones\\" + ia.sesion + ".");
+  iaEstado("Transcribiendo en vivo. El audio es temporal y se borra al terminar.");
 }
 
 $("#ia-consent").addEventListener("change", iaBotones);
@@ -3517,7 +3528,7 @@ $("#ia-grabar").addEventListener("click", () => {
 $("#ia-pausar").addEventListener("click", () => {
   if (!ia.rec) return;
   if (ia.rec.state === "recording") { ia.acumulado += Date.now() - ia.inicio; ia.rec.pause(); iaEstado("En pausa."); }
-  else { ia.inicio = Date.now(); ia.rec.resume(); iaEstado("Grabando."); }
+  else { ia.inicio = Date.now(); ia.rec.resume(); iaEstado("Transcribiendo en vivo."); }
   iaBotones(); iaPintarReloj();
 });
 $("#ia-subir").addEventListener("click", () => {
@@ -3532,7 +3543,7 @@ $("#ia-subir").addEventListener("click", () => {
   i.click();
 });
 $("#ia-enviar").addEventListener("click", async () => {
-  if (!$("#ia-anon").value.trim()) { mensaje("Primero grabe, suba o cargue la transcripción."); return; }
+  if (!$("#ia-anon").value.trim()) { mensaje("Primero transcriba, suba un audio o cargue la transcripción."); return; }
   const b = $("#ia-enviar"); b.disabled = true;
   try {
     const [modelo, esfuerzo] = $("#ia-modelo").value.split("|");
@@ -3548,7 +3559,7 @@ $("#ia-enviar").addEventListener("click", async () => {
 });
 window.addEventListener("beforeunload", e => { if (ia.rec) { e.preventDefault(); e.returnValue = ""; } });
 
-// Con el servidor de este equipo aparecen la grabación y el envío directo. En la página publicada
+// Con el servidor de este equipo aparecen la transcripción en vivo y el envío directo. En la página publicada
 // el bloque solo aparece si el servidor de este equipo responde (la página habla con él, no con GitHub).
 if (IA_PUBLICADA) $("#s-ia").hidden = true;
 if (IA_PUBLICADA || /^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
