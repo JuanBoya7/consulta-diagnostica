@@ -287,6 +287,9 @@ body.en-sesion .marco{display:none}
 .vs-hecho{font-size:.75rem;font-weight:600;color:var(--accent-dark);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-left:4px}
 .vs-hoja input[type=number],.vs-hoja input[type=time]{font:inherit;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:#fff;color:var(--ink);text-align:left}
 .vs-main{padding-bottom:160px}
+.vs-main.ancho{max-width:1000px}
+#vs-hueco>.bloque:first-child,#vs-hueco>.panel:first-child{margin-top:0}
+#vs-hueco .barra{position:static;border-top:1px solid var(--border);margin-top:12px}
 .inst-reg:first-child{border-top:0}
 .inst-reg textarea{min-height:70px;margin-top:6px}
 
@@ -317,7 +320,7 @@ body.en-sesion .marco{display:none}
 <h1>Consulta diagnóstica</h1>
 <p class="lead">Siga la ruta de entrevista y verifique sus hipótesis: criterios, diferenciales, códigos y los planes, instrumentos y fichas de las guías.</p>
 
-<div class="panel">
+<div class="panel" id="s-poblacion">
   <div class="fila">
     <div class="campo">
       <span class="rot">Población</span>
@@ -9948,6 +9951,7 @@ function pintarLaterales() {
 }
 // Lleva a una sección o campo: cambia de pestaña si hace falta y enfoca el campo.
 function irA(id, tab) {
+  try { if (vs.activa) return irSesion(id); } catch {}
   if (tab) mostrarTab(tab);
   const el = document.getElementById(id); if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: el.offsetHeight > innerHeight * 0.7 ? "start" : "center" });
@@ -10112,10 +10116,52 @@ async function copiarTexto(t) {
 // con lo mínimo a la vista. Es otra vista del mismo estado (ruta, examen mental, hipótesis): lo que
 // se marca aquí es lo que se ve al salir, donde siguen los datos, la verificación y el informe.
 const vs = { activa: false, cur: null, t0: null, hoja: null };
+// Pedido del docente (2026-11-22): hacer todo el proceso desde el modo sesión. Las fases de antes y
+// después de la entrevista traen a la tarjeta las mismas secciones de la vista completa (se mueven al
+// abrir la tarjeta y vuelven a su sitio al cambiar o salir), con todo lo que ya hacen.
+const VS_ANTES = [{ id: "x-datos", t: "Datos", largo: "Datos de la atención", nodos: ["s-poblacion", "s-datos"] }];
+const VS_DESPUES = [
+  { id: "x-examen", t: "Examen mental", nodos: ["s-examen"] },
+  { id: "x-hipotesis", t: "Hipótesis", largo: "Hipótesis y criterios", nodos: ["tab-hipotesis"] },
+  { id: "x-ia", t: "Transcripción", largo: "Transcripción y propuesta de Claude", nodos: ["s-ia"] },
+  { id: "x-informe", t: "Informe", largo: "Informe de la sesión", nodos: ["s-granola"] },
+  { id: "x-impresion", t: "Impresión", largo: "Impresión diagnóstica", nodos: ["s-impresion"] },
+  { id: "x-plan", t: "Plan", largo: "Formulación, plan y recomendaciones", nodos: ["s-formulacion", "s-plan", "s-recomendaciones"] },
+  { id: "x-guardar", t: "Guardar", largo: "Revisar y guardar", nodos: ["s-instrumentos", "s-devolucion", "barra"] }
+];
+const vsHay = b => b.nodos.some(n => { const el = document.getElementById(n); return el && !(n === "s-ia" && el.hidden); });
+const fasesSesion = () => [...VS_ANTES.filter(vsHay), ...rutaActual(), ...VS_DESPUES.filter(vsHay)];
+const vsMovidos = [];
+function moverNodos(ids) {
+  const dest = document.getElementById("vs-hueco"); if (!dest) return;
+  for (const id of ids) {
+    const el = document.getElementById(id); if (!el || (id === "s-ia" && el.hidden)) continue;
+    const hueco = document.createComment("vs:" + id);
+    el.parentNode.insertBefore(hueco, el);
+    vsMovidos.push({ el, hueco, oculto: el.hidden });
+    el.hidden = false; dest.appendChild(el);
+  }
+}
+function devolverNodos() {
+  while (vsMovidos.length) { const { el, hueco, oculto } = vsMovidos.pop(); hueco.parentNode.replaceChild(el, hueco); el.hidden = oculto; }
+}
+// Llevar a un campo o sección sin salir del modo sesión (avisos de lo que falta, incongruencias…).
+function irSesion(id) {
+  const el = document.getElementById(id);
+  let k = null;
+  if (/^area-/.test(id)) k = "a:" + id.slice(5);
+  else if (/^b-/.test(id)) { const b = rutaActual().find(x => "b-" + x.id === id); k = b && (tarjetasSesion().find(t => t.b === b) || {}).k; }
+  else for (const b of [...VS_ANTES, ...VS_DESPUES]) if (el && b.nodos.some(n => { const r = document.getElementById(n); return r && r.contains(el); })) { k = "x:" + b.id; break; }
+  if (!k) return;
+  vs.cur = k; vs.hoja = null; pintarSesion();
+  const d = document.getElementById(id);
+  if (d) { d.scrollIntoView({ behavior: "smooth", block: "center" }); if (/^(INPUT|SELECT|TEXTAREA)$/.test(d.tagName)) d.focus({ preventScroll: true }); }
+}
 function tarjetasSesion() {
   const out = [], ab = desplegadas();
-  for (const b of rutaActual()) {
-    if (b.tipo === "check") out.push({ k: "c:" + b.id, b });
+  for (const b of fasesSesion()) {
+    if (b.nodos) out.push({ k: "x:" + b.id, b });
+    else if (b.tipo === "check") out.push({ k: "c:" + b.id, b });
     else {
       if (b.aDemanda) out.push({ k: "e:" + b.id, b });
       for (const a of areasDe(b, ab)) out.push({ k: "a:" + a.id, b, a });
@@ -10140,9 +10186,11 @@ function estadoBloqueSesion(b) {
 }
 function pintarSesion() {
   if (!vs.activa) return;
+  devolverNodos();
   const T = tarjetasSesion(), i = idxSesion(T), c = T[i]; vs.cur = c.k;
-  const fi = rutaActual().indexOf(c.b), bd = rutaActual().find(b => b.aDemanda);
-  const fases = rutaActual().map((b, j) => {
+  const FS = fasesSesion(), fi = FS.indexOf(c.b), bd = rutaActual().find(b => b.aDemanda);
+  const fases = FS.map((b, j) => {
+    if (b.nodos) return `<button type="button" class="vs-fase${j === fi ? " actual" : ""}" data-vs-fase="${j}">${esc(b.t)}</button>`;
     const e = estadoBloqueSesion(b);
     let cls = e.de && e.n >= e.de ? "hecha" : e.n ? "parcial" : "";
     if (e.dem && !e.de && j < fi) cls = "hecha";
@@ -10152,7 +10200,8 @@ function pintarSesion() {
   const rb = rutaActual().find(b => b.fijo);
   const riesgo = rb ? areasDe(rb).map(a => { const r = ruta.resp[a.id]; return `<button type="button" class="vs-rp${r ? " r-" + r : ""}" data-vs-ir="a:${a.id}">${esc(a.t)}: <b>${r ? esc(etResp(a, r)) : "sin explorar"}</b></button>`; }).join("") : "";
   const g = grabacionLista() ? `<button type="button" class="sec${grabando() ? " grabando" : ""}" id="vs-grabar">${esc($("#ia-grabar").textContent)}</button>` : "";
-  const cuerpo = c.k[0] === "c" ? sesionCheck(c) : c.k[0] === "e" ? sesionElegir(c) : sesionArea(c);
+  const cuerpo = c.k[0] === "x" ? `<div class="vs-card"><div class="vs-eti">${esc(c.b.largo || c.b.t)}</div><div id="vs-hueco"></div></div>`
+    : c.k[0] === "c" ? sesionCheck(c) : c.k[0] === "e" ? sesionElegir(c) : sesionArea(c);
   const nHip = hipSugeridas().length, nObs = eemTocado.size;
   const hojaPrevia = document.querySelector("#vista-sesion .vs-hoja"), scrollHoja = hojaPrevia && vs.hojaPrevia === vs.hoja ? hojaPrevia.scrollTop : 0;
   vs.hojaPrevia = vs.hoja;
@@ -10161,12 +10210,13 @@ function pintarSesion() {
       ${bd ? '<button type="button" class="sec" id="vs-area" title="Tecla +">+ Área</button>' : ""}
       <button type="button" class="prim" id="vs-salir">Vista completa</button></div>
     <div class="vs-fases">${fases}</div><div class="vs-riesgo">${riesgo}</div></div>
-    <div class="vs-main">${cuerpo}
+    <div class="vs-main${c.k[0] === "x" ? " ancho" : ""}">${cuerpo}
       <div class="vs-nav"><button type="button" class="sec" id="vs-ant"${i ? "" : " disabled"}>← Anterior</button><span class="pos">${i + 1} de ${T.length}</span>
-      <button type="button" class="prim" id="vs-sig">${i === T.length - 1 ? "Terminar →" : "Siguiente →"}</button></div></div>
-    <button type="button" class="vs-fab" id="vs-hip">Hipótesis<span class="larga"> sugeridas</span><span class="n">${nHip}</span></button>
-    <button type="button" class="vs-fab" id="vs-obs" title="Tecla O">Examen<span class="larga"> mental</span><span class="n">${nObs}</span></button>
+      <button type="button" class="prim" id="vs-sig">${i === T.length - 1 ? "Vista completa →" : "Siguiente →"}</button></div></div>
+    ${c.k === "x:x-guardar" ? "" : `<button type="button" class="vs-fab" id="vs-hip">Hipótesis<span class="larga"> sugeridas</span><span class="n">${nHip}</span></button>
+    <button type="button" class="vs-fab" id="vs-obs" title="Tecla O">Examen<span class="larga"> mental</span><span class="n">${nObs}</span></button>`}
     ${vs.hoja ? `<div class="vs-velo" data-vs-cerrar></div><div class="vs-hoja" role="dialog" aria-modal="true"><div class="in">${sesionHoja()}</div></div>` : ""}`;
+  if (c.k[0] === "x") moverNodos(c.b.nodos);
   const hoja = document.querySelector("#vista-sesion .vs-hoja"); if (hoja && scrollHoja) hoja.scrollTop = scrollHoja;
   const fasesC = document.querySelector("#vista-sesion .vs-fases"), act = fasesC && fasesC.querySelector(".actual");
   if (act) fasesC.scrollLeft = act.offsetLeft - (fasesC.clientWidth - act.offsetWidth) / 2;
@@ -10222,13 +10272,14 @@ function entrarSesion() {
   pintarSesion(); window.scrollTo(0, 0);
 }
 function salirSesion(destino) {
+  devolverNodos();
   vs.activa = false; vs.hoja = null;
   document.body.classList.remove("en-sesion"); $("#vista-sesion").hidden = true;
   if (destino) irA(destino, "entrevista");
 }
 function moverSesion(d) {
   const T = tarjetasSesion(), i = idxSesion(T);
-  if (d > 0 && i === T.length - 1) return salirSesion("s-examen");
+  if (d > 0 && i === T.length - 1) return salirSesion();
   vs.cur = T[Math.max(0, Math.min(T.length - 1, i + d))].k; pintarSesion(); window.scrollTo(0, 0);
 }
 function cambioSesion() { if (typeof sucio !== "undefined") sucio = true; actualizarRuta(); pintarSesion(); }
@@ -10290,7 +10341,7 @@ $("#vista-sesion").addEventListener("click", e => {
     pintarAcuerdos(); marcarCierre(); if (typeof sucio !== "undefined") sucio = true; pintarSesion();
   }
   else if (D.vsDom) { if (typeof sucio !== "undefined") sucio = true; tocarEem(D.vsDom, Number(D.vsOp)); }
-  else if (D.vsFase != null) { const b = rutaActual()[+D.vsFase]; vs.cur = (tarjetasSesion().find(x => x.b === b) || {}).k; pintarSesion(); }
+  else if (D.vsFase != null) { const b = fasesSesion()[+D.vsFase]; vs.cur = (tarjetasSesion().find(x => x.b === b) || {}).k; pintarSesion(); window.scrollTo(0, 0); }
   else if (D.vsIr) { vs.cur = D.vsIr; vs.hoja = null; pintarSesion(); }
   else if (D.vsCerrar != null) { vs.hoja = null; pintarSesion(); }
   else if (t.id === "vs-sig") moverSesion(1);
@@ -11662,10 +11713,11 @@ let intento = false; // tras el primer intento de guardar, la página señala lo
 // falta para guardar y la barra de progreso del lateral.
 function requeridos() {
   const r = [], lleno = v => !!String(v ?? "").trim();
+  // Primero lo que va arriba en la tarjeta de datos (población, edad y escenario).
+  if (!$("#campo-edad").hidden) r.push(["Rango de edad", "edad", !!$("#edad").value]);
+  r.push(["Escenario", "esc", !!$("#esc").value]);
   if (modo === "inicial") for (const [k, et] of CAMPOS_PAC) if (obligPac().includes(k)) r.push([et, "pac-" + k, lleno(paciente[k])]);
   for (const [k, et] of [...CAMPOS_AT, ["motivo", modo === "seguimiento" ? "Foco de la sesión" : "Motivo de consulta"]]) if (OBLIG_AT.includes(k)) r.push([et, "at-" + k, lleno(atencion[k])]);
-  r.push(["Escenario", "esc", !!$("#esc").value]);
-  if (!$("#campo-edad").hidden) r.push(["Rango de edad", "edad", !!$("#edad").value]);
   for (const a of rutaActual().filter(b => b.fijo || b.obligatorio).flatMap(b => areasDe(b))) r.push([a.t, "area-" + a.id, !!ruta.resp[a.id]]);
   for (const d of EXAMEN) if (d.ops) r.push(["Examen mental: " + d.t.toLowerCase(), "eem-" + d.id, !!(eem[d.id] && eem[d.id].size)]);
   r.push(["Informe de la sesión", "granola", lleno($("#granola").value)]);
