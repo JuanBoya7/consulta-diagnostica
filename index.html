@@ -175,6 +175,13 @@ button.globo:hover{border-color:var(--accent)}
 .estado-guardado{font-size:.85rem;color:var(--accent-dark)}
 .texto{white-space:pre-wrap;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.92rem;margin:10px 0}
 @media (max-width:600px){h1{font-size:1.4rem} .sint{margin-left:0} .a-cab{flex-direction:column} .eem-fila{grid-template-columns:1fr}}
+/* Especificadores en la impresión diagnóstica. */
+.esp{grid-column:1/-1;margin-top:4px}
+@media (max-width:600px){.imp{grid-template-columns:1fr}}
+.esp summary{font-size:.85rem}
+.esp-g{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:6px 0}
+.esp-g>.meta{min-width:150px;margin:0}
+.esp-g select{font:inherit;font-size:.88rem;border:1px solid var(--border);border-radius:8px;padding:4px 8px;max-width:100%}
 /* Examen mental por defecto y ventana de verificación al guardar. */
 .eem-fila.defecto .ops button[aria-pressed=true]{border-style:dashed}
 .por-def{display:block;font-size:.72rem;font-weight:400;color:var(--ink-faint)}
@@ -1462,6 +1469,7362 @@ const VERIF = {
   "tp-evitativo": { oculto: [1], 0: { n: 4, t: "Cuatro o más de siete: inhibición social, sentimientos de inferioridad e hipersensibilidad a la crítica", items: ["Evita actividades laborales con mucho contacto por miedo a la crítica o el rechazo", "Solo se relaciona si está seguro de que va a agradar", "Se contiene en las relaciones íntimas por miedo a la vergüenza o el ridículo", "Le preocupa ser criticado o rechazado en situaciones sociales", "Se inhibe en situaciones nuevas por sentirse inadecuado", "Se ve socialmente inepto, poco atractivo o inferior", "Es muy reacio a correr riesgos o hacer actividades nuevas por miedo a la vergüenza"] } },
   "tp-dependiente": { oculto: [1], 0: { n: 5, t: "Cinco o más de ocho: necesidad excesiva de que se ocupen de él, sumisión y miedo a la separación", items: ["Le cuesta tomar decisiones cotidianas sin consejo y reafirmación excesivos", "Necesita que otros asuman la responsabilidad de las áreas principales de su vida", "Le cuesta expresar desacuerdo por miedo a perder apoyo o aprobación", "Le cuesta iniciar proyectos o hacer cosas por sí mismo", "Va demasiado lejos para obtener apoyo, hasta hacer voluntariamente cosas desagradables", "Se siente incómodo o indefenso cuando está solo", "Busca con urgencia otra relación cuando termina una relación cercana", "Le preocupa de forma irreal que lo dejen solo y tenga que cuidarse"] } },
   "tp-obsesivo": { oculto: [1], 0: { n: 4, t: "Cuatro o más de ocho: preocupación por el orden, el perfeccionismo y el control, a costa de la flexibilidad", items: ["Preocupación por detalles, normas, listas, orden u horarios hasta perder el objetivo", "Perfeccionismo que interfiere con terminar las tareas", "Dedicación excesiva al trabajo, a costa del ocio y las amistades", "Escrupulosidad e inflexibilidad en moral, ética o valores", "Incapacidad para desprenderse de objetos gastados o inútiles sin valor sentimental", "Reticencia a delegar si no se hace exactamente a su manera", "Avaricia en el gasto, para él y para los demás", "Rigidez y obstinación"] } }
+};
+
+
+/* Especificadores y códigos del DSM-5-TR por hipótesis (los escribe unir-especificadores.cjs a partir
+   de la extracción del DSM-5-TR de la biblioteca: secciones «Specify» y «Coding/Recording Procedures»).
+   Etiquetas en español, traducción propia. No se edita a mano: se corrige el JSON y se vuelve a unir. */
+const ESPECIFICADORES = {
+ "tdm": {
+  "grupos": [
+   {
+    "id": "episodio",
+    "t": "Episodio",
+    "tipo": "uno",
+    "ops": [
+     [
+      "unico",
+      "Episodio único",
+      "F32"
+     ],
+     [
+      "recurrente",
+      "Recurrente (intervalo de al menos 2 meses sin criterios entre episodios)",
+      "F33"
+     ]
+    ]
+   },
+   {
+    "id": "estado",
+    "t": "Gravedad, rasgos psicóticos o remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderado",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ],
+     [
+      "psicoticas",
+      "Con características psicóticas (se codifica así sea cual sea la gravedad)"
+     ],
+     [
+      "remision_parcial",
+      "En remisión parcial"
+     ],
+     [
+      "remision_total",
+      "En remisión total"
+     ],
+     [
+      "sin_especificar",
+      "Sin especificar"
+     ]
+    ]
+   },
+   {
+    "id": "rasgos",
+    "t": "Especificadores sin código propio",
+    "tipo": "varios",
+    "ops": [
+     [
+      "ansiedad",
+      "Con ansiedad"
+     ],
+     [
+      "mixtas",
+      "Con rasgos mixtos"
+     ],
+     [
+      "melancolicas",
+      "Con características melancólicas"
+     ],
+     [
+      "atipicas",
+      "Con características atípicas"
+     ],
+     [
+      "psic_congruentes",
+      "Con características psicóticas congruentes con el estado de ánimo"
+     ],
+     [
+      "psic_incongruentes",
+      "Con características psicóticas incongruentes con el estado de ánimo"
+     ],
+     [
+      "catatonia",
+      "Con catatonia",
+      "+F06.1"
+     ],
+     [
+      "periparto",
+      "Con inicio en el periparto"
+     ],
+     [
+      "estacional",
+      "Con patrón estacional (patrón de episodios recurrentes)"
+     ],
+     [
+      "panico",
+      "Con ataques de pánico"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad_ansiedad",
+    "t": "Gravedad de la ansiedad (si marcó «Con ansiedad»)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (2 síntomas)"
+     ],
+     [
+      "moderada",
+      "Moderada (3 síntomas)"
+     ],
+     [
+      "moderada_grave",
+      "Moderada-grave (4 o 5 síntomas)"
+     ],
+     [
+      "grave",
+      "Grave (4 o 5 síntomas con agitación motora)"
+     ]
+    ],
+    "solo": {
+     "rasgos": [
+      "ansiedad"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "leve"
+    },
+    "cod": "F32.0"
+   },
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "moderado"
+    },
+    "cod": "F32.1"
+   },
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "grave"
+    },
+    "cod": "F32.2"
+   },
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "psicoticas"
+    },
+    "cod": "F32.3"
+   },
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "remision_parcial"
+    },
+    "cod": "F32.4"
+   },
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "remision_total"
+    },
+    "cod": "F32.5"
+   },
+   {
+    "si": {
+     "episodio": "unico",
+     "estado": "sin_especificar"
+    },
+    "cod": "F32.9"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "leve"
+    },
+    "cod": "F33.0"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "moderado"
+    },
+    "cod": "F33.1"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "grave"
+    },
+    "cod": "F33.2"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "psicoticas"
+    },
+    "cod": "F33.3"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "remision_parcial"
+    },
+    "cod": "F33.41"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "remision_total"
+    },
+    "cod": "F33.42"
+   },
+   {
+    "si": {
+     "episodio": "recurrente",
+     "estado": "sin_especificar"
+    },
+    "cod": "F33.9"
+   },
+   {
+    "si": {
+     "episodio": "unico"
+    },
+    "cod": "F32.9"
+   },
+   {
+    "si": {},
+    "cod": "F33.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno depresivo mayor, Coding and Recording Procedures (tabla de códigos) y Specifiers for Depressive Disorders",
+  "nota": "Gravedad y rasgos psicóticos solo si hoy se cumplen criterios de episodio depresivo mayor; remisión solo si hoy no se cumplen. Si hay rasgos psicóticos se codifica «psicóticas» sin importar la gravedad. Recurrente exige intervalo de al menos 2 meses consecutivos sin criterios. Los especificadores de rasgos no cambian el código; catatonia agrega F06.1 como código adicional. Con ataques de pánico viene de la sección Panic Attack Specifier (se anota, no se codifica). Gravedad de la ansiedad: la define el número de síntomas de ansiedad."
+ },
+ "distimia": {
+  "grupos": [
+   {
+    "id": "inicio",
+    "t": "Inicio",
+    "tipo": "uno",
+    "ops": [
+     [
+      "temprano",
+      "De inicio temprano (antes de los 21 años)"
+     ],
+     [
+      "tardio",
+      "De inicio tardío (a los 21 años o más)"
+     ]
+    ]
+   },
+   {
+    "id": "sindrome",
+    "t": "Cuadro de los últimos 2 años",
+    "tipo": "uno",
+    "ops": [
+     [
+      "distimico_puro",
+      "Con síndrome distímico puro"
+     ],
+     [
+      "episodio_persistente",
+      "Con episodio depresivo mayor persistente"
+     ],
+     [
+      "intermitente_actual",
+      "Con episodios depresivos mayores intermitentes, con episodio actual"
+     ],
+     [
+      "intermitente_sin_actual",
+      "Con episodios depresivos mayores intermitentes, sin episodio actual"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderada",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso (si no se cumplen hoy criterios completos de episodio)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "remision_parcial",
+      "En remisión parcial"
+     ],
+     [
+      "remision_total",
+      "En remisión total"
+     ]
+    ]
+   },
+   {
+    "id": "rasgos",
+    "t": "Otros especificadores",
+    "tipo": "varios",
+    "ops": [
+     [
+      "ansiedad",
+      "Con ansiedad"
+     ],
+     [
+      "atipicas",
+      "Con características atípicas"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad_ansiedad",
+    "t": "Gravedad de la ansiedad (si marcó «Con ansiedad»)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (2 síntomas)"
+     ],
+     [
+      "moderada",
+      "Moderada (3 síntomas)"
+     ],
+     [
+      "moderada_grave",
+      "Moderada-grave (4 o 5 síntomas)"
+     ],
+     [
+      "grave",
+      "Grave (4 o 5 síntomas con agitación motora)"
+     ]
+    ],
+    "solo": {
+     "rasgos": [
+      "ansiedad"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F34.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno depresivo persistente, Diagnostic Criteria (especificadores)",
+  "nota": "Un solo código (F34.1); ningún especificador lo cambia. Si en algún momento de los 2 años hubo criterios de episodio depresivo mayor, se diagnostica además trastorno depresivo mayor (con el especificador correspondiente). En niños y adolescentes la duración exigida es 1 año."
+ },
+ "ddae": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F34.81"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de desregulación disruptiva del estado de ánimo, Diagnostic Criteria",
+  "nota": "Sin especificadores en el manual. Un solo código F34.81. No se diagnostica por primera vez antes de los 6 ni después de los 18 años; inicio de los síntomas antes de los 10; no coexiste con TND, trastorno explosivo intermitente ni bipolar."
+ },
+ "tdpm": {
+  "grupos": [
+   {
+    "id": "confirmacion",
+    "t": "Confirmación",
+    "tipo": "uno",
+    "ops": [
+     [
+      "confirmado",
+      "Confirmado con registros diarios prospectivos de al menos 2 ciclos sintomáticos"
+     ],
+     [
+      "provisional",
+      "Provisional (sin esa confirmación todavía)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F32.81"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno disfórico premenstrual, Diagnostic Criteria y Recording Procedures",
+  "nota": "Un solo código F32.81. Si no hay confirmación prospectiva de 2 ciclos se anota «provisional» tras el nombre."
+ },
+ "animo-ne": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F39"
+   }
+  ],
+  "fuente": "DSM-5-TR, Unspecified Mood Disorder",
+  "nota": "Sin especificadores. Se usa cuando cuesta elegir entre bipolar no especificado y depresivo no especificado (p. ej., agitación aguda)."
+ },
+ "bipolar": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Trastorno",
+    "tipo": "uno",
+    "ops": [
+     [
+      "bipolar1",
+      "Trastorno bipolar I",
+      "F31"
+     ],
+     [
+      "bipolar2",
+      "Trastorno bipolar II",
+      "F31.81"
+     ],
+     [
+      "ciclotimico",
+      "Trastorno ciclotímico",
+      "F34.0"
+     ]
+    ]
+   },
+   {
+    "id": "episodio",
+    "t": "Episodio actual o más reciente (bipolar I y II)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "manico",
+      "Maníaco",
+      null,
+      {
+       "diagnostico": [
+        "bipolar1"
+       ]
+      }
+     ],
+     [
+      "hipomaniaco",
+      "Hipomaníaco"
+     ],
+     [
+      "depresivo",
+      "Depresivo"
+     ],
+     [
+      "sin_especificar",
+      "Sin especificar (solo bipolar I)",
+      null,
+      {
+       "diagnostico": [
+        "bipolar1"
+       ]
+      }
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "bipolar1",
+      "bipolar2"
+     ]
+    }
+   },
+   {
+    "id": "estado",
+    "t": "Gravedad, rasgos psicóticos o remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderado",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ],
+     [
+      "psicoticas",
+      "Con características psicóticas"
+     ],
+     [
+      "remision_parcial",
+      "En remisión parcial"
+     ],
+     [
+      "remision_total",
+      "En remisión total"
+     ],
+     [
+      "sin_especificar",
+      "Sin especificar"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "bipolar1",
+      "bipolar2"
+     ]
+    }
+   },
+   {
+    "id": "rasgos",
+    "t": "Especificadores sin código propio",
+    "tipo": "varios",
+    "ops": [
+     [
+      "ansiedad",
+      "Con ansiedad (también en ciclotímico)"
+     ],
+     [
+      "mixtas",
+      "Con rasgos mixtos"
+     ],
+     [
+      "ciclado_rapido",
+      "Con ciclado rápido (4 o más episodios en 12 meses)"
+     ],
+     [
+      "melancolicas",
+      "Con características melancólicas"
+     ],
+     [
+      "atipicas",
+      "Con características atípicas"
+     ],
+     [
+      "psic_congruentes",
+      "Con características psicóticas congruentes con el estado de ánimo"
+     ],
+     [
+      "psic_incongruentes",
+      "Con características psicóticas incongruentes con el estado de ánimo"
+     ],
+     [
+      "catatonia",
+      "Con catatonia",
+      "+F06.1"
+     ],
+     [
+      "periparto",
+      "Con inicio en el periparto"
+     ],
+     [
+      "estacional",
+      "Con patrón estacional"
+     ],
+     [
+      "panico",
+      "Con ataques de pánico"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "bipolar1",
+      "bipolar2"
+     ]
+    }
+   },
+   {
+    "id": "gravedad_ansiedad",
+    "t": "Gravedad de la ansiedad (si marcó «Con ansiedad»)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (2 síntomas)"
+     ],
+     [
+      "moderada",
+      "Moderada (3 síntomas)"
+     ],
+     [
+      "moderada_grave",
+      "Moderada-grave (4 o 5 síntomas)"
+     ],
+     [
+      "grave",
+      "Grave (4 o 5 síntomas con agitación motora)"
+     ]
+    ],
+    "solo": {
+     "rasgos": [
+      "ansiedad"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "manico",
+     "estado": "leve"
+    },
+    "cod": "F31.11"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "depresivo",
+     "estado": "leve"
+    },
+    "cod": "F31.31"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "manico",
+     "estado": "moderado"
+    },
+    "cod": "F31.12"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "depresivo",
+     "estado": "moderado"
+    },
+    "cod": "F31.32"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "manico",
+     "estado": "grave"
+    },
+    "cod": "F31.13"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "depresivo",
+     "estado": "grave"
+    },
+    "cod": "F31.4"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "manico",
+     "estado": "psicoticas"
+    },
+    "cod": "F31.2"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "depresivo",
+     "estado": "psicoticas"
+    },
+    "cod": "F31.5"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "manico",
+     "estado": "remision_parcial"
+    },
+    "cod": "F31.73"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "depresivo",
+     "estado": "remision_parcial"
+    },
+    "cod": "F31.75"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "manico",
+     "estado": "remision_total"
+    },
+    "cod": "F31.74"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "depresivo",
+     "estado": "remision_total"
+    },
+    "cod": "F31.76"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "hipomaniaco",
+     "estado": "remision_parcial"
+    },
+    "cod": "F31.71"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "hipomaniaco",
+     "estado": "remision_total"
+    },
+    "cod": "F31.72"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "sin_especificar"
+    },
+    "cod": "F31.9"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "estado": "sin_especificar"
+    },
+    "cod": "F31.9"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1",
+     "episodio": "hipomaniaco"
+    },
+    "cod": "F31.0"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar1"
+    },
+    "cod": "F31.9"
+   },
+   {
+    "si": {
+     "diagnostico": "bipolar2"
+    },
+    "cod": "F31.81"
+   },
+   {
+    "si": {
+     "diagnostico": "ciclotimico"
+    },
+    "cod": "F34.0"
+   },
+   {
+    "si": {},
+    "cod": "F31.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno bipolar I y Trastorno bipolar II, Coding and Recording Procedures; Trastorno ciclotímico, Diagnostic Criteria",
+  "nota": "Bipolar I: código por episodio actual o más reciente y estado. Gravedad y rasgos psicóticos solo si hoy se cumplen criterios de episodio maníaco o depresivo; remisión solo si no. Si hay rasgos psicóticos se codifica «psicóticas» sin importar la gravedad. Episodio hipomaníaco sin remisión: gravedad y rasgos psicóticos no aplican, F31.0. Episodio sin especificar: F31.9. Bipolar II: un solo código F31.81; episodio, gravedad (solo si el episodio depresivo cumple criterios hoy), remisión y rasgos se escriben pero no se codifican; con episodio hipomaníaco solo aplican ansiedad, mixtas, ciclado rápido, periparto y estacional. Ciclotímico: F34.0, solo admite «con ansiedad»; duración 2 años (1 año en niños y adolescentes). Catatonia añade F06.1 como código adicional. Ciclado rápido y patrón estacional describen el patrón de los episodios."
+ },
+ "otro-depresivo": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Presentación",
+    "tipo": "uno",
+    "ops": [
+     [
+      "otro_especificado",
+      "Otro trastorno depresivo especificado",
+      "F32.89"
+     ],
+     [
+      "no_especificado",
+      "Trastorno depresivo no especificado",
+      "F32.A"
+     ]
+    ]
+   },
+   {
+    "id": "presentacion",
+    "t": "Si es otro especificado, razón",
+    "tipo": "uno",
+    "ops": [
+     [
+      "depresion_breve_recurrente",
+      "Depresión breve recurrente (2 a 13 días, al menos una vez al mes, 12 meses)"
+     ],
+     [
+      "episodio_corta_duracion",
+      "Episodio depresivo de corta duración (4 a 13 días)"
+     ],
+     [
+      "sintomas_insuficientes",
+      "Episodio depresivo con síntomas insuficientes (al menos 2 semanas)"
+     ],
+     [
+      "mayor_superpuesto",
+      "Episodio depresivo mayor superpuesto a esquizofrenia, esquizofreniforme, delirante u otro espectro psicótico"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "otro_especificado"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "no_especificado"
+    },
+    "cod": "F32.A"
+   },
+   {
+    "si": {},
+    "cod": "F32.89"
+   }
+  ],
+  "fuente": "DSM-5-TR, Other Specified Depressive Disorder y Unspecified Depressive Disorder",
+  "nota": "Otro especificado F32.89 (se anota la razón concreta); no especificado F32.A (sin razón; incluye información insuficiente, p. ej. urgencias). Ambos excluyen trastorno de adaptación con ánimo deprimido o mixto. El episodio depresivo mayor de un esquizoafectivo no recibe este diagnóstico. F32.A está en el índice de códigos del manual (línea 1076); la sección de texto no imprime el código."
+ },
+ "otro-bipolar": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Presentación",
+    "tipo": "uno",
+    "ops": [
+     [
+      "otro_especificado",
+      "Otro trastorno bipolar y relacionado especificado",
+      "F31.89"
+     ],
+     [
+      "no_especificado",
+      "Trastorno bipolar y relacionado no especificado",
+      "F31.9"
+     ]
+    ]
+   },
+   {
+    "id": "presentacion",
+    "t": "Si es otro especificado, razón",
+    "tipo": "uno",
+    "ops": [
+     [
+      "hipomania_corta",
+      "Episodios hipomaníacos de corta duración (2 a 3 días) y episodios depresivos mayores"
+     ],
+     [
+      "hipomania_insuficiente",
+      "Episodios hipomaníacos con síntomas insuficientes y episodios depresivos mayores"
+     ],
+     [
+      "hipomania_sin_depresivo",
+      "Episodio hipomaníaco sin episodio depresivo mayor previo"
+     ],
+     [
+      "ciclotimia_corta",
+      "Ciclotimia de corta duración (menos de 24 meses; menos de 12 en niños y adolescentes)"
+     ],
+     [
+      "manico_superpuesto",
+      "Episodio maníaco superpuesto a esquizofrenia, esquizofreniforme, delirante u otro espectro psicótico"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "otro_especificado"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "no_especificado"
+    },
+    "cod": "F31.9"
+   },
+   {
+    "si": {},
+    "cod": "F31.89"
+   }
+  ],
+  "fuente": "DSM-5-TR, Other Specified Bipolar and Related Disorder y Unspecified Bipolar and Related Disorder",
+  "nota": "El episodio maníaco de un esquizoafectivo no recibe este diagnóstico."
+ },
+ "otra-ansiedad": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Presentación",
+    "tipo": "uno",
+    "ops": [
+     [
+      "otro_especificado",
+      "Otro trastorno de ansiedad especificado",
+      "F41.8"
+     ],
+     [
+      "no_especificado",
+      "Trastorno de ansiedad no especificado",
+      "F41.9"
+     ]
+    ]
+   },
+   {
+    "id": "presentacion",
+    "t": "Si es otro especificado, razón",
+    "tipo": "uno",
+    "ops": [
+     [
+      "ataques_limitados",
+      "Ataques con síntomas limitados"
+     ],
+     [
+      "tag_menos",
+      "Ansiedad generalizada que ocurre con menos frecuencia que más días que no"
+     ],
+     [
+      "khyal_cap",
+      "Khyâl cap (ataques de viento)"
+     ],
+     [
+      "ataque_nervios",
+      "Ataque de nervios"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "otro_especificado"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "no_especificado"
+    },
+    "cod": "F41.9"
+   },
+   {
+    "si": {},
+    "cod": "F41.8"
+   }
+  ],
+  "fuente": "DSM-5-TR, Other Specified Anxiety Disorder y Unspecified Anxiety Disorder",
+  "nota": "Ambos excluyen trastorno de adaptación con ansiedad o mixto con ánimo deprimido. Los dos últimos ejemplos remiten a Culture and Psychiatric Diagnosis (sección III)."
+ },
+ "panico": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F41.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de pánico, Diagnostic Criteria; Panic Attack Specifier",
+  "nota": "Sin especificadores propios: el ataque de pánico ya forma parte de los criterios y no se usa como especificador aquí. Si cumple criterios de agorafobia se diagnostican ambos (F41.0 y F40.00)."
+ },
+ "agorafobia": {
+  "grupos": [
+   {
+    "id": "panico",
+    "t": "Ataques de pánico",
+    "tipo": "varios",
+    "ops": [
+     [
+      "panico",
+      "Con ataques de pánico"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F40.00"
+   }
+  ],
+  "fuente": "DSM-5-TR, Agorafobia, Diagnostic Criteria",
+  "nota": "Sin especificadores propios; se diagnostica con independencia del trastorno de pánico. Con ataques de pánico es opcional (Panic Attack Specifier) y no cambia el código."
+ },
+ "social": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Alcance",
+    "tipo": "uno",
+    "ops": [
+     [
+      "solo_actuacion",
+      "Solo actuación (el miedo se limita a hablar o actuar en público)"
+     ]
+    ]
+   },
+   {
+    "id": "panico",
+    "t": "Ataques de pánico",
+    "tipo": "varios",
+    "ops": [
+     [
+      "panico",
+      "Con ataques de pánico"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F40.10"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de ansiedad social, Diagnostic Criteria (especificador performance only)",
+  "nota": "Único especificador del manual: solo actuación. No cambia el código F40.10. Sin marcar = tipo general."
+ },
+ "tag": {
+  "grupos": [
+   {
+    "id": "panico",
+    "t": "Ataques de pánico",
+    "tipo": "varios",
+    "ops": [
+     [
+      "panico",
+      "Con ataques de pánico"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F41.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de ansiedad generalizada, Diagnostic Criteria",
+  "nota": "Sin especificadores propios; en niños basta un síntoma de los seis del criterio C. Con ataques de pánico es opcional (Panic Attack Specifier)."
+ },
+ "separacion": {
+  "grupos": [
+   {
+    "id": "panico",
+    "t": "Ataques de pánico",
+    "tipo": "varios",
+    "ops": [
+     [
+      "panico",
+      "Con ataques de pánico"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F93.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de ansiedad por separación, Diagnostic Criteria",
+  "nota": "Sin especificadores propios. Duración: 4 semanas en niños y adolescentes, típicamente 6 meses o más en adultos. Con ataques de pánico es opcional (Panic Attack Specifier)."
+ },
+ "mutismo": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F94.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Mutismo selectivo, Diagnostic Criteria",
+  "nota": "Sin especificadores. Duración mínima 1 mes (no limitada al primer mes de escuela)."
+ },
+ "fobia": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Tipo según el estímulo fóbico (se pueden marcar varios y se codifica cada uno)",
+    "tipo": "varios",
+    "ops": [
+     [
+      "animal",
+      "Animal",
+      "F40.218"
+     ],
+     [
+      "entorno_natural",
+      "Entorno natural",
+      "F40.228"
+     ],
+     [
+      "sangre_inyeccion_herida",
+      "Sangre-inyección-herida",
+      "F40.23x"
+     ],
+     [
+      "situacional",
+      "Situacional",
+      "F40.248"
+     ],
+     [
+      "otro",
+      "Otro (atragantamiento, vómito; en niños, ruidos fuertes o personajes disfrazados)",
+      "F40.298"
+     ]
+    ]
+   },
+   {
+    "id": "sih",
+    "t": "Si es sangre-inyección-herida, subtipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "sangre",
+      "Miedo a la sangre",
+      "F40.230"
+     ],
+     [
+      "inyecciones",
+      "Miedo a inyecciones y transfusiones",
+      "F40.231"
+     ],
+     [
+      "otra_atencion",
+      "Miedo a otra atención médica",
+      "F40.232"
+     ],
+     [
+      "herida",
+      "Miedo a lesiones",
+      "F40.233"
+     ]
+    ],
+    "solo": {
+     "tipo": [
+      "sangre_inyeccion_herida"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "sih": "sangre"
+    },
+    "cod": "F40.230"
+   },
+   {
+    "si": {
+     "sih": "inyecciones"
+    },
+    "cod": "F40.231"
+   },
+   {
+    "si": {
+     "sih": "otra_atencion"
+    },
+    "cod": "F40.232"
+   },
+   {
+    "si": {
+     "sih": "herida"
+    },
+    "cod": "F40.233"
+   },
+   {
+    "si": {
+     "tipo": "sangre_inyeccion_herida"
+    },
+    "cod": "F40.23x"
+   },
+   {
+    "si": {
+     "tipo": "animal"
+    },
+    "cod": "F40.218"
+   },
+   {
+    "si": {
+     "tipo": "entorno_natural"
+    },
+    "cod": "F40.228"
+   },
+   {
+    "si": {
+     "tipo": "situacional"
+    },
+    "cod": "F40.248"
+   },
+   {
+    "si": {
+     "tipo": "otro"
+    },
+    "cod": "F40.298"
+   },
+   {
+    "si": {},
+    "cod": "F40.298"
+   }
+  ],
+  "fuente": "DSM-5-TR, Fobia específica, Diagnostic Criteria (Code based on the phobic stimulus) y Coding note",
+  "nota": "Con más de un estímulo se codifican todos los que apliquen (p. ej., serpientes y volar: F40.218 y F40.248): mostrar un código por cada tipo marcado; las reglas de codigos sirven para un tipo a la vez. Para sangre-inyección-herida el manual da F40.23x y pide elegir F40.230, F40.231, F40.232 o F40.233."
+ },
+ "toc": {
+  "grupos": [
+   {
+    "id": "insight",
+    "t": "Introspección",
+    "tipo": "uno",
+    "ops": [
+     [
+      "buena",
+      "Con introspección buena o regular"
+     ],
+     [
+      "pobre",
+      "Con poca introspección"
+     ],
+     [
+      "ausente",
+      "Con ausencia de introspección / creencias delirantes"
+     ]
+    ]
+   },
+   {
+    "id": "tic",
+    "t": "Relacionado con tics",
+    "tipo": "uno",
+    "ops": [
+     [
+      "tic",
+      "Relacionado con tics (antecedente actual o pasado de trastorno de tics)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F42.2"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno obsesivo-compulsivo, criterios diagnósticos (especificadores)",
+  "nota": "Ningún especificador cambia el código. Los dos grupos se aplican a la vez."
+ },
+ "tdc": {
+  "grupos": [
+   {
+    "id": "dismorfia",
+    "t": "Dismorfia muscular",
+    "tipo": "uno",
+    "ops": [
+     [
+      "muscular",
+      "Con dismorfia muscular"
+     ]
+    ]
+   },
+   {
+    "id": "insight",
+    "t": "Introspección",
+    "tipo": "uno",
+    "ops": [
+     [
+      "buena",
+      "Con introspección buena o regular"
+     ],
+     [
+      "pobre",
+      "Con poca introspección"
+     ],
+     [
+      "ausente",
+      "Con ausencia de introspección / creencias delirantes"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F45.22"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno dismórfico corporal, criterios diagnósticos (especificadores)",
+  "nota": "Ningún especificador cambia el código."
+ },
+ "acumulacion": {
+  "grupos": [
+   {
+    "id": "adquisicion",
+    "t": "Adquisición excesiva",
+    "tipo": "uno",
+    "ops": [
+     [
+      "exc",
+      "Con adquisición excesiva"
+     ]
+    ]
+   },
+   {
+    "id": "insight",
+    "t": "Introspección",
+    "tipo": "uno",
+    "ops": [
+     [
+      "buena",
+      "Con introspección buena o regular"
+     ],
+     [
+      "pobre",
+      "Con poca introspección"
+     ],
+     [
+      "ausente",
+      "Con ausencia de introspección / creencias delirantes"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F42.3"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de acumulación, criterios diagnósticos (especificadores)",
+  "nota": "Ningún especificador cambia el código."
+ },
+ "trico": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F63.3"
+   }
+  ],
+  "fuente": "DSM-5-TR, Tricotilomanía (trastorno de arrancarse el pelo), criterios diagnósticos",
+  "nota": "El DSM-5-TR no lista especificadores para este trastorno."
+ },
+ "excoriacion": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F42.4"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de excoriación (rascarse la piel), criterios diagnósticos",
+  "nota": "El DSM-5-TR no lista especificadores para este trastorno."
+ },
+ "tept": {
+  "grupos": [
+   {
+    "id": "disoc",
+    "t": "Síntomas disociativos",
+    "tipo": "uno",
+    "ops": [
+     [
+      "con",
+      "Con síntomas disociativos"
+     ]
+    ]
+   },
+   {
+    "id": "disoc_tipo",
+    "t": "Tipo de síntoma disociativo (si hay)",
+    "tipo": "varios",
+    "ops": [
+     [
+      "despersonalizacion",
+      "Despersonalización"
+     ],
+     [
+      "desrealizacion",
+      "Desrealización"
+     ]
+    ],
+    "solo": {
+     "disoc": [
+      "con"
+     ]
+    }
+   },
+   {
+    "id": "expresion",
+    "t": "Expresión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "retardada",
+      "Con expresión retardada (criterios completos al menos 6 meses después del evento)"
+     ]
+    ]
+   },
+   {
+    "id": "edad",
+    "t": "Versión de los criterios",
+    "tipo": "uno",
+    "ops": [
+     [
+      "mayor6",
+      "Adultos, adolescentes y niños mayores de 6 años"
+     ],
+     [
+      "menor6",
+      "Niños de 6 años o menos"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F43.10"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de estrés postraumático (criterios para mayores de 6 años y para 6 años o menos), especificadores",
+  "nota": "Los especificadores son iguales en ambas versiones y no cambian el código (F43.10). Para marcar con síntomas disociativos el DSM exige despersonalización, desrealización o ambas, no atribuibles a sustancias ni a otra afección médica."
+ },
+ "adaptacion": {
+  "grupos": [
+   {
+    "id": "subtipo",
+    "t": "Subtipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "deprimido",
+      "Con estado de ánimo deprimido",
+      "1"
+     ],
+     [
+      "ansiedad",
+      "Con ansiedad",
+      "2"
+     ],
+     [
+      "mixto",
+      "Con ansiedad mixta y estado de ánimo deprimido",
+      "3"
+     ],
+     [
+      "conducta",
+      "Con alteración de la conducta",
+      "4"
+     ],
+     [
+      "emoconducta",
+      "Con alteración mixta de las emociones y la conducta",
+      "5"
+     ],
+     [
+      "noesp",
+      "Sin especificar",
+      "0"
+     ]
+    ]
+   },
+   {
+    "id": "duracion",
+    "t": "Duración",
+    "tipo": "uno",
+    "ops": [
+     [
+      "agudo",
+      "Agudo (síntomas durante menos de 6 meses)"
+     ],
+     [
+      "persistente",
+      "Persistente o crónico (6 meses o más)"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "F43.2{subtipo}",
+  "codigos": [
+   {
+    "si": {
+     "subtipo": "deprimido"
+    },
+    "cod": "F43.21"
+   },
+   {
+    "si": {
+     "subtipo": "ansiedad"
+    },
+    "cod": "F43.22"
+   },
+   {
+    "si": {
+     "subtipo": "mixto"
+    },
+    "cod": "F43.23"
+   },
+   {
+    "si": {
+     "subtipo": "conducta"
+    },
+    "cod": "F43.24"
+   },
+   {
+    "si": {
+     "subtipo": "emoconducta"
+    },
+    "cod": "F43.25"
+   },
+   {
+    "si": {
+     "subtipo": "noesp"
+    },
+    "cod": "F43.20"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de adaptación, especificadores",
+  "nota": "Agudo/persistente no cambian el código. Persistente aplica cuando la duración supera 6 meses; por definición los síntomas no pasan de 6 meses tras terminar el estresor o sus consecuencias."
+ },
+ "duelo": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F43.81"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de duelo prolongado",
+  "nota": "Sin especificadores en el manual. El archivo de la biblioteca (primera impresión) trae F43.8; F43.81 es el código de la actualización posterior. Duración: 12 meses desde la muerte en adultos, 6 en niños y adolescentes."
+ },
+ "apego-reactivo": {
+  "grupos": [
+   {
+    "id": "persistente",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "persistente",
+      "Persistente (más de 12 meses)"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "grave",
+      "Grave (presenta todos los síntomas, cada uno en nivel relativamente alto)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F94.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de apego reactivo, especificadores",
+  "nota": "El DSM solo define el nivel grave. Sin cambio de código."
+ },
+ "apego-desinhibido": {
+  "grupos": [
+   {
+    "id": "persistente",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "persistente",
+      "Persistente (más de 12 meses)"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "grave",
+      "Grave (presenta todos los síntomas, cada uno en nivel relativamente alto)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F94.2"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de relación social desinhibida, especificadores",
+  "nota": "El DSM solo define el nivel grave. Sin cambio de código."
+ },
+ "otro-trauma": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "otro",
+      "Otro trastorno relacionado con trauma y estrés especificado",
+      "F43.89"
+     ],
+     [
+      "noesp",
+      "Trastorno relacionado con trauma y estrés no especificado",
+      "F43.9"
+     ]
+    ]
+   },
+   {
+    "id": "presentacion",
+    "t": "Presentación específica (se registra el motivo)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "adap_tardio",
+      "Similar a adaptación con inicio tardío (más de 3 meses tras el estresor)"
+     ],
+     [
+      "adap_largo",
+      "Similar a adaptación con duración prolongada (más de 6 meses) sin estresor prolongado"
+     ],
+     [
+      "tept_subumbral",
+      "Respuesta persistente al trauma con síntomas tipo TEPT por debajo del umbral (más de 6 meses)"
+     ],
+     [
+      "ataque_nervios",
+      "Ataque de nervios"
+     ],
+     [
+      "cultural",
+      "Otros síndromes culturales"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "otro"
+     ]
+    }
+   }
+  ],
+  "plantilla": "{diagnostico}",
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "otro"
+    },
+    "cod": "F43.89"
+   },
+   {
+    "si": {
+     "diagnostico": "noesp"
+    },
+    "cod": "F43.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Otro trastorno relacionado con trauma y estrés especificado / no especificado",
+  "nota": "La presentación solo aplica al especificado. El archivo de la biblioteca trae F43.8 (primera impresión); F43.89 es el código posterior."
+ },
+ "disociativo": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "identidad",
+      "Trastorno de identidad disociativo",
+      "F44.81"
+     ],
+     [
+      "amnesia",
+      "Amnesia disociativa",
+      "F44.0"
+     ]
+    ]
+   },
+   {
+    "id": "fuga",
+    "t": "Fuga disociativa (solo amnesia)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "con",
+      "Con fuga disociativa",
+      "F44.1"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "amnesia"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "identidad"
+    },
+    "cod": "F44.81"
+   },
+   {
+    "si": {
+     "diagnostico": "amnesia",
+     "fuga": "con"
+    },
+    "cod": "F44.1"
+   },
+   {
+    "si": {
+     "diagnostico": "amnesia"
+    },
+    "cod": "F44.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de identidad disociativo y Amnesia disociativa (nota de codificación)",
+  "nota": "El trastorno de identidad disociativo no tiene especificadores. Amnesia sin fuga F44.0; con fuga F44.1. Con fuga solo corresponde a amnesia."
+ },
+ "despersonalizacion": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F48.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de despersonalización/desrealización",
+  "nota": "Sin especificadores en el manual."
+ },
+ "somaticos": {
+  "grupos": [
+   {
+    "id": "dolor",
+    "t": "Dolor predominante",
+    "tipo": "uno",
+    "ops": [
+     [
+      "dolor",
+      "Con predominio del dolor"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "persistente",
+      "Persistente (síntomas graves, deterioro marcado y más de 6 meses)"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (un solo síntoma del criterio B)"
+     ],
+     [
+      "moderada",
+      "Moderado (dos o más del criterio B)"
+     ],
+     [
+      "grave",
+      "Grave (dos o más del criterio B más múltiples quejas somáticas o un síntoma muy intenso)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F45.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de síntomas somáticos, especificadores",
+  "nota": "Sin cambio de código."
+ },
+ "enfermedad": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Tipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "busca",
+      "Tipo con búsqueda de atención"
+     ],
+     [
+      "evita",
+      "Tipo con evitación de atención"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F45.21"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de ansiedad por enfermedad, especificadores",
+  "nota": "Sin cambio de código. Si dura menos de 6 meses o falta el criterio D, el manual lo remite a otro trastorno de síntomas somáticos especificado (F45.8)."
+ },
+ "f54": {
+  "grupos": [
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (aumenta el riesgo médico)"
+     ],
+     [
+      "moderada",
+      "Moderado (agrava la afección médica)"
+     ],
+     [
+      "grave",
+      "Grave (lleva a hospitalización o urgencias)"
+     ],
+     [
+      "extrema",
+      "Extrema (riesgo grave que amenaza la vida)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F54"
+   }
+  ],
+  "fuente": "DSM-5-TR, Factores psicológicos que influyen en otras afecciones médicas, especificadores",
+  "nota": "Sin cambio de código."
+ },
+ "facticio": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Aplicado a",
+    "tipo": "uno",
+    "ops": [
+     [
+      "uno",
+      "Trastorno facticio aplicado a uno mismo",
+      "F68.10"
+     ],
+     [
+      "otro",
+      "Trastorno facticio aplicado a otro (el diagnóstico es del perpetrador, no de la víctima)",
+      "F68.A"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "unico",
+      "Episodio único"
+     ],
+     [
+      "recurrente",
+      "Episodios recurrentes (dos o más)"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "{diagnostico}",
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "uno"
+    },
+    "cod": "F68.10"
+   },
+   {
+    "si": {
+     "diagnostico": "otro"
+    },
+    "cod": "F68.A"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno facticio, criterios y especificadores",
+  "nota": "Episodio único o recurrente no cambia el código."
+ },
+ "anorexia": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Tipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "restrictivo",
+      "Tipo restrictivo",
+      "1"
+     ],
+     [
+      "purgativo",
+      "Tipo con atracones/purgas",
+      "2"
+     ]
+    ]
+   },
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "parcial",
+      "En remisión parcial"
+     ],
+     [
+      "total",
+      "En remisión total"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual (IMC adultos)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (IMC ≥ 17)"
+     ],
+     [
+      "moderada",
+      "Moderado (IMC 16–16,99)"
+     ],
+     [
+      "grave",
+      "Grave (IMC 15–15,99)"
+     ],
+     [
+      "extrema",
+      "Extrema (IMC < 15)"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "F50.0{tipo}",
+  "codigos": [
+   {
+    "si": {
+     "tipo": "restrictivo"
+    },
+    "cod": "F50.01"
+   },
+   {
+    "si": {
+     "tipo": "purgativo"
+    },
+    "cod": "F50.02"
+   }
+  ],
+  "fuente": "DSM-5-TR, Anorexia nerviosa, especificadores",
+  "nota": "En niños y adolescentes la gravedad se basa en el percentil de IMC. El tipo se refiere a los últimos 3 meses."
+ },
+ "bulimia": {
+  "grupos": [
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "parcial",
+      "En remisión parcial"
+     ],
+     [
+      "total",
+      "En remisión total"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual (conductas compensatorias por semana)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (1–3)"
+     ],
+     [
+      "moderada",
+      "Moderado (4–7)"
+     ],
+     [
+      "grave",
+      "Grave (8–13)"
+     ],
+     [
+      "extrema",
+      "Extrema (14 o más)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F50.2"
+   }
+  ],
+  "fuente": "DSM-5-TR, Bulimia nerviosa, especificadores",
+  "nota": "Sin cambio de código."
+ },
+ "atracon": {
+  "grupos": [
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "parcial",
+      "En remisión parcial"
+     ],
+     [
+      "total",
+      "En remisión total"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual (atracones por semana)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (1–3)"
+     ],
+     [
+      "moderada",
+      "Moderado (4–7)"
+     ],
+     [
+      "grave",
+      "Grave (8–13)"
+     ],
+     [
+      "extrema",
+      "Extrema (14 o más)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F50.81"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno por atracón, especificadores",
+  "nota": "Sin cambio de código."
+ },
+ "teria": {
+  "grupos": [
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "remision",
+      "En remisión"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F50.82"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de evitación/restricción de la ingesta de alimentos, especificadores",
+  "nota": "El único especificador es en remisión; sin gravedad."
+ },
+ "enuresis": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Subtipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "nocturna",
+      "Solo nocturna"
+     ],
+     [
+      "diurna",
+      "Solo diurna"
+     ],
+     [
+      "mixta",
+      "Nocturna y diurna"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F98.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Enuresis, especificadores",
+  "nota": "Sin cambio de código. Edad mínima 5 años."
+ },
+ "encopresis": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Subtipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "con",
+      "Con estreñimiento e incontinencia por rebosamiento"
+     ],
+     [
+      "sin",
+      "Sin estreñimiento ni incontinencia por rebosamiento"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F98.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Encopresis, especificadores",
+  "nota": "Sin cambio de código. Edad mínima 4 años."
+ },
+ "insomnio": {
+  "grupos": [
+   {
+    "id": "comorbilidad",
+    "t": "Comorbilidad",
+    "tipo": "varios",
+    "ops": [
+     [
+      "mental",
+      "Con trastorno mental (incluidos los trastornos por consumo de sustancias)"
+     ],
+     [
+      "medica",
+      "Con afección médica"
+     ],
+     [
+      "sueno",
+      "Con otro trastorno del sueño"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "episodico",
+      "Episódico (al menos 1 mes y menos de 3)"
+     ],
+     [
+      "persistente",
+      "Persistente (3 meses o más)"
+     ],
+     [
+      "recurrente",
+      "Recurrente (dos o más episodios en un año)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F51.01"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de insomnio, especificadores y procedimientos de registro",
+  "nota": "F51.01 sirve para las tres comorbilidades; se codifica además la condición asociada justo después."
+ },
+ "hipersomnia": {
+  "grupos": [
+   {
+    "id": "comorbilidad",
+    "t": "Comorbilidad",
+    "tipo": "varios",
+    "ops": [
+     [
+      "mental",
+      "Con trastorno mental (incluidos los trastornos por consumo de sustancias)"
+     ],
+     [
+      "medica",
+      "Con afección médica"
+     ],
+     [
+      "sueno",
+      "Con otro trastorno del sueño"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "aguda",
+      "Agudo (menos de 1 mes)"
+     ],
+     [
+      "subaguda",
+      "Subagudo (1 a 3 meses)"
+     ],
+     [
+      "persistente",
+      "Persistente (más de 3 meses)"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (dificultad para mantenerse alerta 1–2 días/semana)"
+     ],
+     [
+      "moderada",
+      "Moderado (3–4 días/semana)"
+     ],
+     [
+      "grave",
+      "Grave (5–7 días/semana)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F51.11"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de hipersomnolencia, especificadores",
+  "nota": "F51.11 aplica a las tres comorbilidades; se codifica además la condición asociada."
+ },
+ "pesadillas": {
+  "grupos": [
+   {
+    "id": "inicio",
+    "t": "Momento",
+    "tipo": "uno",
+    "ops": [
+     [
+      "inicio",
+      "Durante el inicio del sueño"
+     ]
+    ]
+   },
+   {
+    "id": "comorbilidad",
+    "t": "Comorbilidad",
+    "tipo": "varios",
+    "ops": [
+     [
+      "mental",
+      "Con trastorno mental (incluidos los trastornos por consumo de sustancias)"
+     ],
+     [
+      "medica",
+      "Con afección médica"
+     ],
+     [
+      "sueno",
+      "Con otro trastorno del sueño"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "agudo",
+      "Agudo (1 mes o menos)"
+     ],
+     [
+      "subagudo",
+      "Subagudo (más de 1 mes y menos de 6)"
+     ],
+     [
+      "persistente",
+      "Persistente (6 meses o más)"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual (frecuencia)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (menos de un episodio por semana)"
+     ],
+     [
+      "moderada",
+      "Moderado (uno o más por semana, sin ser cada noche)"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F51.5"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de pesadillas, especificadores",
+  "nota": "El texto del nivel grave no aparece en el archivo (se corta tras moderada por un salto de página): no encontrado; la etiqueta queda sin descripción. F51.5 aplica a todos los especificadores."
+ },
+ "parasomnia": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Subtipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "sonambulismo",
+      "Tipo sonambulismo",
+      "F51.3"
+     ],
+     [
+      "terrores",
+      "Tipo terrores nocturnos",
+      "F51.4"
+     ]
+    ]
+   },
+   {
+    "id": "sonambulismo_con",
+    "t": "Con (solo sonambulismo)",
+    "tipo": "varios",
+    "ops": [
+     [
+      "comer",
+      "Con ingesta relacionada con el sueño"
+     ],
+     [
+      "sexual",
+      "Con conducta sexual relacionada con el sueño (sexsomnia)"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "sonambulismo"
+     ]
+    }
+   }
+  ],
+  "plantilla": "{diagnostico}",
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "sonambulismo"
+    },
+    "cod": "F51.3"
+   },
+   {
+    "si": {
+     "diagnostico": "terrores"
+    },
+    "cod": "F51.4"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos del despertar del sueño no REM, especificadores",
+  "nota": "Los especificadores con ingesta y con conducta sexual solo aplican al sonambulismo y no cambian el código."
+ },
+ "circadiano": {
+  "grupos": [
+   {
+    "id": "tipo",
+    "t": "Tipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "retrasada",
+      "Fase de sueño retrasada",
+      "1"
+     ],
+     [
+      "adelantada",
+      "Fase de sueño adelantada",
+      "2"
+     ],
+     [
+      "irregular",
+      "Sueño-vigilia irregular",
+      "3"
+     ],
+     [
+      "no24",
+      "Sueño-vigilia distinto de 24 horas",
+      "4"
+     ],
+     [
+      "turnos",
+      "Trabajo por turnos",
+      "6"
+     ],
+     [
+      "noesp",
+      "Tipo no especificado",
+      "0"
+     ]
+    ]
+   },
+   {
+    "id": "fase",
+    "t": "Con (según el tipo)",
+    "tipo": "varios",
+    "ops": [
+     [
+      "familiar",
+      "Familiar (solo fase retrasada o adelantada)"
+     ],
+     [
+      "solapa",
+      "Superpuesto con el tipo distinto de 24 horas (solo fase retrasada)"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "episodico",
+      "Episódico (1 mes o más y menos de 3)"
+     ],
+     [
+      "persistente",
+      "Persistente (3 meses o más)"
+     ],
+     [
+      "recurrente",
+      "Recurrente (dos o más episodios en un año)"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "G47.2{tipo}",
+  "codigos": [
+   {
+    "si": {
+     "tipo": "retrasada"
+    },
+    "cod": "G47.21"
+   },
+   {
+    "si": {
+     "tipo": "adelantada"
+    },
+    "cod": "G47.22"
+   },
+   {
+    "si": {
+     "tipo": "irregular"
+    },
+    "cod": "G47.23"
+   },
+   {
+    "si": {
+     "tipo": "no24"
+    },
+    "cod": "G47.24"
+   },
+   {
+    "si": {
+     "tipo": "turnos"
+    },
+    "cod": "G47.26"
+   },
+   {
+    "si": {
+     "tipo": "noesp"
+    },
+    "cod": "G47.20"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos del ritmo circadiano de sueño-vigilia, especificadores",
+  "nota": "Los códigos G47.2x están impresos en el manual. El curso aplica a todos los tipos."
+ },
+ "sueno-medico": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Trastorno",
+    "tipo": "uno",
+    "ops": [
+     [
+      "apnea_obs",
+      "Apnea e hipopnea obstructiva del sueño",
+      "G47.33"
+     ],
+     [
+      "apnea_central_idio",
+      "Apnea central del sueño idiopática",
+      "G47.31"
+     ],
+     [
+      "apnea_central_opioides",
+      "Apnea central del sueño asociada al consumo de opioides",
+      "G47.37"
+     ],
+     [
+      "cheyne",
+      "Respiración de Cheyne-Stokes",
+      "R06.3"
+     ],
+     [
+      "hipoventilacion_idio",
+      "Hipoventilación relacionada con el sueño, idiopática",
+      "G47.34"
+     ],
+     [
+      "hipoventilacion_cong",
+      "Hipoventilación alveolar central congénita",
+      "G47.35"
+     ],
+     [
+      "hipoventilacion_comorbida",
+      "Hipoventilación relacionada con el sueño, comórbida",
+      "G47.36"
+     ],
+     [
+      "narcolepsia1",
+      "Narcolepsia tipo 1 (con cataplejía o deficiencia de hipocretina)",
+      "G47.411"
+     ],
+     [
+      "narcolepsia2",
+      "Narcolepsia tipo 2 (sin cataplejía)",
+      "G47.419"
+     ],
+     [
+      "narcolepsia1_medica",
+      "Narcolepsia con cataplejía o deficiencia de hipocretina por afección médica",
+      "G47.421"
+     ],
+     [
+      "narcolepsia2_medica",
+      "Narcolepsia sin cataplejía ni deficiencia de hipocretina por afección médica",
+      "G47.429"
+     ],
+     [
+      "piernas",
+      "Síndrome de piernas inquietas",
+      "G25.81"
+     ],
+     [
+      "rem",
+      "Trastorno de conducta del sueño REM",
+      "G47.52"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual (apneas, hipoventilación y narcolepsia)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderada",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "apnea_obs",
+      "apnea_central_idio",
+      "apnea_central_opioides",
+      "cheyne",
+      "hipoventilacion_idio",
+      "hipoventilacion_cong",
+      "hipoventilacion_comorbida",
+      "narcolepsia1",
+      "narcolepsia2",
+      "narcolepsia1_medica",
+      "narcolepsia2_medica"
+     ]
+    }
+   }
+  ],
+  "plantilla": "{diagnostico}",
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "apnea_obs"
+    },
+    "cod": "G47.33"
+   },
+   {
+    "si": {
+     "diagnostico": "apnea_central_idio"
+    },
+    "cod": "G47.31"
+   },
+   {
+    "si": {
+     "diagnostico": "apnea_central_opioides"
+    },
+    "cod": "G47.37"
+   },
+   {
+    "si": {
+     "diagnostico": "cheyne"
+    },
+    "cod": "R06.3"
+   },
+   {
+    "si": {
+     "diagnostico": "hipoventilacion_idio"
+    },
+    "cod": "G47.34"
+   },
+   {
+    "si": {
+     "diagnostico": "hipoventilacion_cong"
+    },
+    "cod": "G47.35"
+   },
+   {
+    "si": {
+     "diagnostico": "hipoventilacion_comorbida"
+    },
+    "cod": "G47.36"
+   },
+   {
+    "si": {
+     "diagnostico": "narcolepsia1"
+    },
+    "cod": "G47.411"
+   },
+   {
+    "si": {
+     "diagnostico": "narcolepsia2"
+    },
+    "cod": "G47.419"
+   },
+   {
+    "si": {
+     "diagnostico": "narcolepsia1_medica"
+    },
+    "cod": "G47.421"
+   },
+   {
+    "si": {
+     "diagnostico": "narcolepsia2_medica"
+    },
+    "cod": "G47.429"
+   },
+   {
+    "si": {
+     "diagnostico": "piernas"
+    },
+    "cod": "G25.81"
+   },
+   {
+    "si": {
+     "diagnostico": "rem"
+    },
+    "cod": "G47.52"
+   }
+  ],
+  "fuente": "DSM-5-TR, trastornos del sueño relacionados con la respiración, narcolepsia, síndrome de piernas inquietas, trastorno de conducta del sueño REM",
+  "nota": "Apnea obstructiva: índice apnea-hipopnea menor de 15 leve, 15–30 moderada, mayor de 30 grave. La apnea central con opioides exige codificar antes el trastorno por consumo (F11.10 o F11.20). Las narcolepsias por afección médica exigen codificar primero la afección. Piernas inquietas y REM sin gravedad: no encontrado."
+ },
+ "tdah": {
+  "grupos": [
+   {
+    "id": "presentacion",
+    "t": "Presentación",
+    "tipo": "uno",
+    "ops": [
+     [
+      "combinada",
+      "Combinada",
+      "2"
+     ],
+     [
+      "inatenta",
+      "Predominio de falta de atención",
+      "0"
+     ],
+     [
+      "hiperactiva",
+      "Predominio hiperactivo/impulsivo",
+      "1"
+     ]
+    ]
+   },
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin especificar"
+     ],
+     [
+      "parcial",
+      "En remisión parcial"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderada",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "F90.{presentacion}",
+  "codigos": [
+   {
+    "si": {
+     "presentacion": "combinada"
+    },
+    "cod": "F90.2"
+   },
+   {
+    "si": {
+     "presentacion": "inatenta"
+    },
+    "cod": "F90.0"
+   },
+   {
+    "si": {
+     "presentacion": "hiperactiva"
+    },
+    "cod": "F90.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno por déficit de atención con hiperactividad, criterios y especificadores",
+  "nota": "La presentación se define por los últimos 6 meses. Remisión parcial y gravedad no cambian el código. Existen además F90.8 y F90.9 como categorías aparte (no verificadas en esta lectura)."
+ },
+ "tea": {
+  "grupos": [
+   {
+    "id": "nivel_com",
+    "t": "Nivel de apoyo, comunicación social",
+    "tipo": "uno",
+    "ops": [
+     [
+      "1",
+      "Comunicación social: nivel 1: requiere apoyo"
+     ],
+     [
+      "2",
+      "Comunicación social: nivel 2: requiere apoyo notable"
+     ],
+     [
+      "3",
+      "Comunicación social: nivel 3: requiere apoyo muy notable"
+     ]
+    ]
+   },
+   {
+    "id": "nivel_rrb",
+    "t": "Nivel de apoyo, conductas restringidas y repetitivas",
+    "tipo": "uno",
+    "ops": [
+     [
+      "1",
+      "Conductas restringidas y repetitivas: nivel 1: requiere apoyo"
+     ],
+     [
+      "2",
+      "Conductas restringidas y repetitivas: nivel 2: requiere apoyo notable"
+     ],
+     [
+      "3",
+      "Conductas restringidas y repetitivas: nivel 3: requiere apoyo muy notable"
+     ]
+    ]
+   },
+   {
+    "id": "intelectual",
+    "t": "Discapacidad intelectual asociada",
+    "tipo": "uno",
+    "ops": [
+     [
+      "con",
+      "Con discapacidad intelectual"
+     ],
+     [
+      "sin",
+      "Sin discapacidad intelectual"
+     ]
+    ]
+   },
+   {
+    "id": "lenguaje",
+    "t": "Deterioro del lenguaje asociado",
+    "tipo": "uno",
+    "ops": [
+     [
+      "con",
+      "Con deterioro del lenguaje"
+     ],
+     [
+      "sin",
+      "Sin deterioro del lenguaje"
+     ]
+    ]
+   },
+   {
+    "id": "asociado",
+    "t": "Asociado a",
+    "tipo": "varios",
+    "ops": [
+     [
+      "genetica",
+      "Afección médica o genética conocida, o factor ambiental"
+     ],
+     [
+      "otro_trast",
+      "Otro trastorno del neurodesarrollo, mental o del comportamiento"
+     ]
+    ]
+   },
+   {
+    "id": "catatonia",
+    "t": "Catatonía",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin catatonía"
+     ],
+     [
+      "si",
+      "Con catatonía"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "catatonia": "si"
+    },
+    "cod": "F84.0 + F06.1"
+   },
+   {
+    "si": {},
+    "cod": "F84.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno del espectro autista, especificadores y procedimientos de registro",
+  "nota": "Un solo código F84.0. Los niveles se califican por separado para cada dominio (tabla 2 del manual). Con catatonía: añadir F06.1 (catatonía asociada a trastorno del espectro autista). Asociado a afección genética, médica o factor ambiental: añadir el código de esa afección (p. ej. síndrome de Rett, X frágil, epilepsia). Orden de registro del manual: niveles, discapacidad intelectual, lenguaje (con el nivel verbal actual), asociaciones."
+ },
+ "di": {
+  "grupos": [
+   {
+    "id": "gravedad",
+    "t": "Gravedad",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve",
+      "0"
+     ],
+     [
+      "moderada",
+      "Moderado",
+      "1"
+     ],
+     [
+      "grave",
+      "Grave",
+      "2"
+     ],
+     [
+      "profunda",
+      "Profunda",
+      "3"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "F7{gravedad}",
+  "codigos": [
+   {
+    "si": {
+     "gravedad": "leve"
+    },
+    "cod": "F70"
+   },
+   {
+    "si": {
+     "gravedad": "moderada"
+    },
+    "cod": "F71"
+   },
+   {
+    "si": {
+     "gravedad": "grave"
+    },
+    "cod": "F72"
+   },
+   {
+    "si": {
+     "gravedad": "profunda"
+    },
+    "cod": "F73"
+   }
+  ],
+  "fuente": "DSM-5-TR, Discapacidad intelectual (trastorno del desarrollo intelectual), especificadores",
+  "nota": "La gravedad se juzga por el funcionamiento adaptativo en los dominios conceptual, social y práctico (tabla 1). Aparte existen retraso global del desarrollo (F88) y discapacidad intelectual no especificada (F79)."
+ },
+ "aprendizaje": {
+  "grupos": [
+   {
+    "id": "dominio",
+    "t": "Dominio afectado",
+    "tipo": "varios",
+    "ops": [
+     [
+      "lectura",
+      "Con dificultad en la lectura",
+      "F81.0"
+     ],
+     [
+      "escritura",
+      "Con dificultad en la expresión escrita",
+      "F81.81"
+     ],
+     [
+      "matematicas",
+      "Con dificultad en las matemáticas",
+      "F81.2"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderada",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "dominio": "lectura"
+    },
+    "cod": "F81.0"
+   },
+   {
+    "si": {
+     "dominio": "escritura"
+    },
+    "cod": "F81.81"
+   },
+   {
+    "si": {
+     "dominio": "matematicas"
+    },
+    "cod": "F81.2"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno específico del aprendizaje, criterios y especificadores",
+  "nota": "Se especifican todos los dominios y subhabilidades afectados y cada dominio se codifica por separado (si hay varios, varios códigos). Subhabilidades en lectura: precisión, velocidad o fluidez, comprensión (dislexia como término alternativo); escritura: ortografía, gramática y puntuación, claridad u organización; matemáticas: sentido numérico, hechos aritméticos, cálculo, razonamiento (discalculia como término alternativo). La gravedad no cambia el código."
+ },
+ "lenguaje": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Trastorno",
+    "tipo": "uno",
+    "ops": [
+     [
+      "lenguaje",
+      "Trastorno del lenguaje",
+      "F80.2"
+     ],
+     [
+      "fonologico",
+      "Trastorno fonológico (sonidos del habla)",
+      "F80.0"
+     ],
+     [
+      "fluidez",
+      "Trastorno de fluidez de inicio en la infancia (tartamudeo)",
+      "F80.81"
+     ],
+     [
+      "social",
+      "Trastorno de la comunicación social (pragmática)",
+      "F80.82"
+     ],
+     [
+      "no_esp",
+      "Trastorno de la comunicación no especificado",
+      "F80.9"
+     ],
+     [
+      "fluidez_adulto",
+      "Trastorno de fluidez de inicio en la adultez",
+      "F98.5"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "{diagnostico}",
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "lenguaje"
+    },
+    "cod": "F80.2"
+   },
+   {
+    "si": {
+     "diagnostico": "fonologico"
+    },
+    "cod": "F80.0"
+   },
+   {
+    "si": {
+     "diagnostico": "fluidez"
+    },
+    "cod": "F80.81"
+   },
+   {
+    "si": {
+     "diagnostico": "social"
+    },
+    "cod": "F80.82"
+   },
+   {
+    "si": {
+     "diagnostico": "no_esp"
+    },
+    "cod": "F80.9"
+   },
+   {
+    "si": {
+     "diagnostico": "fluidez_adulto"
+    },
+    "cod": "F98.5"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la comunicación (lenguaje, fonológico, fluidez, comunicación social, no especificado)",
+  "nota": "El manual no trae especificadores de gravedad para estos trastornos. Los casos de fluidez de inicio tardío se codifican F98.5 (nota del criterio C). En la plantilla el fragmento es el código completo de la opción."
+ },
+ "tics": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Trastorno",
+    "tipo": "uno",
+    "ops": [
+     [
+      "tourette",
+      "Trastorno de Tourette",
+      "F95.2"
+     ],
+     [
+      "persistente",
+      "Trastorno de tics motores o vocales persistente (crónico)",
+      "F95.1"
+     ],
+     [
+      "provisional",
+      "Trastorno de tics provisional",
+      "F95.0"
+     ],
+     [
+      "otro_esp",
+      "Otro trastorno de tics especificado",
+      "F95.8"
+     ],
+     [
+      "no_esp",
+      "Trastorno de tics no especificado",
+      "F95.9"
+     ]
+    ]
+   },
+   {
+    "id": "tipo",
+    "t": "Tipo de tics (solo en el persistente)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "motores",
+      "Solo tics motores"
+     ],
+     [
+      "vocales",
+      "Solo tics vocales"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "{diagnostico}",
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "tourette"
+    },
+    "cod": "F95.2"
+   },
+   {
+    "si": {
+     "diagnostico": "persistente"
+    },
+    "cod": "F95.1"
+   },
+   {
+    "si": {
+     "diagnostico": "provisional"
+    },
+    "cod": "F95.0"
+   },
+   {
+    "si": {
+     "diagnostico": "otro_esp"
+    },
+    "cod": "F95.8"
+   },
+   {
+    "si": {
+     "diagnostico": "no_esp"
+    },
+    "cod": "F95.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de tics, criterios y especificadores",
+  "nota": "Los diagnósticos son jerárquicos: Tourette, luego persistente, luego provisional; no se baja de nivel si ya se cumplió uno superior. El especificador motores o vocales solo se exige en el persistente y no cambia el código. En la plantilla el fragmento es el código completo de la opción."
+ },
+ "conducta": {
+  "grupos": [
+   {
+    "id": "inicio",
+    "t": "Tipo según edad de inicio",
+    "tipo": "uno",
+    "ops": [
+     [
+      "infantil",
+      "De inicio infantil (antes de los 10 años)",
+      "1"
+     ],
+     [
+      "adolescente",
+      "De inicio adolescente",
+      "2"
+     ],
+     [
+      "no_esp",
+      "De inicio no especificado",
+      "9"
+     ]
+    ]
+   },
+   {
+    "id": "emociones",
+    "t": "Emociones prosociales",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin especificador"
+     ],
+     [
+      "limitadas",
+      "Con emociones prosociales limitadas"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "moderada",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ]
+   }
+  ],
+  "plantilla": "F91.{inicio}",
+  "codigos": [
+   {
+    "si": {
+     "inicio": "infantil"
+    },
+    "cod": "F91.1"
+   },
+   {
+    "si": {
+     "inicio": "adolescente"
+    },
+    "cod": "F91.2"
+   },
+   {
+    "si": {
+     "inicio": "no_esp"
+    },
+    "cod": "F91.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno de conducta, especificadores",
+  "nota": "El tipo por edad de inicio define el código; el especificador de emociones prosociales limitadas y la gravedad no lo cambian. Ese especificador exige al menos dos rasgos (falta de remordimiento o culpa, insensibilidad o falta de empatía, despreocupación por el desempeño, afecto superficial) durante 12 meses o más y en varias relaciones y contextos."
+ },
+ "tnd": {
+  "grupos": [
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (un solo entorno)"
+     ],
+     [
+      "moderada",
+      "Moderado (al menos dos entornos)"
+     ],
+     [
+      "grave",
+      "Grave (tres o más entornos)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F91.3"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno negativista desafiante, especificador de gravedad",
+  "nota": "Código único F91.3. La gravedad se define por el número de entornos con síntomas."
+ },
+ "explosivo": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F63.81"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno explosivo intermitente, criterios",
+  "nota": "Sin especificadores en el manual. Código único F63.81. Edad mínima 6 años (o nivel de desarrollo equivalente)."
+ },
+ "piromania": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F63.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Piromanía, criterios",
+  "nota": "Sin especificadores. Código único F63.1."
+ },
+ "cleptomania": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F63.2"
+   }
+  ],
+  "fuente": "DSM-5-TR, Cleptomanía, criterios y lista de códigos del capítulo",
+  "nota": "Sin especificadores. Código único F63.2."
+ },
+ "juego": {
+  "grupos": [
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin especificar"
+     ],
+     [
+      "episodico",
+      "Episódico"
+     ],
+     [
+      "persistente",
+      "Persistente"
+     ]
+    ]
+   },
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin remisión"
+     ],
+     [
+      "temprana",
+      "En remisión temprana (3 a menos de 12 meses)"
+     ],
+     [
+      "sostenida",
+      "En remisión sostenida (12 meses o más)"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (4 a 5 criterios)"
+     ],
+     [
+      "moderada",
+      "Moderado (6 a 7 criterios)"
+     ],
+     [
+      "grave",
+      "Grave (8 a 9 criterios)"
+     ]
+    ]
+   }
+  ],
+  "nombre": "Trastorno por juego de apuestas",
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F63.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno por juego de apuestas, especificadores",
+  "nota": "Código único F63.0; ningún especificador lo modifica."
+ },
+ "videojuegos": {
+  "grupos": [],
+  "codigos": [],
+  "fuente": "DSM-5-TR, Sección III, Trastorno por videojuegos en internet (criterios propuestos para estudio ulterior)",
+  "nota": "Condición en estudio, sin código ICD-10-CM en el manual. Criterios propuestos: 5 o más de 9 en 12 meses. Existe un especificador de gravedad, pero no se leyeron sus definiciones, por eso no se incluye grupo de gravedad."
+ },
+ "sustancias": {
+  "grupos": [
+   {
+    "id": "sustancia",
+    "t": "Sustancia",
+    "tipo": "uno",
+    "ops": [
+     [
+      "alcohol",
+      "Alcohol",
+      "F10"
+     ],
+     [
+      "cannabis",
+      "Cannabis",
+      "F12"
+     ],
+     [
+      "fenciclidina",
+      "Fenciclidina",
+      "F16"
+     ],
+     [
+      "alucinogeno",
+      "Otros alucinógenos",
+      "F16"
+     ],
+     [
+      "inhalante",
+      "Inhalantes",
+      "F18"
+     ],
+     [
+      "opioide",
+      "Opioides",
+      "F11"
+     ],
+     [
+      "sedante",
+      "Sedantes, hipnóticos o ansiolíticos",
+      "F13"
+     ],
+     [
+      "anfetamina",
+      "Estimulantes tipo anfetamina",
+      "F15"
+     ],
+     [
+      "cocaina",
+      "Cocaína",
+      "F14"
+     ],
+     [
+      "otro_estim",
+      "Otro estimulante o no especificado",
+      "F15"
+     ],
+     [
+      "tabaco",
+      "Tabaco",
+      "F17"
+     ],
+     [
+      "otra",
+      "Otra sustancia (o desconocida)",
+      "F19"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (2 a 3 criterios)"
+     ],
+     [
+      "moderada",
+      "Moderado (4 a 5)"
+     ],
+     [
+      "grave",
+      "Grave (6 o más)"
+     ]
+    ]
+   },
+   {
+    "id": "remision",
+    "t": "Remisión",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin remisión"
+     ],
+     [
+      "temprana",
+      "En remisión temprana (3 a menos de 12 meses)"
+     ],
+     [
+      "sostenida",
+      "En remisión sostenida (12 meses o más)"
+     ]
+    ]
+   },
+   {
+    "id": "adicionales",
+    "t": "Especificadores adicionales de la remisión",
+    "tipo": "varios",
+    "ops": [
+     [
+      "controlado",
+      "En un entorno controlado"
+     ],
+     [
+      "mantenimiento",
+      "En terapia de mantenimiento (solo opioides y tabaco)"
+     ]
+    ],
+    "solo": {
+     "remision": [
+      "temprana",
+      "sostenida"
+     ]
+    }
+   }
+  ],
+  "nombre": "Trastorno por consumo de {sustancia}",
+  "codigos": [
+   {
+    "si": {
+     "sustancia": "alcohol",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F10.10"
+   },
+   {
+    "si": {
+     "sustancia": "alcohol",
+     "gravedad": "leve"
+    },
+    "cod": "F10.11"
+   },
+   {
+    "si": {
+     "sustancia": "alcohol",
+     "remision": "no"
+    },
+    "cod": "F10.20"
+   },
+   {
+    "si": {
+     "sustancia": "alcohol"
+    },
+    "cod": "F10.21"
+   },
+   {
+    "si": {
+     "sustancia": "cannabis",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F12.10"
+   },
+   {
+    "si": {
+     "sustancia": "cannabis",
+     "gravedad": "leve"
+    },
+    "cod": "F12.11"
+   },
+   {
+    "si": {
+     "sustancia": "cannabis",
+     "remision": "no"
+    },
+    "cod": "F12.20"
+   },
+   {
+    "si": {
+     "sustancia": "cannabis"
+    },
+    "cod": "F12.21"
+   },
+   {
+    "si": {
+     "sustancia": "fenciclidina",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F16.10"
+   },
+   {
+    "si": {
+     "sustancia": "fenciclidina",
+     "gravedad": "leve"
+    },
+    "cod": "F16.11"
+   },
+   {
+    "si": {
+     "sustancia": "fenciclidina",
+     "remision": "no"
+    },
+    "cod": "F16.20"
+   },
+   {
+    "si": {
+     "sustancia": "fenciclidina"
+    },
+    "cod": "F16.21"
+   },
+   {
+    "si": {
+     "sustancia": "alucinogeno",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F16.10"
+   },
+   {
+    "si": {
+     "sustancia": "alucinogeno",
+     "gravedad": "leve"
+    },
+    "cod": "F16.11"
+   },
+   {
+    "si": {
+     "sustancia": "alucinogeno",
+     "remision": "no"
+    },
+    "cod": "F16.20"
+   },
+   {
+    "si": {
+     "sustancia": "alucinogeno"
+    },
+    "cod": "F16.21"
+   },
+   {
+    "si": {
+     "sustancia": "inhalante",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F18.10"
+   },
+   {
+    "si": {
+     "sustancia": "inhalante",
+     "gravedad": "leve"
+    },
+    "cod": "F18.11"
+   },
+   {
+    "si": {
+     "sustancia": "inhalante",
+     "remision": "no"
+    },
+    "cod": "F18.20"
+   },
+   {
+    "si": {
+     "sustancia": "inhalante"
+    },
+    "cod": "F18.21"
+   },
+   {
+    "si": {
+     "sustancia": "opioide",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F11.10"
+   },
+   {
+    "si": {
+     "sustancia": "opioide",
+     "gravedad": "leve"
+    },
+    "cod": "F11.11"
+   },
+   {
+    "si": {
+     "sustancia": "opioide",
+     "remision": "no"
+    },
+    "cod": "F11.20"
+   },
+   {
+    "si": {
+     "sustancia": "opioide"
+    },
+    "cod": "F11.21"
+   },
+   {
+    "si": {
+     "sustancia": "sedante",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F13.10"
+   },
+   {
+    "si": {
+     "sustancia": "sedante",
+     "gravedad": "leve"
+    },
+    "cod": "F13.11"
+   },
+   {
+    "si": {
+     "sustancia": "sedante",
+     "remision": "no"
+    },
+    "cod": "F13.20"
+   },
+   {
+    "si": {
+     "sustancia": "sedante"
+    },
+    "cod": "F13.21"
+   },
+   {
+    "si": {
+     "sustancia": "anfetamina",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F15.10"
+   },
+   {
+    "si": {
+     "sustancia": "anfetamina",
+     "gravedad": "leve"
+    },
+    "cod": "F15.11"
+   },
+   {
+    "si": {
+     "sustancia": "anfetamina",
+     "remision": "no"
+    },
+    "cod": "F15.20"
+   },
+   {
+    "si": {
+     "sustancia": "anfetamina"
+    },
+    "cod": "F15.21"
+   },
+   {
+    "si": {
+     "sustancia": "cocaina",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F14.10"
+   },
+   {
+    "si": {
+     "sustancia": "cocaina",
+     "gravedad": "leve"
+    },
+    "cod": "F14.11"
+   },
+   {
+    "si": {
+     "sustancia": "cocaina",
+     "remision": "no"
+    },
+    "cod": "F14.20"
+   },
+   {
+    "si": {
+     "sustancia": "cocaina"
+    },
+    "cod": "F14.21"
+   },
+   {
+    "si": {
+     "sustancia": "otro_estim",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F15.10"
+   },
+   {
+    "si": {
+     "sustancia": "otro_estim",
+     "gravedad": "leve"
+    },
+    "cod": "F15.11"
+   },
+   {
+    "si": {
+     "sustancia": "otro_estim",
+     "remision": "no"
+    },
+    "cod": "F15.20"
+   },
+   {
+    "si": {
+     "sustancia": "otro_estim"
+    },
+    "cod": "F15.21"
+   },
+   {
+    "si": {
+     "sustancia": "tabaco",
+     "gravedad": "leve"
+    },
+    "cod": "Z72.0"
+   },
+   {
+    "si": {
+     "sustancia": "tabaco",
+     "remision": "no"
+    },
+    "cod": "F17.200"
+   },
+   {
+    "si": {
+     "sustancia": "tabaco"
+    },
+    "cod": "F17.201"
+   },
+   {
+    "si": {
+     "sustancia": "otra",
+     "gravedad": "leve",
+     "remision": "no"
+    },
+    "cod": "F19.10"
+   },
+   {
+    "si": {
+     "sustancia": "otra",
+     "gravedad": "leve"
+    },
+    "cod": "F19.11"
+   },
+   {
+    "si": {
+     "sustancia": "otra",
+     "remision": "no"
+    },
+    "cod": "F19.20"
+   },
+   {
+    "si": {
+     "sustancia": "otra"
+    },
+    "cod": "F19.21"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos relacionados con sustancias, apartado Code based on current severity/remission de cada sustancia",
+  "nota": "Regla general: leve F1x.10; leve en remisión F1x.11; moderado o grave F1x.20; moderado o grave en remisión F1x.21 (temprana o sostenida igual). Tabaco: leve Z72.0 (el manual no lista código aparte para leve en remisión, por eso Z72.0 cubre leve en cualquier momento), moderado o grave F17.200, en remisión F17.201. Estimulantes: anfetamínicos y otros F15, cocaína F14. Fenciclidina y otros alucinógenos comparten F16. Entorno controlado y terapia de mantenimiento no cambian el código. Si hay también intoxicación, abstinencia u otro trastorno inducido por la misma sustancia, NO se usa este código: el consumo queda en el cuarto carácter del código del trastorno inducido (ver sust-aguda). El trastorno por consumo se aplica a todas las clases menos cafeína (el trastorno por consumo de cafeína está en la Sección III, sin código). Se registra el nombre de la sustancia concreta (p. ej. F13.20 trastorno moderado por consumo de alprazolam)."
+ },
+ "sust-aguda": {
+  "grupos": [
+   {
+    "id": "estado",
+    "t": "Cuadro",
+    "tipo": "uno",
+    "ops": [
+     [
+      "intoxicacion",
+      "Intoxicación"
+     ],
+     [
+      "abstinencia",
+      "Abstinencia"
+     ]
+    ]
+   },
+   {
+    "id": "sustancia",
+    "t": "Sustancia",
+    "tipo": "uno",
+    "ops": [
+     [
+      "alcohol",
+      "Alcohol",
+      "F10"
+     ],
+     [
+      "cannabis",
+      "Cannabis",
+      "F12"
+     ],
+     [
+      "fenciclidina",
+      "Fenciclidina",
+      "F16"
+     ],
+     [
+      "alucinogeno",
+      "Otros alucinógenos",
+      "F16"
+     ],
+     [
+      "inhalante",
+      "Inhalantes",
+      "F18"
+     ],
+     [
+      "opioide",
+      "Opioides",
+      "F11"
+     ],
+     [
+      "sedante",
+      "Sedantes, hipnóticos o ansiolíticos",
+      "F13"
+     ],
+     [
+      "anfetamina",
+      "Estimulantes tipo anfetamina",
+      "F15"
+     ],
+     [
+      "cocaina",
+      "Cocaína",
+      "F14"
+     ],
+     [
+      "otro_estim",
+      "Otro estimulante o no especificado",
+      "F15"
+     ],
+     [
+      "tabaco",
+      "Tabaco",
+      "F17"
+     ],
+     [
+      "cafeina",
+      "Cafeína",
+      "F15"
+     ],
+     [
+      "otra",
+      "Otra sustancia (o desconocida)",
+      "F19"
+     ]
+    ]
+   },
+   {
+    "id": "uso",
+    "t": "Trastorno por consumo comórbido de la misma sustancia",
+    "tipo": "uno",
+    "ops": [
+     [
+      "ninguno",
+      "Sin trastorno por consumo",
+      "9"
+     ],
+     [
+      "leve",
+      "Con trastorno por consumo leve",
+      "1"
+     ],
+     [
+      "moderado",
+      "Con trastorno por consumo moderado o grave",
+      "2"
+     ]
+    ]
+   },
+   {
+    "id": "percepcion",
+    "t": "Alteraciones de la percepción",
+    "tipo": "uno",
+    "ops": [
+     [
+      "no",
+      "Sin alteraciones de la percepción"
+     ],
+     [
+      "si",
+      "Con alteraciones de la percepción"
+     ]
+    ]
+   }
+  ],
+  "nombre": "{estado} por {sustancia}",
+  "codigos": [
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "alcohol",
+     "uso": "leve"
+    },
+    "cod": "F10.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "alcohol",
+     "uso": "moderado"
+    },
+    "cod": "F10.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "alcohol",
+     "uso": "ninguno"
+    },
+    "cod": "F10.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F12.122"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "leve"
+    },
+    "cod": "F12.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F12.222"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "moderado"
+    },
+    "cod": "F12.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F12.922"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "ninguno"
+    },
+    "cod": "F12.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "fenciclidina",
+     "uso": "leve"
+    },
+    "cod": "F16.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "fenciclidina",
+     "uso": "moderado"
+    },
+    "cod": "F16.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "fenciclidina",
+     "uso": "ninguno"
+    },
+    "cod": "F16.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "alucinogeno",
+     "uso": "leve"
+    },
+    "cod": "F16.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "alucinogeno",
+     "uso": "moderado"
+    },
+    "cod": "F16.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "alucinogeno",
+     "uso": "ninguno"
+    },
+    "cod": "F16.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "inhalante",
+     "uso": "leve"
+    },
+    "cod": "F18.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "inhalante",
+     "uso": "moderado"
+    },
+    "cod": "F18.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "inhalante",
+     "uso": "ninguno"
+    },
+    "cod": "F18.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F11.122"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "leve"
+    },
+    "cod": "F11.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F11.222"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "moderado"
+    },
+    "cod": "F11.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F11.922"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "ninguno"
+    },
+    "cod": "F11.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "F13.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "sedante",
+     "uso": "moderado"
+    },
+    "cod": "F13.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "sedante",
+     "uso": "ninguno"
+    },
+    "cod": "F13.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F15.122"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "leve"
+    },
+    "cod": "F15.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F15.222"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "moderado"
+    },
+    "cod": "F15.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F15.922"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "ninguno"
+    },
+    "cod": "F15.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F14.122"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "leve"
+    },
+    "cod": "F14.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F14.222"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "moderado"
+    },
+    "cod": "F14.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F14.922"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "ninguno"
+    },
+    "cod": "F14.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otro_estim",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F15.122"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otro_estim",
+     "uso": "leve"
+    },
+    "cod": "F15.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otro_estim",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F15.222"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otro_estim",
+     "uso": "moderado"
+    },
+    "cod": "F15.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otro_estim",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F15.922"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otro_estim",
+     "uso": "ninguno"
+    },
+    "cod": "F15.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F19.122"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.120"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F19.222"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "moderado"
+    },
+    "cod": "F19.220"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F19.922"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "ninguno"
+    },
+    "cod": "F19.920"
+   },
+   {
+    "si": {
+     "estado": "intoxicacion",
+     "sustancia": "cafeina"
+    },
+    "cod": "F15.920"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F10.132"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "leve"
+    },
+    "cod": "F10.130"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F10.232"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "moderado"
+    },
+    "cod": "F10.230"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F10.932"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "ninguno"
+    },
+    "cod": "F10.930"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F13.132"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "F13.130"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F13.232"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "moderado"
+    },
+    "cod": "F13.230"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F13.932"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "ninguno"
+    },
+    "cod": "F13.930"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otra",
+     "uso": "leve",
+     "percepcion": "si"
+    },
+    "cod": "F19.132"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.130"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otra",
+     "uso": "moderado",
+     "percepcion": "si"
+    },
+    "cod": "F19.232"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otra",
+     "uso": "moderado"
+    },
+    "cod": "F19.230"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otra",
+     "uso": "ninguno",
+     "percepcion": "si"
+    },
+    "cod": "F19.932"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otra",
+     "uso": "ninguno"
+    },
+    "cod": "F19.930"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cannabis",
+     "uso": "leve"
+    },
+    "cod": "F12.13"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cannabis",
+     "uso": "moderado"
+    },
+    "cod": "F12.23"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cannabis",
+     "uso": "ninguno"
+    },
+    "cod": "F12.93"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "opioide",
+     "uso": "leve"
+    },
+    "cod": "F11.13"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "opioide",
+     "uso": "moderado"
+    },
+    "cod": "F11.23"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "opioide",
+     "uso": "ninguno"
+    },
+    "cod": "F11.93"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "anfetamina",
+     "uso": "leve"
+    },
+    "cod": "F15.13"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "anfetamina",
+     "uso": "moderado"
+    },
+    "cod": "F15.23"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "anfetamina",
+     "uso": "ninguno"
+    },
+    "cod": "F15.93"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cocaina",
+     "uso": "leve"
+    },
+    "cod": "F14.13"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cocaina",
+     "uso": "moderado"
+    },
+    "cod": "F14.23"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cocaina",
+     "uso": "ninguno"
+    },
+    "cod": "F14.93"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otro_estim",
+     "uso": "leve"
+    },
+    "cod": "F15.13"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otro_estim",
+     "uso": "moderado"
+    },
+    "cod": "F15.23"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "otro_estim",
+     "uso": "ninguno"
+    },
+    "cod": "F15.93"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "tabaco"
+    },
+    "cod": "F17.203"
+   },
+   {
+    "si": {
+     "estado": "abstinencia",
+     "sustancia": "cafeina"
+    },
+    "cod": "F15.93"
+   }
+  ],
+  "fuente": "DSM-5-TR, notas de codificación de intoxicación y abstinencia de cada sustancia; Recording Procedures for Substance Intoxication and Substance Withdrawal",
+  "nota": "El cuarto carácter indica el consumo comórbido: 1 leve, 2 moderado o grave, 9 sin trastorno por consumo. Intoxicación: F1x.120 / F1x.220 / F1x.920; con alteraciones de la percepción F1x.122 / .222 / .922, solo en cannabis, opioides, estimulantes y otra sustancia (alcohol, sedantes, fenciclidina, otros alucinógenos e inhalantes traen un único código sin percepción). Abstinencia: alcohol, sedantes y otra sustancia F1x.130 / .230 / .930 (con percepción .132 / .232 / .932); cannabis, opioides y estimulantes F1x.13 / .23 / .93 (sin variante de percepción). Tabaco: solo abstinencia, F17.203 (implica trastorno por consumo moderado o grave). Cafeína: intoxicación F15.920, abstinencia F15.93. Fenciclidina, otros alucinógenos e inhalantes no tienen abstinencia. Estimulantes: anfetamínicos y otros F15, cocaína F14. Con un trastorno por consumo comórbido no se codifica el consumo aparte. Si predomina un delirium, se diagnostica el delirium por intoxicación o abstinencia (ver delirium). Trastorno de percepción persistente por alucinógenos: F16.983 (aparte). Se anota el nombre de la sustancia concreta."
+ },
+ "delirium": {
+  "grupos": [
+   {
+    "id": "etiologia",
+    "t": "Causa",
+    "tipo": "uno",
+    "ops": [
+     [
+      "medica",
+      "Debido a otra afección médica",
+      "F05"
+     ],
+     [
+      "multiple",
+      "Debido a múltiples etiologías",
+      "F05"
+     ],
+     [
+      "intoxicacion",
+      "Por intoxicación con sustancia"
+     ],
+     [
+      "abstinencia",
+      "Por abstinencia de sustancia"
+     ],
+     [
+      "medicamento",
+      "Inducido por medicamento"
+     ],
+     [
+      "otro_esp",
+      "Otro delirium especificado (p. ej. subsindrómico)",
+      "R41.0"
+     ],
+     [
+      "no_esp",
+      "Delirium no especificado",
+      "R41.0"
+     ]
+    ]
+   },
+   {
+    "id": "curso",
+    "t": "Curso",
+    "tipo": "uno",
+    "ops": [
+     [
+      "agudo",
+      "Agudo (horas o días)"
+     ],
+     [
+      "persistente",
+      "Persistente (semanas o meses)"
+     ]
+    ]
+   },
+   {
+    "id": "actividad",
+    "t": "Nivel de actividad psicomotora",
+    "tipo": "uno",
+    "ops": [
+     [
+      "hiperactivo",
+      "Hiperactivo"
+     ],
+     [
+      "hipoactivo",
+      "Hipoactivo"
+     ],
+     [
+      "mixto",
+      "Nivel de actividad mixto"
+     ]
+    ]
+   },
+   {
+    "id": "sustancia",
+    "t": "Sustancia (solo intoxicación, abstinencia o medicamento)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "alcohol",
+      "Alcohol"
+     ],
+     [
+      "cannabis",
+      "Cannabis"
+     ],
+     [
+      "fenciclidina",
+      "Fenciclidina"
+     ],
+     [
+      "alucinogeno",
+      "Otros alucinógenos (incluida ketamina)"
+     ],
+     [
+      "inhalante",
+      "Inhalantes (solo intoxicación)"
+     ],
+     [
+      "opioide",
+      "Opioides"
+     ],
+     [
+      "sedante",
+      "Sedantes, hipnóticos o ansiolíticos"
+     ],
+     [
+      "anfetamina",
+      "Estimulantes tipo anfetamina u otros estimulantes"
+     ],
+     [
+      "cocaina",
+      "Cocaína (solo intoxicación)"
+     ],
+     [
+      "otra",
+      "Otra sustancia o desconocida"
+     ]
+    ],
+    "solo": {
+     "etiologia": [
+      "intoxicacion",
+      "abstinencia",
+      "medicamento"
+     ]
+    }
+   },
+   {
+    "id": "uso",
+    "t": "Trastorno por consumo comórbido (solo intoxicación o abstinencia)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Con trastorno por consumo leve"
+     ],
+     [
+      "moderado",
+      "Con trastorno por consumo moderado o grave"
+     ],
+     [
+      "ninguno",
+      "Sin trastorno por consumo"
+     ]
+    ],
+    "solo": {
+     "etiologia": [
+      "intoxicacion",
+      "abstinencia"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "alcohol",
+     "uso": "leve"
+    },
+    "cod": "F10.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "alcohol",
+     "uso": "moderado"
+    },
+    "cod": "F10.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "alcohol",
+     "uso": "ninguno"
+    },
+    "cod": "F10.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "leve"
+    },
+    "cod": "F12.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "moderado"
+    },
+    "cod": "F12.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "cannabis",
+     "uso": "ninguno"
+    },
+    "cod": "F12.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "fenciclidina",
+     "uso": "leve"
+    },
+    "cod": "F16.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "fenciclidina",
+     "uso": "moderado"
+    },
+    "cod": "F16.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "fenciclidina",
+     "uso": "ninguno"
+    },
+    "cod": "F16.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "alucinogeno",
+     "uso": "leve"
+    },
+    "cod": "F16.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "alucinogeno",
+     "uso": "moderado"
+    },
+    "cod": "F16.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "alucinogeno",
+     "uso": "ninguno"
+    },
+    "cod": "F16.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "inhalante",
+     "uso": "leve"
+    },
+    "cod": "F18.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "inhalante",
+     "uso": "moderado"
+    },
+    "cod": "F18.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "inhalante",
+     "uso": "ninguno"
+    },
+    "cod": "F18.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "leve"
+    },
+    "cod": "F11.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "moderado"
+    },
+    "cod": "F11.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "opioide",
+     "uso": "ninguno"
+    },
+    "cod": "F11.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "F13.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "sedante",
+     "uso": "moderado"
+    },
+    "cod": "F13.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "sedante",
+     "uso": "ninguno"
+    },
+    "cod": "F13.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "leve"
+    },
+    "cod": "F15.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "moderado"
+    },
+    "cod": "F15.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "anfetamina",
+     "uso": "ninguno"
+    },
+    "cod": "F15.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "leve"
+    },
+    "cod": "F14.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "moderado"
+    },
+    "cod": "F14.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "cocaina",
+     "uso": "ninguno"
+    },
+    "cod": "F14.921"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.121"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "moderado"
+    },
+    "cod": "F19.221"
+   },
+   {
+    "si": {
+     "etiologia": "intoxicacion",
+     "sustancia": "otra",
+     "uso": "ninguno"
+    },
+    "cod": "F19.921"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "leve"
+    },
+    "cod": "F10.131"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "moderado"
+    },
+    "cod": "F10.231"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "alcohol",
+     "uso": "ninguno"
+    },
+    "cod": "F10.931"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "opioide",
+     "uso": "leve"
+    },
+    "cod": "F11.188"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "opioide",
+     "uso": "moderado"
+    },
+    "cod": "F11.288"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "opioide",
+     "uso": "ninguno"
+    },
+    "cod": "F11.988"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "F13.131"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "moderado"
+    },
+    "cod": "F13.231"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "sedante",
+     "uso": "ninguno"
+    },
+    "cod": "F13.931"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.131"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "otra",
+     "uso": "moderado"
+    },
+    "cod": "F19.231"
+   },
+   {
+    "si": {
+     "etiologia": "abstinencia",
+     "sustancia": "otra",
+     "uso": "ninguno"
+    },
+    "cod": "F19.931"
+   },
+   {
+    "si": {
+     "etiologia": "medicamento",
+     "sustancia": "opioide"
+    },
+    "cod": "F11.921 (F11.988 si es durante la abstinencia de un opioide tomado como se prescribió)"
+   },
+   {
+    "si": {
+     "etiologia": "medicamento",
+     "sustancia": "cannabis"
+    },
+    "cod": "F12.921"
+   },
+   {
+    "si": {
+     "etiologia": "medicamento",
+     "sustancia": "sedante"
+    },
+    "cod": "F13.921 (F13.931 si es durante la abstinencia)"
+   },
+   {
+    "si": {
+     "etiologia": "medicamento",
+     "sustancia": "anfetamina"
+    },
+    "cod": "F15.921"
+   },
+   {
+    "si": {
+     "etiologia": "medicamento",
+     "sustancia": "alucinogeno"
+    },
+    "cod": "F16.921"
+   },
+   {
+    "si": {
+     "etiologia": "medicamento"
+    },
+    "cod": "F19.921 (F19.931 si es durante la abstinencia)"
+   },
+   {
+    "si": {
+     "etiologia": "medica"
+    },
+    "cod": "F05"
+   },
+   {
+    "si": {
+     "etiologia": "multiple"
+    },
+    "cod": "F05"
+   },
+   {
+    "si": {
+     "etiologia": "otro_esp"
+    },
+    "cod": "R41.0"
+   },
+   {
+    "si": {
+     "etiologia": "no_esp"
+    },
+    "cod": "R41.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Delirium, notas de codificación y procedimientos de registro; Otro delirium especificado y Delirium no especificado",
+  "nota": "Por intoxicación: F1x.121 (consumo leve) / F1x.221 (moderado o grave) / F1x.921 (sin consumo), con alcohol F10, cannabis F12, fenciclidina y otros alucinógenos F16, inhalantes F18, opioides F11, sedantes F13, anfetamínicos F15, cocaína F14, otra F19. Por abstinencia (el manual solo trae estas cuatro clases): alcohol F10.131/.231/.931, sedantes F13.131/.231/.931, otra F19.131/.231/.931, opioides F11.188/.288/.988. Por medicamento tomado como se prescribió: ver cada código (F19.921 si no encaja en una clase). Debido a otra afección médica: F05, nombrando la afección y codificándola antes (p. ej. K72.90 encefalopatía hepática, luego F05). Múltiples etiologías: F05 más un código por cada causa (p. ej. F10.231 si además hay delirium por abstinencia de alcohol). Con delirium por sustancia no se codifica el consumo aparte. Orden de registro: trastorno por consumo, con, delirium por la sustancia, curso, nivel de actividad. Curso y actividad no cambian el código."
+ },
+ "neurocognitivo": {
+  "grupos": [
+   {
+    "id": "nivel",
+    "t": "Nivel",
+    "tipo": "uno",
+    "ops": [
+     [
+      "mayor",
+      "Trastorno neurocognitivo mayor"
+     ],
+     [
+      "leve",
+      "Trastorno neurocognitivo leve"
+     ]
+    ]
+   },
+   {
+    "id": "etiologia",
+    "t": "Debido a",
+    "tipo": "uno",
+    "ops": [
+     [
+      "alzheimer",
+      "Enfermedad de Alzheimer"
+     ],
+     [
+      "frontotemporal",
+      "Degeneración frontotemporal"
+     ],
+     [
+      "lewy",
+      "Enfermedad por cuerpos de Lewy"
+     ],
+     [
+      "vascular",
+      "Enfermedad vascular"
+     ],
+     [
+      "tce",
+      "Traumatismo craneoencefálico"
+     ],
+     [
+      "sustancias",
+      "Sustancia o medicamento"
+     ],
+     [
+      "vih",
+      "Infección por VIH"
+     ],
+     [
+      "prion",
+      "Enfermedad por priones"
+     ],
+     [
+      "parkinson",
+      "Enfermedad de Parkinson"
+     ],
+     [
+      "huntington",
+      "Enfermedad de Huntington"
+     ],
+     [
+      "otra_medica",
+      "Otra afección médica"
+     ],
+     [
+      "multiple",
+      "Múltiples etiologías"
+     ],
+     [
+      "no_esp",
+      "Etiología no especificada"
+     ]
+    ]
+   },
+   {
+    "id": "certeza",
+    "t": "Certeza etiológica (Alzheimer, frontotemporal, Lewy, vascular, Parkinson)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "probable",
+      "Probable"
+     ],
+     [
+      "posible",
+      "Posible"
+     ]
+    ],
+    "solo": {
+     "etiologia": [
+      "alzheimer",
+      "frontotemporal",
+      "lewy",
+      "vascular"
+     ]
+    }
+   },
+   {
+    "id": "comportamiento",
+    "t": "Alteración del comportamiento",
+    "tipo": "uno",
+    "ops": [
+     [
+      "sin",
+      "Sin alteración del comportamiento",
+      "0"
+     ],
+     [
+      "con",
+      "Con alteración del comportamiento (especificar)",
+      "1"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad (solo mayor)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve (dificultad en actividades instrumentales)"
+     ],
+     [
+      "moderada",
+      "Moderado (dificultad en actividades básicas)"
+     ],
+     [
+      "grave",
+      "Grave (dependencia total)"
+     ]
+    ],
+    "solo": {
+     "nivel": [
+      "mayor"
+     ]
+    }
+   },
+   {
+    "id": "sustancia",
+    "t": "Sustancia (solo etiología sustancias)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "alcohol_amn",
+      "Alcohol, tipo amnésico confabulatorio"
+     ],
+     [
+      "alcohol_noamn",
+      "Alcohol, tipo no amnésico confabulatorio (solo mayor)"
+     ],
+     [
+      "inhalante",
+      "Inhalantes"
+     ],
+     [
+      "sedante",
+      "Sedantes, hipnóticos o ansiolíticos"
+     ],
+     [
+      "anfetamina",
+      "Estimulantes tipo anfetamina (solo leve)"
+     ],
+     [
+      "cocaina",
+      "Cocaína (solo leve)"
+     ],
+     [
+      "otra",
+      "Otra sustancia o desconocida"
+     ]
+    ],
+    "solo": {
+     "etiologia": [
+      "sustancias"
+     ]
+    }
+   },
+   {
+    "id": "uso",
+    "t": "Trastorno por consumo comórbido (solo sustancias)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Con trastorno por consumo leve"
+     ],
+     [
+      "moderado",
+      "Con trastorno por consumo moderado o grave"
+     ],
+     [
+      "ninguno",
+      "Sin trastorno por consumo"
+     ]
+    ],
+    "solo": {
+     "etiologia": [
+      "sustancias"
+     ]
+    }
+   }
+  ],
+  "nombre": "{nivel} debido a {etiologia}",
+  "codigos": [
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_amn",
+     "uso": "leve"
+    },
+    "cod": "no aplica (un consumo leve no basta para el cuadro mayor)"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_amn",
+     "uso": "moderado"
+    },
+    "cod": "F10.26"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_amn",
+     "uso": "ninguno"
+    },
+    "cod": "F10.96"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_noamn",
+     "uso": "leve"
+    },
+    "cod": "no aplica (un consumo leve no basta para el cuadro mayor)"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_noamn",
+     "uso": "moderado"
+    },
+    "cod": "F10.27"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_noamn",
+     "uso": "ninguno"
+    },
+    "cod": "F10.97"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "inhalante",
+     "uso": "leve"
+    },
+    "cod": "F18.17"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "inhalante",
+     "uso": "moderado"
+    },
+    "cod": "F18.27"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "inhalante",
+     "uso": "ninguno"
+    },
+    "cod": "F18.97"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "no aplica (un consumo leve no basta para el cuadro mayor)"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "sedante",
+     "uso": "moderado"
+    },
+    "cod": "F13.27"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "sedante",
+     "uso": "ninguno"
+    },
+    "cod": "F13.97"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.17"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "otra",
+     "uso": "moderado"
+    },
+    "cod": "F19.27"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "sustancias",
+     "sustancia": "otra",
+     "uso": "ninguno"
+    },
+    "cod": "F19.97"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_amn",
+     "uso": "leve"
+    },
+    "cod": "F10.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_amn",
+     "uso": "moderado"
+    },
+    "cod": "F10.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_amn",
+     "uso": "ninguno"
+    },
+    "cod": "F10.988"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_noamn",
+     "uso": "leve"
+    },
+    "cod": "F10.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_noamn",
+     "uso": "moderado"
+    },
+    "cod": "F10.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "alcohol_noamn",
+     "uso": "ninguno"
+    },
+    "cod": "F10.988"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "inhalante",
+     "uso": "leve"
+    },
+    "cod": "F18.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "inhalante",
+     "uso": "moderado"
+    },
+    "cod": "F18.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "inhalante",
+     "uso": "ninguno"
+    },
+    "cod": "F18.988"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "F13.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "sedante",
+     "uso": "moderado"
+    },
+    "cod": "F13.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "sedante",
+     "uso": "ninguno"
+    },
+    "cod": "F13.988"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "anfetamina",
+     "uso": "leve"
+    },
+    "cod": "F15.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "anfetamina",
+     "uso": "moderado"
+    },
+    "cod": "F15.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "anfetamina",
+     "uso": "ninguno"
+    },
+    "cod": "F15.988"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "cocaina",
+     "uso": "leve"
+    },
+    "cod": "F14.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "cocaina",
+     "uso": "moderado"
+    },
+    "cod": "F14.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "cocaina",
+     "uso": "ninguno"
+    },
+    "cod": "F14.988"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.188"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "otra",
+     "uso": "moderado"
+    },
+    "cod": "F19.288"
+   },
+   {
+    "si": {
+     "nivel": "leve",
+     "etiologia": "sustancias",
+     "sustancia": "otra",
+     "uso": "ninguno"
+    },
+    "cod": "F19.988"
+   },
+   {
+    "si": {
+     "etiologia": "no_esp"
+    },
+    "cod": "R41.9"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "alzheimer",
+     "comportamiento": "con"
+    },
+    "cod": "G30.9 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "alzheimer",
+     "comportamiento": "sin"
+    },
+    "cod": "G30.9 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "frontotemporal",
+     "comportamiento": "con"
+    },
+    "cod": "G31.09 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "frontotemporal",
+     "comportamiento": "sin"
+    },
+    "cod": "G31.09 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "lewy",
+     "comportamiento": "con"
+    },
+    "cod": "G31.83 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "lewy",
+     "comportamiento": "sin"
+    },
+    "cod": "G31.83 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "tce",
+     "comportamiento": "con"
+    },
+    "cod": "S06.2X9S + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "tce",
+     "comportamiento": "sin"
+    },
+    "cod": "S06.2X9S + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "vih",
+     "comportamiento": "con"
+    },
+    "cod": "B20 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "vih",
+     "comportamiento": "sin"
+    },
+    "cod": "B20 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "prion",
+     "comportamiento": "con"
+    },
+    "cod": "A81.9 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "prion",
+     "comportamiento": "sin"
+    },
+    "cod": "A81.9 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "parkinson",
+     "comportamiento": "con"
+    },
+    "cod": "G20 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "parkinson",
+     "comportamiento": "sin"
+    },
+    "cod": "G20 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "huntington",
+     "comportamiento": "con"
+    },
+    "cod": "G10 + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "huntington",
+     "comportamiento": "sin"
+    },
+    "cod": "G10 + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "vascular",
+     "comportamiento": "con"
+    },
+    "cod": "F01.51"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "vascular",
+     "comportamiento": "sin"
+    },
+    "cod": "F01.50"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "otra_medica",
+     "comportamiento": "con"
+    },
+    "cod": "[código de la afección médica primero] + F02.81"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "otra_medica",
+     "comportamiento": "sin"
+    },
+    "cod": "[código de la afección médica primero] + F02.80"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "multiple",
+     "comportamiento": "con"
+    },
+    "cod": "[todas las afecciones médicas, salvo la vascular] + F02.81 (+ F01.51 si hay componente vascular)"
+   },
+   {
+    "si": {
+     "nivel": "mayor",
+     "etiologia": "multiple",
+     "comportamiento": "sin"
+    },
+    "cod": "[todas las afecciones médicas, salvo la vascular] + F02.80 (+ F01.50 si hay componente vascular)"
+   },
+   {
+    "si": {
+     "nivel": "leve"
+    },
+    "cod": "G31.84"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos neurocognitivos mayor y leve: tabla de codificación (pp. 682-683), notas de cada subtipo y tabla del trastorno neurocognitivo inducido por sustancia o medicamento",
+  "nota": "Mayor: primero el código de la afección etiológica (Alzheimer G30.9, frontotemporal G31.09, cuerpos de Lewy G31.83, TCE S06.2X9S, VIH B20, priones A81.9, Parkinson G20, Huntington G10, otra afección médica la que corresponda) y luego F02.8x (quinto carácter 0 sin alteración del comportamiento, 1 con). Vascular: solo F01.50 (sin) o F01.51 (con), sin código adicional de la enfermedad vascular. Leve: G31.84 para toda etiología médica, sin código adicional de la causa; la alteración del comportamiento no se codifica pero se registra. La gravedad del mayor (leve, moderada, grave) no se codifica pero se registra. Etiología no especificada: R41.9 (mayor o leve). Sustancia o medicamento: código según clase y consumo comórbido, sin diagnosticar el consumo aparte (mayor: alcohol amnésico F10.26 con consumo moderado o grave y F10.96 sin consumo; no amnésico F10.27 / F10.97; inhalantes F18.17/.27/.97; sedantes F13.27 / F13.97; otra F19.17/.27/.97. Leve: alcohol F10.188/.288/.988, inhalantes F18.188/.288/.988, sedantes F13.188/.288/.988, anfetamínicos F15.188/.288/.988, cocaína F14.188/.288/.988, otra F19.188/.288/.988). En alcohol y sedantes un consumo leve no basta para el cuadro mayor. Psicosis, depresión o cambio de personalidad debidos a la misma afección llevan códigos adicionales (p. ej. F06.2, F06.32, F07.0). Múltiples etiologías: códigos de cada afección médica primero (sin la vascular), luego F02.8x una sola vez, más F01.5x si hay componente vascular y los códigos inducidos por sustancias si participan. Probable o posible no cambia el código. La degeneración frontotemporal tiene variantes conductual y del lenguaje, que no se codifican aparte."
+ },
+ "psicosis": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "esquizofrenia",
+      "Esquizofrenia",
+      "F20.9"
+     ],
+     [
+      "esquizofreniforme",
+      "Trastorno esquizofreniforme",
+      "F20.81"
+     ],
+     [
+      "esquizoafectivo",
+      "Trastorno esquizoafectivo",
+      "F25.0 / F25.1"
+     ],
+     [
+      "delirante",
+      "Trastorno delirante",
+      "F22"
+     ],
+     [
+      "breve",
+      "Trastorno psicótico breve",
+      "F23"
+     ],
+     [
+      "otro_esp",
+      "Otro trastorno del espectro de la esquizofrenia y otro trastorno psicótico especificado",
+      "F28"
+     ],
+     [
+      "no_esp",
+      "Trastorno del espectro de la esquizofrenia y otro trastorno psicótico no especificado",
+      "F29"
+     ]
+    ]
+   },
+   {
+    "id": "ea_tipo",
+    "t": "Tipo de esquizoafectivo (solo si es esquizoafectivo)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "bipolar",
+      "Tipo bipolar",
+      "F25.0"
+     ],
+     [
+      "depresivo",
+      "Tipo depresivo",
+      "F25.1"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "esquizoafectivo"
+     ]
+    }
+   },
+   {
+    "id": "del_tipo",
+    "t": "Tipo de delirio (solo si es trastorno delirante)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "erotomaniaco",
+      "Tipo erotomaníaco"
+     ],
+     [
+      "grandeza",
+      "Tipo de grandeza"
+     ],
+     [
+      "celotipico",
+      "Tipo celotípico"
+     ],
+     [
+      "persecutorio",
+      "Tipo persecutorio"
+     ],
+     [
+      "somatico",
+      "Tipo somático"
+     ],
+     [
+      "mixto",
+      "Tipo mixto"
+     ],
+     [
+      "no_esp",
+      "Tipo no especificado"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "delirante"
+     ]
+    }
+   },
+   {
+    "id": "del_ext",
+    "t": "Contenido (solo trastorno delirante)",
+    "tipo": "varios",
+    "ops": [
+     [
+      "extravagante",
+      "Con contenido extravagante"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "delirante"
+     ]
+    }
+   },
+   {
+    "id": "breve_esp",
+    "t": "Especificadores del psicótico breve",
+    "tipo": "varios",
+    "ops": [
+     [
+      "estresor",
+      "Con factor(es) de estrés notable(s)"
+     ],
+     [
+      "sin_estresor",
+      "Sin factor(es) de estrés notable(s)"
+     ],
+     [
+      "posparto",
+      "Con inicio en el periparto (embarazo o primeras 4 semanas posparto)"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "breve"
+     ]
+    }
+   },
+   {
+    "id": "pronostico",
+    "t": "Pronóstico (solo esquizofreniforme)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "bueno",
+      "Con características de buen pronóstico"
+     ],
+     [
+      "no_bueno",
+      "Sin características de buen pronóstico"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "esquizofreniforme"
+     ]
+    }
+   },
+   {
+    "id": "curso",
+    "t": "Curso (solo tras 1 año de evolución; esquizofrenia, esquizoafectivo, delirante)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "p_ag",
+      "Primer episodio, actualmente en episodio agudo"
+     ],
+     [
+      "p_rp",
+      "Primer episodio, actualmente en remisión parcial"
+     ],
+     [
+      "p_rt",
+      "Primer episodio, actualmente en remisión total"
+     ],
+     [
+      "m_ag",
+      "Episodios múltiples, actualmente en episodio agudo"
+     ],
+     [
+      "m_rp",
+      "Episodios múltiples, actualmente en remisión parcial"
+     ],
+     [
+      "m_rt",
+      "Episodios múltiples, actualmente en remisión total"
+     ],
+     [
+      "cont",
+      "Continuo"
+     ],
+     [
+      "nesp",
+      "No especificado"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "esquizofrenia",
+      "esquizoafectivo",
+      "delirante"
+     ]
+    }
+   },
+   {
+    "id": "catatonia",
+    "t": "Catatonía",
+    "tipo": "varios",
+    "ops": [
+     [
+      "catatonia",
+      "Con catatonía (añadir F06.1)",
+      "F06.1"
+     ]
+    ]
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual (síntomas principales, últimos 7 días; opcional)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "na",
+      "No evaluada"
+     ],
+     [
+      "0",
+      "0 · ausente"
+     ],
+     [
+      "1",
+      "1 · dudoso"
+     ],
+     [
+      "2",
+      "2 · leve"
+     ],
+     [
+      "3",
+      "3 · moderado"
+     ],
+     [
+      "4",
+      "4 · grave"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "esquizoafectivo",
+     "ea_tipo": "bipolar"
+    },
+    "cod": "F25.0"
+   },
+   {
+    "si": {
+     "diagnostico": "esquizoafectivo",
+     "ea_tipo": "depresivo"
+    },
+    "cod": "F25.1"
+   },
+   {
+    "si": {
+     "diagnostico": "esquizofrenia"
+    },
+    "cod": "F20.9"
+   },
+   {
+    "si": {
+     "diagnostico": "esquizofreniforme"
+    },
+    "cod": "F20.81"
+   },
+   {
+    "si": {
+     "diagnostico": "delirante"
+    },
+    "cod": "F22"
+   },
+   {
+    "si": {
+     "diagnostico": "breve"
+    },
+    "cod": "F23"
+   },
+   {
+    "si": {
+     "diagnostico": "otro_esp"
+    },
+    "cod": "F28"
+   },
+   {
+    "si": {
+     "diagnostico": "no_esp"
+    },
+    "cod": "F29"
+   },
+   {
+    "si": {},
+    "cod": "F20.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos del espectro de la esquizofrenia y otros trastornos psicóticos (esquizofrenia, esquizofreniforme, esquizoafectivo, delirante, psicótico breve, otro especificado y no especificado)",
+  "nota": "Catatonía: el DSM indica un código adicional F06.1 (catatonía asociada a [trastorno]) además del diagnóstico principal; aplica a breve, esquizofreniforme, esquizofrenia y esquizoafectivo. Los especificadores de curso solo tras 1 año de evolución (esquizofrenia, esquizoafectivo y delirante). Esquizoafectivo: el código depende del tipo (F25.0 bipolar, F25.1 depresivo). Gravedad: escala 0-4 por síntoma (delirios, alucinaciones, habla desorganizada, conducta motora anormal, síntomas negativos), opcional; en el delirante no es necesaria. Otro especificado (F28): se registra con el motivo concreto; no especificado (F29): sin motivo. El esquizotípico (F21) se codifica en su propia hipótesis (tp-esquizotipico). No hay código distinto para contenido extravagante ni para los especificadores de curso."
+ },
+ "tp-paranoide": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno paranoide de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Si los criterios se cumplen antes del inicio de una esquizofrenia, se agrega «(premórbido)» al nombre. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-esquizoide": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.1"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno esquizoide de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Si los criterios se cumplen antes del inicio de una esquizofrenia, se agrega «(premórbido)» al nombre. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-esquizotipico": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F21"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastorno esquizotípico (de la personalidad), capítulos Espectro de la esquizofrenia y Trastornos de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Si los criterios se cumplen antes del inicio de una esquizofrenia, se agrega «(premórbido)» al nombre. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-antisocial": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.2"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno antisocial de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "limite": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.3"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno límite de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-histrionico": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.4"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno histriónico de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-narcisista": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.81"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno narcisista de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-evitativo": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.6"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno de la personalidad evitativa",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-dependiente": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.7"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno de la personalidad dependiente",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "tp-obsesivo": {
+  "grupos": [],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F60.5"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos de la personalidad, Trastorno obsesivo-compulsivo de la personalidad",
+  "nota": "El DSM-5-TR no da especificadores ni subtipos para este trastorno. Otro especificado F60.89 (se registra con el motivo, p. ej. rasgos mixtos) y no especificado F60.9 se codifican aparte, no con este id."
+ },
+ "genero": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "ninos",
+      "Disforia de género en niños",
+      "F64.2"
+     ],
+     [
+      "adol_adu",
+      "Disforia de género en adolescentes y adultos",
+      "F64.0"
+     ],
+     [
+      "otro_esp",
+      "Otra disforia de género especificada",
+      "F64.8"
+     ],
+     [
+      "no_esp",
+      "Disforia de género no especificada",
+      "F64.9"
+     ]
+    ]
+   },
+   {
+    "id": "espec",
+    "t": "Especificadores",
+    "tipo": "varios",
+    "ops": [
+     [
+      "dsd",
+      "Con un trastorno/diferencia del desarrollo sexual (codificarlo además)"
+     ],
+     [
+      "postrans",
+      "Postransición (solo adolescentes y adultos)"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "ninos"
+    },
+    "cod": "F64.2"
+   },
+   {
+    "si": {
+     "diagnostico": "adol_adu"
+    },
+    "cod": "F64.0"
+   },
+   {
+    "si": {
+     "diagnostico": "otro_esp"
+    },
+    "cod": "F64.8"
+   },
+   {
+    "si": {
+     "diagnostico": "no_esp"
+    },
+    "cod": "F64.9"
+   },
+   {
+    "si": {},
+    "cod": "F64.0"
+   }
+  ],
+  "fuente": "DSM-5-TR, Disforia de género, lista de clasificación y criterios",
+  "nota": "Los especificadores no cambian el código. Con trastorno del desarrollo sexual: codificar además esa afección. Postransición figura bajo adolescentes y adultos. Otro especificado F64.8 y no especificado F64.9 aparecen en la lista del capítulo."
+ },
+ "sexual": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "retardada",
+      "Eyaculación retardada",
+      "F52.32"
+     ],
+     [
+      "erectil",
+      "Trastorno eréctil",
+      "F52.21"
+     ],
+     [
+      "org_fem",
+      "Trastorno orgásmico femenino",
+      "F52.31"
+     ],
+     [
+      "interes_fem",
+      "Trastorno del interés/excitación sexual femenino",
+      "F52.22"
+     ],
+     [
+      "dolor",
+      "Trastorno de dolor génito-pélvico/penetración",
+      "F52.6"
+     ],
+     [
+      "deseo_m",
+      "Deseo sexual hipoactivo en el varón",
+      "F52.0"
+     ],
+     [
+      "prematura",
+      "Eyaculación prematura (precoz)",
+      "F52.4"
+     ],
+     [
+      "inducida",
+      "Disfunción sexual inducida por sustancias/medicamentos",
+      "F1x.x81"
+     ],
+     [
+      "otro_esp",
+      "Otra disfunción sexual especificada",
+      "F52.8"
+     ],
+     [
+      "no_esp",
+      "Disfunción sexual no especificada",
+      "F52.9"
+     ]
+    ]
+   },
+   {
+    "id": "inicio",
+    "t": "Inicio",
+    "tipo": "uno",
+    "ops": [
+     [
+      "vida",
+      "De por vida"
+     ],
+     [
+      "adq",
+      "Adquirida"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "retardada",
+      "erectil",
+      "org_fem",
+      "interes_fem",
+      "dolor",
+      "deseo_m",
+      "prematura"
+     ]
+    }
+   },
+   {
+    "id": "contexto",
+    "t": "Contexto (no aplica a dolor génito-pélvico/penetración)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "gen",
+      "Generalizada"
+     ],
+     [
+      "sit",
+      "Situacional"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "retardada",
+      "erectil",
+      "org_fem",
+      "interes_fem",
+      "deseo_m",
+      "prematura"
+     ]
+    }
+   },
+   {
+    "id": "nunca_org",
+    "t": "Solo trastorno orgásmico femenino",
+    "tipo": "varios",
+    "ops": [
+     [
+      "nunca",
+      "Nunca ha experimentado un orgasmo en ninguna situación"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "org_fem"
+     ]
+    }
+   },
+   {
+    "id": "gravedad",
+    "t": "Gravedad actual",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Leve"
+     ],
+     [
+      "mod",
+      "Moderado"
+     ],
+     [
+      "grave",
+      "Grave"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "retardada",
+      "erectil",
+      "org_fem",
+      "interes_fem",
+      "dolor",
+      "deseo_m",
+      "prematura"
+     ]
+    }
+   },
+   {
+    "id": "sustancia",
+    "t": "Sustancia (solo si es inducida)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "alcohol",
+      "Alcohol",
+      "F10"
+     ],
+     [
+      "opioide",
+      "Opioide",
+      "F11"
+     ],
+     [
+      "sedante",
+      "Sedante, hipnótico o ansiolítico",
+      "F13"
+     ],
+     [
+      "anfetamina",
+      "Anfetamínico (u otro estimulante)",
+      "F15"
+     ],
+     [
+      "cocaina",
+      "Cocaína",
+      "F14"
+     ],
+     [
+      "otra",
+      "Otra sustancia (o desconocida)",
+      "F19"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "inducida"
+     ]
+    }
+   },
+   {
+    "id": "uso",
+    "t": "Trastorno por consumo comórbido de esa sustancia (solo si es inducida)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "leve",
+      "Con trastorno por consumo leve"
+     ],
+     [
+      "mod_grave",
+      "Con trastorno por consumo moderado o grave"
+     ],
+     [
+      "sin",
+      "Sin trastorno por consumo"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "inducida"
+     ]
+    }
+   },
+   {
+    "id": "inicio_ind",
+    "t": "Inicio (solo si es inducida)",
+    "tipo": "uno",
+    "ops": [
+     [
+      "intox",
+      "Con inicio durante la intoxicación"
+     ],
+     [
+      "abst",
+      "Con inicio durante la abstinencia"
+     ],
+     [
+      "medic",
+      "Con inicio tras el uso de un medicamento"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "inducida"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "alcohol",
+     "uso": "leve"
+    },
+    "cod": "F10.181"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "alcohol",
+     "uso": "mod_grave"
+    },
+    "cod": "F10.281"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "alcohol",
+     "uso": "sin"
+    },
+    "cod": "F10.981"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "opioide",
+     "uso": "leve"
+    },
+    "cod": "F11.181"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "opioide",
+     "uso": "mod_grave"
+    },
+    "cod": "F11.281"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "opioide",
+     "uso": "sin"
+    },
+    "cod": "F11.981"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "sedante",
+     "uso": "leve"
+    },
+    "cod": "F13.181"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "sedante",
+     "uso": "mod_grave"
+    },
+    "cod": "F13.281"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "sedante",
+     "uso": "sin"
+    },
+    "cod": "F13.981"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "anfetamina",
+     "uso": "leve"
+    },
+    "cod": "F15.181"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "anfetamina",
+     "uso": "mod_grave"
+    },
+    "cod": "F15.281"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "anfetamina",
+     "uso": "sin"
+    },
+    "cod": "F15.981"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "cocaina",
+     "uso": "leve"
+    },
+    "cod": "F14.181"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "cocaina",
+     "uso": "mod_grave"
+    },
+    "cod": "F14.281"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "cocaina",
+     "uso": "sin"
+    },
+    "cod": "F14.981"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "otra",
+     "uso": "leve"
+    },
+    "cod": "F19.181"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "otra",
+     "uso": "mod_grave"
+    },
+    "cod": "F19.281"
+   },
+   {
+    "si": {
+     "diagnostico": "inducida",
+     "sustancia": "otra",
+     "uso": "sin"
+    },
+    "cod": "F19.981"
+   },
+   {
+    "si": {
+     "diagnostico": "retardada"
+    },
+    "cod": "F52.32"
+   },
+   {
+    "si": {
+     "diagnostico": "erectil"
+    },
+    "cod": "F52.21"
+   },
+   {
+    "si": {
+     "diagnostico": "org_fem"
+    },
+    "cod": "F52.31"
+   },
+   {
+    "si": {
+     "diagnostico": "interes_fem"
+    },
+    "cod": "F52.22"
+   },
+   {
+    "si": {
+     "diagnostico": "dolor"
+    },
+    "cod": "F52.6"
+   },
+   {
+    "si": {
+     "diagnostico": "deseo_m"
+    },
+    "cod": "F52.0"
+   },
+   {
+    "si": {
+     "diagnostico": "prematura"
+    },
+    "cod": "F52.4"
+   },
+   {
+    "si": {
+     "diagnostico": "otro_esp"
+    },
+    "cod": "F52.8"
+   },
+   {
+    "si": {
+     "diagnostico": "no_esp"
+    },
+    "cod": "F52.9"
+   },
+   {
+    "si": {},
+    "cod": "F52.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Disfunciones sexuales (lista de clasificación, criterios y procedimientos de registro)",
+  "nota": "De por vida/adquirida aplica a todas; generalizada/situacional a todas salvo dolor génito-pélvico/penetración; gravedad a todas (en eyaculación prematura se define por el tiempo hasta la eyaculación tras la penetración vaginal). Los especificadores no cambian el código. Inducida por sustancias: el código termina en 81 y el cuarto carácter es 1 (consumo leve comórbido), 2 (moderado o grave) o 9 (sin consumo); no se agrega diagnóstico aparte de trastorno por consumo. Sustancia no clasificada (p. ej. fluoxetina): código de otra sustancia F19.x81 y se anota la sustancia. En inducida también aplican el inicio y la gravedad (por proporción de ocasiones sexuales: 25-50 por ciento, 50-75 por ciento, 75 o más)."
+ },
+ "parafilico": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "voyerista",
+      "Trastorno voyerista",
+      "F65.3"
+     ],
+     [
+      "exhibicionista",
+      "Trastorno exhibicionista",
+      "F65.2"
+     ],
+     [
+      "frotteurista",
+      "Trastorno frotteurista",
+      "F65.81"
+     ],
+     [
+      "masoquismo",
+      "Trastorno de masoquismo sexual",
+      "F65.51"
+     ],
+     [
+      "sadismo",
+      "Trastorno de sadismo sexual",
+      "F65.52"
+     ],
+     [
+      "pedofilico",
+      "Trastorno pedofílico",
+      "F65.4"
+     ],
+     [
+      "fetichista",
+      "Trastorno fetichista",
+      "F65.0"
+     ],
+     [
+      "travestista",
+      "Trastorno travestista",
+      "F65.1"
+     ],
+     [
+      "otro_esp",
+      "Otro trastorno parafílico especificado",
+      "F65.89"
+     ],
+     [
+      "no_esp",
+      "Trastorno parafílico no especificado",
+      "F65.9"
+     ]
+    ]
+   },
+   {
+    "id": "entorno",
+    "t": "Especificadores generales (no aplican a pedofílico, otro ni no especificado)",
+    "tipo": "varios",
+    "ops": [
+     [
+      "controlado",
+      "En un entorno controlado"
+     ],
+     [
+      "remision",
+      "En remisión total"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "voyerista",
+      "exhibicionista",
+      "frotteurista",
+      "masoquismo",
+      "sadismo",
+      "fetichista",
+      "travestista"
+     ]
+    }
+   },
+   {
+    "id": "exhib",
+    "t": "Exhibicionista: excitación al exponer los genitales a",
+    "tipo": "uno",
+    "ops": [
+     [
+      "prepuberes",
+      "Niños prepúberes"
+     ],
+     [
+      "maduros",
+      "Personas físicamente maduras"
+     ],
+     [
+      "ambos",
+      "Prepúberes y personas maduras"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "exhibicionista"
+     ]
+    }
+   },
+   {
+    "id": "masoq",
+    "t": "Masoquismo",
+    "tipo": "varios",
+    "ops": [
+     [
+      "asfixia",
+      "Con asfixiofilia"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "masoquismo"
+     ]
+    }
+   },
+   {
+    "id": "pedo_tipo",
+    "t": "Pedofílico: tipo",
+    "tipo": "uno",
+    "ops": [
+     [
+      "exclusivo",
+      "Tipo exclusivo"
+     ],
+     [
+      "no_exclusivo",
+      "Tipo no exclusivo"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "pedofilico"
+     ]
+    }
+   },
+   {
+    "id": "pedo_atraccion",
+    "t": "Pedofílico: atracción sexual por",
+    "tipo": "uno",
+    "ops": [
+     [
+      "varones",
+      "Varones"
+     ],
+     [
+      "mujeres",
+      "Mujeres"
+     ],
+     [
+      "ambos",
+      "Ambos sexos"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "pedofilico"
+     ]
+    }
+   },
+   {
+    "id": "pedo_inc",
+    "t": "Pedofílico",
+    "tipo": "varios",
+    "ops": [
+     [
+      "incesto",
+      "Limitado al incesto"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "pedofilico"
+     ]
+    }
+   },
+   {
+    "id": "fetiche",
+    "t": "Fetichista: objeto del fetiche",
+    "tipo": "varios",
+    "ops": [
+     [
+      "parte",
+      "Parte(s) del cuerpo"
+     ],
+     [
+      "objeto",
+      "Objeto(s) inanimado(s)"
+     ],
+     [
+      "otro",
+      "Otro"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "fetichista"
+     ]
+    }
+   },
+   {
+    "id": "trav",
+    "t": "Travestista",
+    "tipo": "varios",
+    "ops": [
+     [
+      "fetichismo",
+      "Con fetichismo"
+     ],
+     [
+      "autoginefilia",
+      "Con autoginefilia"
+     ]
+    ],
+    "solo": {
+     "diagnostico": [
+      "travestista"
+     ]
+    }
+   }
+  ],
+  "codigos": [
+   {
+    "si": {
+     "diagnostico": "voyerista"
+    },
+    "cod": "F65.3"
+   },
+   {
+    "si": {
+     "diagnostico": "exhibicionista"
+    },
+    "cod": "F65.2"
+   },
+   {
+    "si": {
+     "diagnostico": "frotteurista"
+    },
+    "cod": "F65.81"
+   },
+   {
+    "si": {
+     "diagnostico": "masoquismo"
+    },
+    "cod": "F65.51"
+   },
+   {
+    "si": {
+     "diagnostico": "sadismo"
+    },
+    "cod": "F65.52"
+   },
+   {
+    "si": {
+     "diagnostico": "pedofilico"
+    },
+    "cod": "F65.4"
+   },
+   {
+    "si": {
+     "diagnostico": "fetichista"
+    },
+    "cod": "F65.0"
+   },
+   {
+    "si": {
+     "diagnostico": "travestista"
+    },
+    "cod": "F65.1"
+   },
+   {
+    "si": {
+     "diagnostico": "otro_esp"
+    },
+    "cod": "F65.89"
+   },
+   {
+    "si": {
+     "diagnostico": "no_esp"
+    },
+    "cod": "F65.9"
+   },
+   {
+    "si": {},
+    "cod": "F65.9"
+   }
+  ],
+  "fuente": "DSM-5-TR, Trastornos parafílicos, lista de clasificación y criterios",
+  "nota": "Los especificadores no cambian el código. En un entorno controlado y en remisión total aplican a voyerista, exhibicionista, frotteurista, masoquismo, sadismo, fetichista y travestista; el pedofílico tiene sus propios especificadores. Se muestran los especificadores de todos los trastornos: elegir solo los del trastorno marcado."
+ },
+ "f99": {
+  "grupos": [
+   {
+    "id": "diagnostico",
+    "t": "Diagnóstico",
+    "tipo": "uno",
+    "ops": [
+     [
+      "otro_esp",
+      "Otro trastorno mental especificado",
+      "F99"
+     ],
+     [
+      "no_esp",
+      "Trastorno mental no especificado",
+      "F99"
+     ]
+    ]
+   }
+  ],
+  "codigos": [
+   {
+    "si": {},
+    "cod": "F99"
+   }
+  ],
+  "fuente": "DSM-5-TR, Otros trastornos mentales y códigos adicionales: otro trastorno mental especificado y no especificado",
+  "nota": "Sin especificadores. Ambos se codifican F99; el especificado se registra con el motivo concreto. Sin diagnóstico ni afección: Z03.89 (listado en el capítulo de otros trastornos y códigos adicionales). Z71.9: no encontrado en esta revisión."
+ }
 };
 
 
@@ -3295,7 +10658,7 @@ $("#copiar").addEventListener("click", async () => {
   if (elegidas.length) lineas.push("Impresión diagnóstica (hipótesis en verificación)");
   for (const id of elegidas) {
     const h = H[id], r = resumenDx(id);
-    lineas.push("", `${h.t} — DSM-5-TR: ${h.dsm || "sin código"}${h.cie10 ? "; CIE-10: " + h.cie10 : ""}`, h.z ? "Circunstancia presente y objeto de atención clínica." : r.completo ? `Cumple los ${r.total} criterios requeridos.` : `Criterios cumplidos: ${r.cumplidos} de ${r.total} requeridos (hipótesis en verificación).`);
+    lineas.push("", `${impNombre(id)} — DSM-5-TR: ${h.dsm || "sin código"}${h.cie10 ? "; CIE-10: " + h.cie10 : ""}`, h.z ? "Circunstancia presente y objeto de atención clínica." : r.completo ? `Cumple los ${r.total} criterios requeridos.` : `Criterios cumplidos: ${r.cumplidos} de ${r.total} requeridos (hipótesis en verificación).`);
     indices(id).forEach(k => {
       const c = crit(id, k), st = estadoCriterio(id, k);
       const marc = porSintomas(c) ? itemsDe(c).filter(([s]) => marcaDe(id, k, s)).map(([, et]) => et.toLowerCase()) : [];
@@ -3707,7 +11070,7 @@ function iaSolicitud() {
   if (!elegidas.length) l.push("Ninguna todavía.");
   for (const id of elegidas) {
     const h = H[id], r = resumenDx(id);
-    l.push(`- ${h.t} (DSM-5-TR ${h.dsm || "sin código"}) · estado: ${imp.estado[id] || "presuntiva"}${h.z ? "" : ` · criterios con apoyo: ${r.cumplidos} de ${r.total}`}`);
+    l.push(`- ${impNombre(id)} (código que se registra: ${imp.codigo[id] || h.dsm || "sin código"}) · estado: ${imp.estado[id] || "presuntiva"}${h.z ? "" : ` · criterios con apoyo: ${r.cumplidos} de ${r.total}`}`);
     if (!h.z) indices(id).forEach(k => l.push(`  - ${estadoCriterio(id, k).cumple ? "[x]" : "[ ]"} ${crit(id, k).t}`));
   }
   // Apuntes del cierre en el modo sesión (2026-11-22): lo que el psicólogo devolvió y acordó en vivo.
@@ -4141,7 +11504,110 @@ const CAMPOS_PAC = [
 const CAMPOS_AT = [["fecha", "Fecha de la atención", "date"], ["modalidad", "Modalidad", ["Presencial", "Virtual"]], ["lugar", "Lugar o escenario"]];
 const hoyISO = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 let paciente = { tipoDoc: "CC" }, atencion = { fecha: hoyISO(), modalidad: "Presencial" }, pacienteGuardado = null, sesion = 1, atencionId = null, sucio = false;
-const imp = { estado: {}, codigo: {}, principal: null };
+const imp = { estado: {}, codigo: {}, esp: {}, nombre: {}, principal: null };
+// ---------- Especificadores del DSM-5-TR (pedido del docente, 2026-11-22) ----------
+// Cada hipótesis trae sus grupos de especificadores (especificadores.js). Al elegirlos se arma el
+// código que se registra (tabla «codigos», primera regla que coincide, o «plantilla») y el nombre
+// completo («Trastorno depresivo mayor, episodio único, moderado, con ansiedad»).
+function espDe(id) { return (typeof ESPECIFICADORES !== "undefined" && ESPECIFICADORES[id]) || null; }
+function espSel(id) { return (imp.esp[id] = imp.esp[id] || {}); }
+// Grupos que solo aplican a ciertas opciones de otro grupo (p. ej., el tipo de delirio solo con el
+// trastorno delirante): «solo: { diagnostico: ["delirante"] }».
+function espCumple(solo, sel) {
+  return !solo || Object.entries(solo).every(([k, vs]) => [].concat(vs).some(v => Array.isArray(sel[k]) ? sel[k].includes(v) : sel[k] === v));
+}
+const espVisible = (g, sel) => espCumple(g.solo, sel);
+const espOps = (g, sel) => g.ops.filter(o => espCumple(o[3], sel));
+// Quita lo elegido que ya no aplica (grupo oculto u opción que no corresponde al diagnóstico).
+function espLimpiar(id) {
+  const e = espDe(id), sel = espSel(id); if (!e) return;
+  for (let vuelta = 0; vuelta < 3; vuelta++) for (const g of e.grupos || []) {
+    if (sel[g.id] == null) continue;
+    if (!espVisible(g, sel)) { delete sel[g.id]; continue; }
+    const ok = new Set(espOps(g, sel).map(o => o[0]));
+    if (Array.isArray(sel[g.id])) sel[g.id] = sel[g.id].filter(v => ok.has(v));
+    else if (!ok.has(sel[g.id])) delete sel[g.id];
+  }
+}
+// Código base más los adicionales que piden algunos especificadores (fragmento «+F06.1»).
+function espCodigo(id) {
+  const base = espCodigoBase(id), e = espDe(id); if (!base || !e) return base;
+  const sel = espSel(id), extra = [];
+  for (const g of e.grupos || []) if (espVisible(g, sel)) for (const v of [].concat(sel[g.id] || [])) {
+    const op = g.ops.find(o => o[0] === v); if (op && /^\+/.test(op[2] || "")) extra.push(op[2].slice(1).trim());
+  }
+  return [base, ...extra].join(" + ");
+}
+function espCodigoBase(id) {
+  const e = espDe(id); if (!e) return null;
+  const sel = espSel(id);
+  // Tabla: la primera regla que coincide. Si una regla anterior depende de un grupo aún sin elegir,
+  // el código queda pendiente (una regla general no debe adelantarse, p. ej., «en remisión»).
+  const G = Object.fromEntries((e.grupos || []).map(g => [g.id, g]));
+  const sinElegir = g => { const v = sel[g]; return (v == null || (Array.isArray(v) && !v.length)) && G[g] && G[g].tipo === "uno" && G[g].ops.length > 1 && espVisible(G[g], sel); };
+  const vale = (g, v) => Array.isArray(sel[g]) ? sel[g].includes(v) : sel[g] === v;
+  for (const r of e.codigos || []) {
+    const conds = Object.entries(r.si || {});
+    if (conds.some(([g, v]) => !sinElegir(g) && !(Array.isArray(v) ? v.some(x => vale(g, x)) : vale(g, v)))) continue;
+    if (conds.some(([g]) => sinElegir(g))) return null;
+    return r.cod;
+  }
+  if (e.plantilla) {
+    let falta = false;
+    const cod = e.plantilla.replace(/\{([\w-]+)\}/g, (_, g) => {
+      const grupo = (e.grupos || []).find(x => x.id === g), v = sel[g];
+      const op = grupo && grupo.ops.find(o => o[0] === (Array.isArray(v) ? v[0] : v));
+      if (!op || op[2] == null || /^\+/.test(op[2])) { falta = true; return "?"; }
+      return op[2];
+    });
+    return falta ? null : cod;
+  }
+  return null;
+}
+function espNombre(id) {
+  const e = espDe(id), h = H[id]; if (!e) return h.t;
+  const sel = espSel(id), partes = [], usados = new Set();
+  // Etiqueta limpia: sin la aclaración entre paréntesis; las opciones negativas no van en el nombre.
+  const et = (g, v) => ((g.ops.find(o => o[0] === v) || [, ""])[1]).replace(/\s*\([^)]*\)/g, "").trim();
+  const minus = t => /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
+  const G = Object.fromEntries((e.grupos || []).map(g => [g.id, g]));
+  let base = h.t;
+  if (e.nombre) {
+    let completo = true;
+    base = e.nombre.replace(/\{([\w-]+)\}/g, (m, g, pos) => {
+      const v = sel[g]; if (!G[g] || v == null || Array.isArray(v)) { completo = false; return m; }
+      usados.add(g); return pos === 0 ? et(G[g], v) : minus(et(G[g], v));
+    });
+    if (!completo) { base = h.t; usados.clear(); }
+  }
+  for (const g of e.grupos || []) {
+    if (usados.has(g.id) || !espVisible(g, sel)) continue;
+    const vs = [].concat(sel[g.id] ?? []).filter(v => !["no", "ninguno", "na", "nesp"].includes(v));
+    if (!vs.length) continue;
+    if (g.id === "diagnostico") { base = et(g, vs[0]); continue; }
+    partes.push(...vs.map(v => minus(et(g, v))).filter(Boolean));
+  }
+  return [base, ...partes].join(", ");
+}
+const impNombre = id => (imp.nombre[id] || "").trim() || H[id].t;
+function espHtml(id) {
+  const e = espDe(id); if (!e || !(e.grupos || []).length) return "";
+  const sel = espSel(id);
+  return `<details class="esp"${Object.keys(sel).length ? " open" : ""}><summary>Especificadores del DSM-5-TR</summary>
+    ${e.grupos.filter(g => espVisible(g, sel)).map(g => g.tipo === "varios"
+      ? `<div class="esp-g"><span class="meta">${esc(g.t)}</span><div class="ops">${espOps(g, sel).map(o => `<button type="button" data-esp="${id}" data-esp-g="${g.id}" data-esp-v="${esc(o[0])}" aria-pressed="${(sel[g.id] || []).includes(o[0])}">${esc(o[1])}</button>`).join("")}</div></div>`
+      : `<label class="esp-g"><span class="meta">${esc(g.t)}</span><select data-esp="${id}" data-esp-g="${g.id}"><option value="">—</option>${espOps(g, sel).map(o => `<option value="${esc(o[0])}"${sel[g.id] === o[0] ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select></label>`).join("")}
+    ${e.nota ? `<p class="meta">${esc(e.nota)}</p>` : ""}<p class="meta">Fuente: ${esc(e.fuente || "DSM-5-TR")}</p></details>`;
+}
+function espAplicar(id) {
+  espLimpiar(id);
+  imp.codigo[id] = espCodigo(id) || "";
+  imp.nombre[id] = espNombre(id);
+  const a = document.activeElement, foco = a && a.dataset && a.dataset.esp ? `[data-esp="${a.dataset.esp}"][data-esp-g="${a.dataset.espG}"]${a.dataset.espV ? `[data-esp-v="${a.dataset.espV}"]` : ""}` : null;
+  pintarImpresion(); pintarFaltantes();
+  if (foco) document.querySelector("#impresion " + foco)?.focus();
+}
+
 function edadDe(f, en) {
   if (!f) return null;
   const n = new Date(f + "T00:00"), h = en ? new Date(en + "T00:00") : new Date();
@@ -4235,16 +11701,23 @@ function pintarImpresion() {
   if (!elegidas.includes(imp.principal)) imp.principal = elegidas.find(id => !H[id].z && imp.estado[id] !== "descartada") || null;
   $("#impresion").innerHTML = '<div class="caja" style="margin:0">' + elegidas.map(id => {
     const h = H[id], r = resumenDx(id);
-    return `<div class="imp"><div><strong>${esc(h.t)}</strong><div class="meta">${h.z ? "Afección que es objeto de atención" : `${r.cumplidos} de ${r.total} criterios marcados`}</div></div>
+    return `<div class="imp"><div><strong>${esc(impNombre(id))}</strong><div class="meta">${h.z ? "Afección que es objeto de atención" : `${r.cumplidos} de ${r.total} criterios marcados`}</div></div>
       <select data-imp-estado="${id}" aria-label="Estado">${ESTADOS_IMP.map(([v, t]) => `<option value="${v}"${(imp.estado[id] || "presuntiva") === v ? " selected" : ""}>${t}</option>`).join("")}</select>
-      <div class="cods"><label class="meta">Código que registra <input type="text" data-imp-cod="${id}" value="${esc(imp.codigo[id] ?? (h.dsm || h.cie10 || ""))}"></label>
+      <div class="cods"><label class="meta">Código que registra <input type="text" data-imp-cod="${id}" value="${esc(imp.codigo[id] ?? (h.dsm || h.cie10 || ""))}" placeholder="Complete los especificadores"></label>
       ${h.z ? "" : `<label class="meta"><input type="radio" name="imp-principal" value="${id}"${imp.principal === id ? " checked" : ""}> Principal</label>`}
-      <span class="meta">CIE-10 ${esc(h.cie10 || "—")} · CIE-11 ${esc(h.cie11 || "—")}</span></div></div>`;
+      <span class="meta">CIE-10 ${esc(h.cie10 || "—")} · CIE-11 ${esc(h.cie11 || "—")}</span></div>${espHtml(id)}</div>`;
   }).join("") + "</div>";
 }
 $("#impresion").addEventListener("input", e => { const i = e.target; if (i.dataset.impCod) imp.codigo[i.dataset.impCod] = i.value; });
+$("#impresion").addEventListener("click", e => {
+  const b = e.target.closest("[data-esp-v]"); if (!b) return;
+  const s = espSel(b.dataset.esp), l = s[b.dataset.espG] = s[b.dataset.espG] || [], v = b.dataset.espV;
+  if (l.includes(v)) l.splice(l.indexOf(v), 1); else l.push(v);
+  espAplicar(b.dataset.esp);
+});
 $("#impresion").addEventListener("change", e => {
   const i = e.target;
+  if (i.dataset.esp) { const s = espSel(i.dataset.esp); if (i.value) s[i.dataset.espG] = i.value; else delete s[i.dataset.espG]; espAplicar(i.dataset.esp); return; }
   if (i.dataset.impEstado) { imp.estado[i.dataset.impEstado] = i.value; pintar(); }
   if (i.name === "imp-principal") imp.principal = i.value;
   pintarFaltantes();
@@ -4252,7 +11725,7 @@ $("#impresion").addEventListener("change", e => {
 function impresionGuardada() {
   return elegidas.map(id => {
     const h = H[id], r = resumenDx(id);
-    return { id, t: h.t, z: !!h.z, estado: imp.estado[id] || "presuntiva", codigo: imp.codigo[id] ?? (h.dsm || h.cie10 || ""), dsm: h.dsm || "", cie10: h.cie10 || "", cie11: h.cie11 || "",
+    return { id, t: impNombre(id), base: h.t, especificadores: imp.esp[id] || {}, z: !!h.z, estado: imp.estado[id] || "presuntiva", codigo: imp.codigo[id] ?? (h.dsm || h.cie10 || ""), dsm: h.dsm || "", cie10: h.cie10 || "", cie11: h.cie11 || "",
       principal: imp.principal === id, criterios: h.z ? "" : `${r.cumplidos} de ${r.total}`,
       marcados: h.z ? [] : indices(id).filter(k => estadoCriterio(id, k).cumple).map(k => crit(id, k).t) };
   });
@@ -4326,7 +11799,7 @@ function reiniciarLocal() {
   reiniciarIA();
   intento = false;
   paciente = { tipoDoc: "CC" }; atencion = { fecha: hoyISO(), modalidad: "Presencial" }; pacienteGuardado = null; atencionId = null; sesion = 1; sucio = false;
-  for (const o of [imp.estado, imp.codigo]) for (const k in o) delete o[k];
+  for (const o of [imp.estado, imp.codigo, imp.esp, imp.nombre]) for (const k in o) delete o[k];
   imp.principal = null; modo = "inicial";
   if (location.hash) history.replaceState(null, "", location.pathname);
   $("#granola").value = ""; $("#imp-obs").value = ""; $("#plan-texto").value = ""; $("#formulacion-texto").value = ""; if (typeof iaCargarPlanDoc === "function") iaCargarPlanDoc(null);
@@ -4345,7 +11818,7 @@ async function cargarSeguimiento(id) {
   if (edad != null) document.querySelector(`input[name=pob][value=${edad < 18 ? "infancia" : "adultos"}]`).checked = true;
   // La impresión vigente es la de la última atención (sin las descartadas).
   const ult = previas[previas.length - 1];
-  if (ult) for (const d of ult.impresion || []) if (d.estado !== "descartada" && H[d.id]) { elegidas.push(d.id); if (((ult.estado || {}).efectivas || {})[d.id]) marcas[d.id] = JSON.parse(JSON.stringify(ult.estado.efectivas[d.id])); imp.estado[d.id] = d.estado; imp.codigo[d.id] = d.codigo; if (d.principal) imp.principal = d.id; }
+  if (ult) for (const d of ult.impresion || []) if (d.estado !== "descartada" && H[d.id]) { elegidas.push(d.id); if (((ult.estado || {}).efectivas || {})[d.id]) marcas[d.id] = JSON.parse(JSON.stringify(ult.estado.efectivas[d.id])); imp.estado[d.id] = d.estado; imp.codigo[d.id] = d.codigo; if (d.especificadores) imp.esp[d.id] = JSON.parse(JSON.stringify(d.especificadores)); if (d.base && d.t !== d.base) imp.nombre[d.id] = d.t; if (d.principal) imp.principal = d.id; }
   // La formulación y el plan vigentes son los últimos guardados para este paciente.
   const sus = (await Almacen.listar("planes")).filter(x => x.pacienteId === id && !x.ilegible).sort((a, b) => (a.guardado || "").localeCompare(b.guardado || ""));
   const pl = sus.at(-1);
